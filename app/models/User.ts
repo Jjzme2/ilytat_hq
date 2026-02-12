@@ -9,6 +9,8 @@ export class User extends BaseModel {
     photoURL: string;
     employeeId: number | null;
     uid: string;
+    activeThemeId: string;
+    savedThemeIds: string[];
 
     constructor(data: any = {}) {
         super(data);
@@ -20,6 +22,8 @@ export class User extends BaseModel {
         this.photoURL = data.photoURL || '';
         this.employeeId = data.employeeId || null;
         this.uid = data.uid || '';
+        this.activeThemeId = data.activeThemeId || 'light-default';
+        this.savedThemeIds = data.savedThemeIds || ['light-default', 'dark-default'];
     }
 
     override toJSON() {
@@ -32,7 +36,9 @@ export class User extends BaseModel {
             bio: this.bio,
             photoURL: this.photoURL,
             employeeId: this.employeeId,
-            uid: this.uid
+            uid: this.uid,
+            activeThemeId: this.activeThemeId,
+            savedThemeIds: this.savedThemeIds
         };
     }
 }

@@ -61,7 +61,9 @@ export const useUser = () => {
                             photoURL: userData.photoURL || fUser.photoURL,
                             roles: userData.roles || ['user'],
                             tenantId: userData.tenantId || null,
-                            bio: userData.bio || ''
+                            bio: userData.bio || '',
+                            activeThemeId: userData.activeThemeId,
+                            savedThemeIds: userData.savedThemeIds
                         });
                     } catch (e) {
                         console.error('[useUser] Error fetching profile:', e);
@@ -105,7 +107,9 @@ export const useUser = () => {
                     photoURL: userData.photoURL || result.user.photoURL,
                     roles: userData.roles || ['user'],
                     tenantId: userData.tenantId || null,
-                    bio: userData.bio || ''
+                    bio: userData.bio || '',
+                    activeThemeId: userData.activeThemeId,
+                    savedThemeIds: userData.savedThemeIds
                 });
             }
         } finally {

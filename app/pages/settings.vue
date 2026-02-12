@@ -10,7 +10,7 @@
         </header>
 
         <main class="flex-1 overflow-y-auto p-6 scrollbar-thin">
-            <div class="max-w-4xl space-y-8">
+            <div class="max-w-6xl mx-auto space-y-8">
                 <!-- Profile Section -->
                 <section class="bg-zinc-900/40 border border-white/5 rounded-xl p-6">
                     <h2 class="text-lg font-semibold text-white mb-4">Profile</h2>
@@ -41,6 +41,39 @@
                         <button class="ml-auto px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm transition-colors border border-white/5">
                             Edit Profile
                         </button>
+                    </div>
+                </section>
+
+                <!-- Appearance / Themes Section -->
+                <section class="bg-zinc-900/40 border border-white/5 rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-6 sticky top-0 z-10 bg-zinc-900/95 py-2 backdrop-blur">
+                        <div>
+                            <h2 class="text-lg font-semibold text-white">Appearance</h2>
+                            <p class="text-xs text-zinc-400">Choose your style from our collection</p>
+                        </div>
+                        <div class="text-sm font-medium px-3 py-1 bg-black/20 rounded-full border border-white/5">
+                            Top Themes: <span :class="{'text-red-400': themeStore.savedThemeIds.length >= 10, 'text-accent-primary': themeStore.savedThemeIds.length < 10}">{{ themeStore.savedThemeIds.length }}/10</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-8">
+                        <div v-for="category in THEME_CATEGORIES" :key="category">
+                            <h3 class="text-sm font-medium text-zinc-300 mb-3 pl-1 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-accent-secondary"></span>
+                                {{ category }}
+                            </h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                <ThemeCard
+                                    v-for="theme in themesByCategory[category]"
+                                    :key="theme.id"
+                                    :theme="theme"
+                                    :is-active="themeStore.activeThemeId === theme.id"
+                                    :is-saved="themeStore.savedThemeIds.includes(theme.id)"
+                                    @select="themeStore.setTheme"
+                                    @toggle-save="handleToggleSave"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -81,22 +114,6 @@
                 <section class="bg-zinc-900/40 border border-white/5 rounded-xl p-6">
                     <h2 class="text-lg font-semibold text-white mb-4">Preferences</h2>
                     <div class="space-y-4">
-                        <div class="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
-                            <div>
-                                <h3 class="text-sm font-medium text-white">Dark Mode</h3>
-                                <p class="text-xs text-zinc-400">Toggle application theme</p>
-                            </div>
-                            <button 
-                                @click="themeStore.toggleTheme"
-                                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-zinc-900"
-                                :class="themeStore.isDark ? 'bg-accent-primary' : 'bg-zinc-700'"
-                            >
-                                <span 
-                                    class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                                    :class="themeStore.isDark ? 'translate-x-6' : 'translate-x-1'"
-                                />
-                            </button>
-                        </div>
                          <div class="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
                             <div>
                                 <h3 class="text-sm font-medium text-white">Notifications</h3>
@@ -115,6 +132,7 @@
 
 <script setup lang="ts">
 import { useThemeStore } from '~/stores/theme';
+import { THEMES, THEME_CATEGORIES, type Theme } from '~/data/themes';
 import { doc, updateDoc } from 'firebase/firestore';
 
 definePageMeta({
@@ -137,6 +155,24 @@ watch(() => tenant.value?.logo, (newLogo) => {
         logoInput.value = newLogo;
     }
 }, { immediate: true });
+
+const themesByCategory = computed(() => {
+    const grouped: Record<string, Theme[]> = {};
+    THEMES.forEach(theme => {
+        if (!grouped[theme.category]) {
+            grouped[theme.category] = [];
+        }
+        grouped[theme.category].push(theme);
+    });
+    return grouped;
+});
+
+const handleToggleSave = (id: string) => {
+    const success = themeStore.toggleSavedTheme(id);
+    if (!success) {
+        toastError('You can only have up to 10 top themes.');
+    }
+};
 
 const saveLogo = async () => {
     if (!tenantId.value) return;
