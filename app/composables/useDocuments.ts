@@ -130,8 +130,14 @@ export const useDocuments = () => {
         isLoadingR2.value = true;
         r2Error.value = null;
         try {
+            const { auth } = useFirebase();
+            const token = await auth.currentUser?.getIdToken();
+            if (!token) throw new Error('User not authenticated');
+
             const params = prefix ? `?prefix=${encodeURIComponent(prefix)}` : '';
-            const data = await $fetch<{ files: R2File[]; count: number }>(`/api/docs${params}`);
+            const data = await $fetch<{ files: R2File[]; count: number }>(`/api/docs${params}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             r2Files.value = data.files;
         } catch (e: any) {
             r2Error.value = e.data?.message || e.message || 'Failed to fetch R2 documents';
@@ -148,6 +154,10 @@ export const useDocuments = () => {
         isLoadingR2.value = true;
         r2Error.value = null;
         try {
+            const { auth } = useFirebase();
+            const token = await auth.currentUser?.getIdToken();
+            if (!token) throw new Error('User not authenticated');
+
             const formData = new FormData();
             formData.append('file', file);
             if (key) {
@@ -156,7 +166,8 @@ export const useDocuments = () => {
 
             const result = await $fetch<{ success: boolean; key: string; size: number; contentType: string }>('/api/docs', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: { Authorization: `Bearer ${token}` }
             });
 
             // Refresh the file list after upload
@@ -177,7 +188,14 @@ export const useDocuments = () => {
         isLoadingR2.value = true;
         r2Error.value = null;
         try {
-            await $fetch(`/api/docs?key=${encodeURIComponent(key)}`, { method: 'DELETE' });
+            const { auth } = useFirebase();
+            const token = await auth.currentUser?.getIdToken();
+            if (!token) throw new Error('User not authenticated');
+
+            await $fetch(`/api/docs?key=${encodeURIComponent(key)}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
             r2Files.value = r2Files.value.filter(f => f.key !== key);
         } catch (e: any) {
             r2Error.value = e.data?.message || e.message || 'Failed to delete file';
