@@ -27,4 +27,4 @@ logs
 service-account.json
 
 .dev/*
-AI/*
+AI/Summaries/*
