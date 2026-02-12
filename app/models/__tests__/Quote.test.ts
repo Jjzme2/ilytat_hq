@@ -8,7 +8,7 @@ describe('Quote', () => {
         expect(q.author).toBe('')
         expect(q.source).toBe('')
         expect(q.tags).toEqual([])
-        expect(q.type).toBe('common')
+        expect(q.type).toBe('universal')
         expect(q.userId).toBe('system')
         expect(q.notes).toBe('')
         // date should be today in YYYY-MM-DD format
@@ -22,7 +22,7 @@ describe('Quote', () => {
             author: 'Gandhi',
             source: 'Speech',
             tags: ['motivation', 'life'],
-            type: 'inspirational',
+            type: 'universal', // 'inspirational' is not a valid type in model
             userId: 'user-1',
             notes: 'Great quote',
             date: '2025-01-15'
@@ -43,7 +43,7 @@ describe('Quote', () => {
     it('toJSON roundtrip preserves all fields', () => {
         const json = new Quote({
             text: 'Test', author: 'Auth', source: 'Src',
-            tags: ['a'], type: 'rare', userId: 'u1',
+            tags: ['a'], type: 'tenant', userId: 'u1', // 'rare' is not valid type
             notes: 'n', date: '2025-06-01'
         }).toJSON()
 
