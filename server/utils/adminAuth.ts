@@ -60,8 +60,9 @@ export const ensureAdminInitialized = () => {
 
 /**
  * Extract and verify the Bearer token from an incoming request.
+ * Verifies ANY authenticated user (does not check roles).
  */
-export const verifyAdminToken = async (event: H3Event) => {
+export const verifyAuthToken = async (event: H3Event) => {
     ensureAdminInitialized()
     const auth = getAuth()
 
@@ -84,7 +85,7 @@ export const verifyAdminToken = async (event: H3Event) => {
  * Verify token AND check that the user has admin privileges.
  */
 export const verifyAdminAccess = async (event: H3Event) => {
-    const decoded = await verifyAdminToken(event)
+    const decoded = await verifyAuthToken(event)
 
     // Robust role check (supports both role: string and roles: string[])
     const hasAdminRole = decoded.role === 'admin'
