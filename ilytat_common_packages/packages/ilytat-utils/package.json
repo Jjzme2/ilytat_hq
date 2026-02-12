@@ -1,0 +1,12 @@
+{
+    "name": "@ilytat/utils",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Universal Utilities for ILYTAT",
+    "main": "index.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "ILYTAT",
+    "license": "ISC"
+}

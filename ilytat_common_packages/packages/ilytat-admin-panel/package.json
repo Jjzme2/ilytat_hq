@@ -1,0 +1,12 @@
+{
+    "name": "@ilytat/admin-panel",
+    "version": "1.0.0",
+    "description": "Premium Admin Console for ILYTAT HQ",
+    "main": "index.ts",
+    "private": true,
+    "dependencies": {
+        "vue": "^3.5.0",
+        "vuefire": "^3.1.0",
+        "@ilytat/notifications": "workspace:*"
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "name": "@ilytat/animations",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Weighted animation utility for ILYTAT HQ",
+    "main": "./nuxt.config.ts",
+    "author": "ILYTAT",
+    "license": "ISC"
+}

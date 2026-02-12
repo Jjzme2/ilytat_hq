@@ -1,0 +1,11 @@
+{
+    "name": "@ilytat/command-palette",
+    "version": "1.0.0",
+    "description": "Command Palette for ILYTAT HQ",
+    "main": "index.ts",
+    "private": true,
+    "dependencies": {
+        "vue": "^3.5.0",
+        "@vueuse/core": "^10.0.0"
+    }
+}
