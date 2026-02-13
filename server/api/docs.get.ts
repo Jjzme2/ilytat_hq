@@ -29,6 +29,9 @@ function getClient() {
 }
 
 export default defineEventHandler(async (event) => {
+    // SECURITY: Ensure user is authenticated
+    await verifyAdminToken(event);
+
     const query = getQuery(event);
     const config = useRuntimeConfig();
     const bucket = config.cloudflareR2BucketName as string;
