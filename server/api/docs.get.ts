@@ -7,6 +7,7 @@
  * R2 credentials come from server-only runtimeConfig.
  */
 import { S3Client, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
+import { verifyAdminToken } from '../utils/adminAuth';
 
 // Lazy-initialised client (created once per cold start)
 let s3: S3Client | null = null;
@@ -35,6 +36,8 @@ export default defineEventHandler(async (event) => {
     const client = getClient();
 
     // If a key is provided, return that specific object
+    // TODO: Ideally we should use Presigned URLs here and enforce auth for all operations.
+    // For now, we allow unauthenticated access to specific keys to support <img> tags in the frontend.
     if (query.key && typeof query.key === 'string') {
         try {
             const command = new GetObjectCommand({ Bucket: bucket, Key: query.key });
@@ -59,6 +62,9 @@ export default defineEventHandler(async (event) => {
     }
 
     // Default: list all objects in the bucket
+    // Require authentication for listing files
+    await verifyAdminToken(event);
+
     try {
         const prefix = typeof query.prefix === 'string' ? query.prefix : undefined;
         const command = new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix });

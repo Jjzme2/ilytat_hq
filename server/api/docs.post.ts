@@ -9,6 +9,7 @@
  * R2 credentials come from server-only runtimeConfig.
  */
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { verifyAdminToken } from '../utils/adminAuth';
 
 let s3: S3Client | null = null;
 
@@ -30,6 +31,9 @@ function getClient() {
 }
 
 export default defineEventHandler(async (event) => {
+    // Require authentication
+    await verifyAdminToken(event);
+
     const config = useRuntimeConfig();
     const bucket = config.cloudflareR2BucketName as string;
     const client = getClient();
