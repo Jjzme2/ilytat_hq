@@ -32,7 +32,7 @@
             <!-- Projects Grid -->
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div 
-                    v-for="project in projects" 
+                    v-for="project in formattedProjects"
                     :key="project.id"
                     @click="router.push(`/projects/${project.id}`)"
                     class="group relative bg-zinc-900/40 border border-white/5 hover:border-blue-500/30 rounded-xl p-5 cursor-pointer transition-all hover:bg-zinc-900/60"
@@ -41,9 +41,9 @@
                     <div class="absolute top-5 right-5">
                        <span :class="[
                            'text-xs px-2 py-1 rounded-full border',
-                           getStatusColor(project.status)
+                           project.statusColor
                        ]">
-                           {{ formatStatus(project.status) }}
+                           {{ project.formattedStatus }}
                        </span>
                     </div>
 
@@ -55,11 +55,11 @@
                         <div class="flex items-center gap-3">
                             <span v-if="project.deadline" class="flex items-center gap-1">
                                 <span class="i-ph-calendar opacity-70"></span>
-                                {{ formatDate(project.deadline) }}
+                                {{ project.formattedDate }}
                             </span>
                             <span class="flex items-center gap-1">
                                 <span class="i-ph-flag opacity-70"></span>
-                                <span :class="getPriorityColor(project.priority)">{{ capitalize(project.priority) }}</span>
+                                <span :class="project.priorityColor">{{ project.capitalizedPriority }}</span>
                             </span>
                         </div>
                         
@@ -184,6 +184,19 @@ const newProjectForm = ref({
     description: '',
     priority: 'medium' as 'low' | 'medium' | 'high' | 'critical',
     deadline: ''
+});
+
+// Performance Optimization: Memoize formatted values to prevent re-calculation on every render
+const formattedProjects = computed(() => {
+    return projects.value.map(project => ({
+        ...project, // Spread original properties
+        // Pre-calculate formatted values
+        statusColor: getStatusColor(project.status),
+        formattedStatus: formatStatus(project.status),
+        formattedDate: formatDate(project.deadline),
+        priorityColor: getPriorityColor(project.priority),
+        capitalizedPriority: capitalize(project.priority)
+    }));
 });
 
 // Init
