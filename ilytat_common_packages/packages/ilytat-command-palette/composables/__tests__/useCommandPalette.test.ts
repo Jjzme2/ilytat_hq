@@ -14,10 +14,8 @@ import { useCommandPalette } from '../useCommandPalette'
  * we need to manually reset between tests by clearing commands.
  */
 const resetPalette = () => {
-    const { commands, searchQuery, isOpen } = useCommandPalette()
-    commands.value = []
-    searchQuery.value = ''
-    isOpen.value = false
+    const { clearAllCommands } = useCommandPalette()
+    clearAllCommands()
 }
 
 describe('useCommandPalette', () => {
