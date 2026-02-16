@@ -145,4 +145,56 @@ describe('useCommandPalette', () => {
         registerGroup({ id: 'custom', label: 'Custom' })
         expect(groups.value).toHaveLength(initialLength + 1)
     })
+
+    it('registerCommands adds multiple commands in batch', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        registerCommands([
+            { id: 'b1', label: 'B1', action: () => { } },
+            { id: 'b2', label: 'B2', action: () => { } }
+        ])
+        expect(commands.value).toHaveLength(2)
+        expect(commands.value[0].id).toBe('b1')
+        expect(commands.value[1].id).toBe('b2')
+    })
+
+    it('registerCommands prevents duplicates', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        registerCommands([
+            { id: 'b1', label: 'B1', action: () => { } },
+            { id: 'b1', label: 'Duplicate', action: () => { } }
+        ])
+        expect(commands.value).toHaveLength(1)
+        expect(commands.value[0].label).toBe('B1')
+    })
+
+    it('removeCommands removes items matching predicate', () => {
+        const { registerCommands, removeCommands, commands } = useCommandPalette()
+        registerCommands([
+            { id: 'a1', label: 'A1', group: 'G1', action: () => { } },
+            { id: 'a2', label: 'A2', group: 'G2', action: () => { } },
+            { id: 'a3', label: 'A3', group: 'G1', action: () => { } }
+        ])
+
+        removeCommands(c => c.group === 'G1')
+        expect(commands.value).toHaveLength(1)
+        expect(commands.value[0].id).toBe('a2')
+    })
+
+    it('updateCommands atomically updates commands', () => {
+        const { registerCommands, updateCommands, commands } = useCommandPalette()
+        registerCommands([
+            { id: 'old1', label: 'Old1', group: 'Dynamic', action: () => { } },
+            { id: 'static', label: 'Static', group: 'Static', action: () => { } }
+        ])
+
+        updateCommands(
+            c => c.group === 'Dynamic',
+            [{ id: 'new1', label: 'New1', group: 'Dynamic', action: () => { } }]
+        )
+
+        expect(commands.value).toHaveLength(2)
+        expect(commands.value.find(c => c.id === 'static')).toBeDefined()
+        expect(commands.value.find(c => c.id === 'new1')).toBeDefined()
+        expect(commands.value.find(c => c.id === 'old1')).toBeUndefined()
+    })
 })

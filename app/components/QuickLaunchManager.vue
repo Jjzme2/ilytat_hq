@@ -7,22 +7,26 @@ const route = useRoute();
 const projectId = computed(() => route.params.id as string | undefined);
 
 const { links } = useQuickLaunch(projectId);
-const { registerCommand, clearCommandsByGroup } = useCommandPalette();
+const { updateCommands } = useCommandPalette();
 
 const updateQuickLaunchCommands = () => {
-    // Clear existing group to avoid duplicates and handle removals
-    clearCommandsByGroup('Quick Launch');
+    // Generate new commands
+    const newCommands = Object.entries(links.value).map(([label, url]) => ({
+        id: `quicklaunch-${label.replace(/\s+/g, '-').toLowerCase()}`,
+        label,
+        icon: 'i-heroicons-arrow-top-right-on-square',
+        group: 'Quick Launch',
+        action: () => window.open(url as string, '_blank', 'noopener')
+    }));
 
-    // Register current links
-    Object.entries(links.value).forEach(([label, url]) => {
-        registerCommand({
-            id: `quicklaunch-${label.replace(/\s+/g, '-').toLowerCase()}`,
-            label,
-            icon: 'i-heroicons-arrow-top-right-on-square',
-            group: 'Quick Launch',
-            action: () => window.open(url as string, '_blank', 'noopener')
-        });
-    });
+    // Atomically update commands:
+    // 1. Remove old commands (prefix 'quicklaunch-')
+    // 2. Add new commands
+    // This prevents clearing global 'Quick Launch' commands and reduces reactivity triggers
+    updateCommands(
+        (cmd: any) => cmd.id.startsWith('quicklaunch-'),
+        newCommands
+    );
 };
 
 // Update when links change
