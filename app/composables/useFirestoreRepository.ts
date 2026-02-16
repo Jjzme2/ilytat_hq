@@ -34,14 +34,16 @@ export const useFirestoreRepository = <T extends { id: string, toJSON: () => any
     const getAll = async (constraints: QueryConstraint[] = []): Promise<T[]> => {
         try {
             const path = getCollectionName();
+            Logger.debug(`[Firestore] getAll: ${path} (constraints: ${constraints.length})`);
             const q = query(collection(db, path), ...constraints);
             const querySnapshot = await getDocs(q);
+            Logger.debug(`[Firestore] getAll: ${path} returned ${querySnapshot.size} docs`);
             return querySnapshot.docs.map(doc => {
                 const data = doc.data();
                 return modelFactory({ ...data, id: doc.id });
             });
         } catch (e) {
-            console.error(`Error fetching ${toValue(collectionOrRef)}:`, e);
+            Logger.error(`[Firestore] Error fetching ${toValue(collectionOrRef)}:`, e);
             throw e;
         }
     };
@@ -49,14 +51,16 @@ export const useFirestoreRepository = <T extends { id: string, toJSON: () => any
     const getById = async (id: string): Promise<T | null> => {
         try {
             const path = getCollectionName();
+            Logger.debug(`[Firestore] getById: ${path}/${id}`);
             const docRef = doc(db, path, id);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 return modelFactory({ ...docSnap.data(), id: docSnap.id });
             }
+            Logger.debug(`[Firestore] getById: ${path}/${id} - Not Found`);
             return null;
         } catch (e) {
-            console.error(`Error fetching ${toValue(collectionOrRef)} by ID:`, e);
+            Logger.error(`[Firestore] Error fetching ${toValue(collectionOrRef)} by ID (${id}):`, e);
             throw e;
         }
     };
@@ -64,14 +68,16 @@ export const useFirestoreRepository = <T extends { id: string, toJSON: () => any
     const create = async (item: T): Promise<T> => {
         try {
             const path = getCollectionName();
+            Logger.info(`[Firestore] create: ${path}`);
             const json = item.toJSON();
             // Remove id if it exists in JSON to let Firestore generate it
             delete json.id;
 
             const docRef = await addDoc(collection(db, path), json);
+            Logger.info(`[Firestore] create: ${path}/${docRef.id} success`);
             return modelFactory({ ...json, id: docRef.id });
         } catch (e) {
-            console.error(`Error creating ${toValue(collectionOrRef)}:`, e);
+            Logger.error(`[Firestore] Error creating ${toValue(collectionOrRef)}:`, e);
             throw e;
         }
     };
@@ -79,6 +85,7 @@ export const useFirestoreRepository = <T extends { id: string, toJSON: () => any
     const update = async (id: string, item: Partial<T>): Promise<void> => {
         try {
             const path = getCollectionName();
+            Logger.info(`[Firestore] update: ${path}/${id}`);
             const docRef = doc(db, path, id);
 
             let dataToUpdate = item;
@@ -90,8 +97,9 @@ export const useFirestoreRepository = <T extends { id: string, toJSON: () => any
             delete (dataToUpdate as any).id;
 
             await updateDoc(docRef, dataToUpdate as DocumentData);
+            Logger.info(`[Firestore] update: ${path}/${id} success`);
         } catch (e) {
-            console.error(`Error updating ${toValue(collectionOrRef)}:`, e);
+            Logger.error(`[Firestore] Error updating ${toValue(collectionOrRef)} (${id}):`, e);
             throw e;
         }
     };
@@ -99,9 +107,11 @@ export const useFirestoreRepository = <T extends { id: string, toJSON: () => any
     const remove = async (id: string): Promise<void> => {
         try {
             const path = getCollectionName();
+            Logger.info(`[Firestore] remove: ${path}/${id}`);
             await deleteDoc(doc(db, path, id));
+            Logger.info(`[Firestore] remove: ${path}/${id} success`);
         } catch (e) {
-            console.error(`Error deleting ${toValue(collectionOrRef)}:`, e);
+            Logger.error(`[Firestore] Error deleting ${toValue(collectionOrRef)} (${id}):`, e);
             throw e;
         }
     };

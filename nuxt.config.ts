@@ -3,11 +3,13 @@ import { fileURLToPath } from 'node:url'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  srcDir: 'app',
   extends: [
     './ilytat_common_packages/packages/ilytat-command-palette',
     './ilytat_common_packages/packages/ilytat-notifications',
     './ilytat_common_packages/packages/ilytat-admin-panel',
-    './ilytat_common_packages/packages/ilytat-finance'
+    './ilytat_common_packages/packages/ilytat-finance',
+    './ilytat_common_packages/packages/ilytat-logger'
   ],
   future: {
     compatibilityVersion: 4,

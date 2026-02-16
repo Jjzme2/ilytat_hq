@@ -6,13 +6,14 @@
     <!-- Content -->
     <div class="relative z-10 text-center px-6">
         <h1 class="text-9xl font-bold font-mono tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-zinc-800 animate-pulse">
-            404
+            {{ error?.statusCode || 'ERR' }}
         </h1>
         <div class="h-px w-24 bg-gradient-to-r from-transparent via-white/50 to-transparent mx-auto my-8"></div>
-        <h2 class="text-2xl font-light text-zinc-400 mb-4 uppercase tracking-widest">Signal Lost</h2>
+        <h2 class="text-2xl font-light text-zinc-400 mb-4 uppercase tracking-widest">
+            {{ error?.statusCode === 404 ? 'Signal Lost' : 'System Failure' }}
+        </h2>
         <p class="text-zinc-500 max-w-md mx-auto mb-10">
-            The coordinates you are looking for do not exist in this sector. 
-            Return to HQ to re-establish connection.
+            {{ error?.message || 'An unexpected error occurred in the system. Re-establish connection.' }}
         </p>
 
         <button 
@@ -30,7 +31,7 @@
 
     <!-- Decorative Elements -->
     <div class="absolute bottom-10 left-10 font-mono text-xs text-zinc-700">
-        ERR_HYPERYARD_MISSING_LINK
+        ERR_HYPERYARD_MISSING_LINK // {{ error?.statusCode }}
     </div>
   </div>
 </template>

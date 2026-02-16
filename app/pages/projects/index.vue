@@ -175,6 +175,7 @@ definePageMeta({
 const router = useRouter();
 const { projects, isLoading, error, fetchProjects, createProject } = useProjects();
 const { success: toastSuccess, error: toastError } = useToast();
+const { tenantId } = useTenant();
 
 // Local State
 const isCreateModalOpen = ref(false);
@@ -211,7 +212,8 @@ const handleCreate = async () => {
             priority: newProjectForm.value.priority,
             deadline: newProjectForm.value.deadline ? new Date(newProjectForm.value.deadline) : null,
             status: 'active',
-            progress: 0
+            progress: 0,
+            tenantId: tenantId.value
         });
 
         await createProject(project);

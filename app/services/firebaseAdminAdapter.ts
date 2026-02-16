@@ -9,40 +9,19 @@ export class FirebaseAdminAdapter implements AdminAdapter {
     // --- Dashboard ---
     async getDashboardStats(): Promise<AdminStat[]> {
         try {
+            Logger.debug('[AdminAdapter] Fetching dashboard stats...');
             const { useUser } = await import('~/composables/useUser')
             const { user } = useUser()
             // Ensure we have a tenant context
             const tenantId = user.value?.tenantId || 'system'
 
-            // Queries must filter by tenantId to satisfy security rules
-            // 1. Users: This might be tricky if users collection is root and rules require auth.uid == userId.
-            //    Actually, users are public (read-only) forauth users in current rules? 
-            //    Let's check rules: match /users/{userId} { allow read: if isAuth(); }
-            //    So counting users *should* work if list permissions are open. 
-            //    BUT wait, list permissions might not be open for the whole collection if rules are default secure.
-            //    Actually, `allow read: if isAuth()` on `/users/{userId}` allows reading single docs. 
-            //    It does NOT necessarily allow listing the collection unless the rule is on `/users`.
-            //    The rule IS `match /users/{userId}`. This usually implies list is allowed if `isAuth()` is true for "a document"?
-            //    No, for `list` (which `getCountFromServer` uses), the rule must evaluate to true for *potential* results.
-            //    If the rule is `allow read: if isAuth()`, then yes, any auth user can list users.
-            //    HOWEVER, for `tasks` and `activity_logs`, we likely have strict rules.
-
-            // Let's assume we need to filter by tenant for everything that IS tenant-scoped.
-            // Users might not have `tenantId` on them reliably or we want to count *tenant* users.
-            // Start with try/catch blocks or just filter where possible.
-
             const [usersSnapshot, tasksSnapshot, logsSnapshot] = await Promise.all([
-                // For users, we probably only want to count users in THIS tenant.
-                // Assuming users have a 'tenantId' field.
                 getCountFromServer(query(collection(this.db, 'users'), where('tenantId', '==', tenantId))),
-
-                // Tasks are likely under projects now or have tenantId if they are root/group queried.
-                // If they are collectionGroup, we MUST filter by tenantId if rules require `resource.data.tenantId == user.tenantId`.
                 getCountFromServer(query(collectionGroup(this.db, 'tasks'), where('tenantId', '==', tenantId), where('status', '!=', 'completed'))),
-
-                // Logs
                 getCountFromServer(query(collection(this.db, 'activity_logs'), where('tenantId', '==', tenantId)))
             ])
+
+            Logger.debug(`[AdminAdapter] Stats fetched: Users=${usersSnapshot.data().count}, Tasks=${tasksSnapshot.data().count}`);
 
             return [
                 { label: 'Total Users', value: usersSnapshot.data().count, trend: 0 },
@@ -51,17 +30,19 @@ export class FirebaseAdminAdapter implements AdminAdapter {
                 { label: 'System Uptime', value: '99.9%', trend: 0 }
             ]
         } catch (e) {
-            console.error('Failed to fetch stats', e)
+            Logger.error('[AdminAdapter] Failed to fetch stats', e);
             return []
         }
     }
 
     async getSystemHealth(): Promise<SystemServiceStatus[]> {
+        Logger.debug('[AdminAdapter] Checking system health...');
         // Mocked real-world check for now, can perform actual pings
         const dbStatus = 'online'
         try {
             await getDocs(query(collection(this.db, '_lifecycle_ping'), limit(1)))
-        } catch {
+        } catch (e) {
+            Logger.warn('[AdminAdapter] Database health check failed', e);
             return [{ name: 'Database Cluster', status: 'offline' }]
         }
 
@@ -78,6 +59,7 @@ export class FirebaseAdminAdapter implements AdminAdapter {
         // In a real app with thousands of users, this should be paginated or use a callable function
         // For this implementation, we'll try to fetch from the 'users' collection or call an API
         try {
+            Logger.debug('[AdminAdapter] Fetching users list...');
             const token = await (await useCurrentUser().value?.getIdToken())
             if (!token) throw new Error("Unauthorized")
 
@@ -85,9 +67,10 @@ export class FirebaseAdminAdapter implements AdminAdapter {
             const users = await $fetch<AdminUser[]>('/api/admin/users', {
                 headers: { Authorization: `Bearer ${token}` }
             })
+            Logger.debug(`[AdminAdapter] Fetched ${users.length} users.`);
             return users
         } catch (e) {
-            console.error(e)
+            Logger.error('[AdminAdapter] Failed to fetch users', e);
             return []
         }
     }
@@ -158,7 +141,7 @@ export class FirebaseAdminAdapter implements AdminAdapter {
             const tenantId = user.value?.tenantId
 
             if (!tenantId) {
-                console.warn("getProjects: No tenantId found for user. Returning empty list.")
+                Logger.warn("[AdminAdapter] getProjects: No tenantId found for user. Returning empty list.")
                 return []
             }
 
@@ -171,7 +154,7 @@ export class FirebaseAdminAdapter implements AdminAdapter {
             const snapshot = await getDocs(q)
             return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as AdminProject))
         } catch (e) {
-            console.error("Failed to getProjects", e)
+            Logger.error("[AdminAdapter] Failed to getProjects", e)
             throw e
         }
     }
@@ -182,7 +165,7 @@ export class FirebaseAdminAdapter implements AdminAdapter {
         const tenantId = user.value?.tenantId || data.tenantId
 
         if (!tenantId) {
-            console.error("Cannot create project without tenantId")
+            Logger.error("[AdminAdapter] Cannot create project without tenantId")
             throw new Error("Tenant ID is required to create a project.")
         }
 
@@ -192,6 +175,7 @@ export class FirebaseAdminAdapter implements AdminAdapter {
             createdAt: serverTimestamp(),
             members: data.members || []
         })
+        Logger.info(`[AdminAdapter] Created project: ${data.name}`);
     }
 
     async updateProject(id: string, data: Partial<AdminProject>): Promise<void> {

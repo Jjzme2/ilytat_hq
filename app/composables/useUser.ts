@@ -48,6 +48,7 @@ export const useUser = () => {
                 firebaseUser.value = fUser;
                 if (fUser) {
                     try {
+                        Logger.debug(`[useUser] Auth state changed: ${fUser.uid}. Fetching profile...`);
                         // Fetch user profile from Firestore
                         const db = useFirestore();
                         const userDocRef = doc(db, 'users', fUser.uid);
@@ -63,11 +64,13 @@ export const useUser = () => {
                             tenantId: userData.tenantId || null,
                             bio: userData.bio || ''
                         });
+                        Logger.info(`[useUser] User profile loaded for ${fUser.email}`);
                     } catch (e) {
-                        console.error('[useUser] Error fetching profile:', e);
+                        Logger.error('[useUser] Error fetching profile:', e);
                         user.value = null;
                     }
                 } else {
+                    Logger.debug('[useUser] Auth state changed: No user.');
                     user.value = null;
                 }
                 isLoading.value = false;
@@ -86,9 +89,11 @@ export const useUser = () => {
 
     const signIn = async (email: string, password: string) => {
         isLoading.value = true;
+        Logger.info(`[useUser] Attempting sign in for ${email}`);
         try {
             const result = await signInWithEmailAndPassword(auth, email, password);
             if (result.user) {
+                Logger.info(`[useUser] Sign in successful for ${email}`);
                 firebaseUser.value = result.user;
 
                 // Fetch user profile from Firestore
@@ -108,12 +113,16 @@ export const useUser = () => {
                     bio: userData.bio || ''
                 });
             }
+        } catch (e) {
+            Logger.error(`[useUser] Sign in failed for ${email}`, e);
+            throw e;
         } finally {
             isLoading.value = false;
         }
     };
 
     const signOutUser = async () => {
+        Logger.info('[useUser] Signing out...');
         await signOut(auth);
         user.value = null;
         firebaseUser.value = null;
