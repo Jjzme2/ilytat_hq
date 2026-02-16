@@ -1,4 +1,6 @@
 import { Note } from '~/models/Note';
+import { AppError } from '~/utils/AppError';
+import { Logger } from '~/utils/Logger';
 import {
     collection,
     addDoc,
@@ -14,7 +16,7 @@ import {
 } from 'firebase/firestore';
 
 export const useNotes = () => {
-    const { db } = useFirebase();
+    const { db, auth } = useFirebase();
     const { tenantId } = useTenant();
 
     const notes = ref<Note[]>([]);
@@ -38,8 +40,9 @@ export const useNotes = () => {
             notes.value = snapshot.docs.map(d => new Note({ ...d.data(), id: d.id }));
             return notes.value;
         } catch (e: any) {
+            Logger.error('Failed to fetch notes', e);
             error.value = e.message;
-            throw e;
+            throw new AppError(e.message, 'NOTE_FETCH_ERROR', e);
         } finally {
             isLoading.value = false;
         }
@@ -51,20 +54,31 @@ export const useNotes = () => {
         try {
             if (!tenantId.value) throw new Error("No tenant context");
 
-            const noteData = new Note(data).toJSON();
+            const currentUser = auth?.currentUser;
+
+            const rawData = {
+                ...data,
+                tenantId: tenantId.value,
+                projectId: projectId,
+                createdBy: currentUser?.uid || 'system',
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+
+            const noteModel = new Note(rawData);
+            const noteData = noteModel.toJSON();
             delete (noteData as any).id;
-            noteData.tenantId = tenantId.value;
-            noteData.projectId = projectId;
-            noteData.createdAt = serverTimestamp() as any;
-            noteData.updatedAt = serverTimestamp() as any;
+            (noteData as any).createdAt = serverTimestamp();
+            (noteData as any).updatedAt = serverTimestamp();
 
             const docRef = await addDoc(collection(db, 'notes'), noteData);
-            const created = new Note({ ...noteData, id: docRef.id });
+            const created = new Note({ ...noteData, id: docRef.id, createdAt: new Date(), updatedAt: new Date() });
             notes.value.unshift(created);
             return created;
         } catch (e: any) {
+            Logger.error('Failed to create note', e);
             error.value = e.message;
-            throw e;
+            throw new AppError(e.message, 'NOTE_CREATE_ERROR', e);
         } finally {
             isLoading.value = false;
         }
@@ -81,11 +95,13 @@ export const useNotes = () => {
 
             const index = notes.value.findIndex(n => n.id === noteId);
             if (index !== -1 && notes.value[index]) {
-                notes.value[index] = new Note({ ...notes.value[index].toJSON(), ...updates });
+                const updatedData = { ...notes.value[index].toJSON(), ...updates, updatedAt: new Date() };
+                notes.value[index] = new Note(updatedData);
             }
         } catch (e: any) {
+            Logger.error('Failed to update note', e);
             error.value = e.message;
-            throw e;
+            throw new AppError(e.message, 'NOTE_UPDATE_ERROR', e);
         } finally {
             isLoading.value = false;
         }
@@ -98,8 +114,9 @@ export const useNotes = () => {
             await deleteDoc(doc(db, 'notes', noteId));
             notes.value = notes.value.filter(n => n.id !== noteId);
         } catch (e: any) {
+            Logger.error('Failed to delete note', e);
             error.value = e.message;
-            throw e;
+            throw new AppError(e.message, 'NOTE_DELETE_ERROR', e);
         } finally {
             isLoading.value = false;
         }

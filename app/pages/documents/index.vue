@@ -4,7 +4,7 @@
         <header class="flex-none px-6 py-4 border-b border-white/10 flex justify-between items-center bg-zinc-900/50 backdrop-blur-sm sticky top-0 z-10">
             <div>
                 <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-300">
-                    Documents
+                    Foundry
                 </h1>
                 <p class="text-sm text-zinc-400 mt-1">Manage documents and files</p>
             </div>
@@ -39,8 +39,20 @@
 
                 <!-- Documents Tab (Firestore) -->
                 <div v-if="activeTab === 'documents'">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Documents</h2>
+                    <div class="flex items-center justify-between mb-4 gap-4">
+                        <div class="flex items-center gap-4 flex-1">
+                            <h2 class="text-sm font-semibold text-zinc-500 uppercase tracking-wider whitespace-nowrap">Documents</h2>
+                            <!-- Search Bar -->
+                            <div class="relative flex-1 max-w-md">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 i-ph-magnifying-glass text-zinc-500"></span>
+                                <input 
+                                    v-model="searchQuery" 
+                                    type="text" 
+                                    placeholder="Search documents..." 
+                                    class="w-full bg-zinc-900/50 border border-white/10 rounded-lg pl-9 pr-4 py-1.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors placeholder-zinc-600"
+                                />
+                            </div>
+                        </div>
                         <button 
                             @click="showDocForm ? resetForm() : openCreateForm()"
                             class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
@@ -50,45 +62,63 @@
                         </button>
                     </div>
 
-                    <!-- Inline Create/Edit Form -->
-                    <form v-if="showDocForm" @submit.prevent="handleCreateOrUpdateDocument" class="mb-6 p-4 bg-zinc-900/60 border border-white/10 rounded-xl space-y-3">
-                         <div class="flex justify-between items-center mb-2">
-                            <h3 class="text-xs font-bold text-zinc-400">{{ isEditMode ? 'Edit Document' : 'Create New Document' }}</h3>
+                    <!-- Document Factory / Edit Form -->
+                    <div v-if="showDocForm" @click.self="showDocForm = false" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
+                        <div class="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-7xl h-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+                             <div class="flex justify-between items-center p-4 border-b border-white/5 bg-zinc-900">
+                                <h3 class="text-lg font-bold text-white">{{ isEditMode ? 'Edit Document' : 'Create New Document' }}</h3>
+                                <button @click="showDocForm = false" class="text-zinc-500 hover:text-white">
+                                    <span class="i-ph-x-bold text-xl"></span>
+                                </button>
+                            </div>
+                            
+                            <div class="flex-1 overflow-hidden p-6">
+                                <DocumentCreator 
+                                    v-if="!isEditMode"
+                                    :initialTemplateId="selectedTemplateId"
+                                    @save="handleFactorySave" 
+                                    @cancel="showDocForm = false" 
+                                />
+
+                                <!-- Simple Edit Form for existing docs (fallback) -->
+                                <form v-else @submit.prevent="handleCreateOrUpdateDocument" class="max-w-xl mx-auto space-y-4">
+                                    <input 
+                                        v-model="newDocTitle" 
+                                        type="text" 
+                                        required 
+                                        placeholder="Document title..."
+                                        class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                                    />
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <select v-model="newDocType" class="bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500">
+                                            <option :value="DocumentType.NOTE">Note</option>
+                                            <option :value="DocumentType.REPORT">Report</option>
+                                            <option :value="DocumentType.TEMPLATE">Template</option>
+                                            <option :value="DocumentType.PROPOSAL">Proposal</option>
+                                            <option :value="DocumentType.OTHER">Other</option>
+                                        </select>
+                                        <select v-model="newDocStatus" class="bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500">
+                                            <option :value="DocumentStatus.DRAFT">Draft</option>
+                                            <option :value="DocumentStatus.PUBLISHED">Published</option>
+                                            <option :value="DocumentStatus.ARCHIVED">Archived</option>
+                                        </select>
+                                    </div>
+                                    <textarea 
+                                        v-model="newDocContent" 
+                                        rows="10" 
+                                        placeholder="Document content..."
+                                        class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500 font-mono"
+                                    ></textarea>
+                                    <div class="flex justify-end gap-2">
+                                        <button type="button" @click="showDocForm = false" class="px-3 py-1.5 text-zinc-400 hover:text-white text-xs font-medium">Cancel</button>
+                                        <button type="submit" :disabled="isLoading" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium disabled:opacity-50">
+                                            Update Document
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                        <input 
-                            v-model="newDocTitle" 
-                            type="text" 
-                            required 
-                            placeholder="Document title..."
-                            class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-                        />
-                        <div class="grid grid-cols-2 gap-3">
-                            <select v-model="newDocType" class="bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500">
-                                <option value="note">Note</option>
-                                <option value="report">Report</option>
-                                <option value="template">Template</option>
-                                <option value="proposal">Proposal</option>
-                                <option value="other">Other</option>
-                            </select>
-                            <select v-model="newDocStatus" class="bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500">
-                                <option value="draft">Draft</option>
-                                <option value="published">Published</option>
-                                <option value="archived">Archived</option>
-                            </select>
-                        </div>
-                        <textarea 
-                            v-model="newDocContent" 
-                            rows="3" 
-                            placeholder="Document content..."
-                            class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-                        ></textarea>
-                        <div class="flex justify-end gap-2">
-                             <button type="button" @click="resetForm" class="px-3 py-1.5 text-zinc-400 hover:text-white text-xs font-medium">Cancel</button>
-                            <button type="submit" :disabled="isLoading" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium disabled:opacity-50">
-                                {{ isLoading ? 'Saving...' : (isEditMode ? 'Update Document' : 'Create Document') }}
-                            </button>
-                        </div>
-                    </form>
+                    </div>
 
                     <!-- Loading -->
                     <div v-if="isLoading && documents.length === 0" class="flex justify-center py-8">
@@ -96,15 +126,23 @@
                     </div>
 
                     <!-- Documents Grid -->
-                    <div v-else-if="documents.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div v-else-if="filteredDocuments.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div 
-                            v-for="doc in documents" 
+                            v-for="doc in filteredDocuments"  
                             :key="doc.id" 
                             class="group p-5 bg-zinc-900/40 border border-white/5 rounded-xl hover:border-indigo-500/30 transition-all cursor-pointer relative"
                             @click="openDocumentView(doc)"
                         >
                             <div class="flex items-start justify-between mb-3">
-                                <span :class="['text-2xl', getDocTypeIcon(doc.type)]"></span>
+                                <span :class="['text-2xl', doc.typeIcon]"></span>
+                                    <button 
+                                        @click.stop="handlePrintDocument(doc)" 
+                                        class="text-zinc-400 hover:text-emerald-400 p-1.5 rounded-full hover:bg-white/10 transition-all flex items-center justify-center"
+                                        title="Export/Print"
+                                        style="width: 32px; height: 32px;"
+                                    >
+                                        <span class="i-ph-export"></span>
+                                    </button>
                                     <button 
                                         @click.stop="openEditForm(doc)" 
                                         class="text-zinc-400 hover:text-indigo-400 p-1.5 rounded-full hover:bg-white/10 transition-all flex items-center justify-center"
@@ -125,7 +163,7 @@
                             <h3 class="text-white font-medium text-sm mb-1">{{ doc.title }}</h3>
                             <p v-if="doc.content" class="text-xs text-zinc-400 line-clamp-2 mb-2">{{ doc.content }}</p>
                             <div class="flex items-center gap-2">
-                                <span :class="['text-[10px] px-1.5 py-0.5 rounded', getDocStatusBadge(doc.status)]">{{ capitalize(doc.status) }}</span>
+                                <span :class="['text-[10px] px-1.5 py-0.5 rounded', doc.statusColor]">{{ doc.formattedStatus }}</span>
                                 <span class="text-[10px] text-zinc-600">{{ formatDate(doc.createdAt) }}</span>
                             </div>
                         </div>
@@ -312,7 +350,7 @@
                         <div>
                             <DialogTitle class="text-xl font-bold text-white">{{ viewingDocument.title }}</DialogTitle>
                             <div class="flex items-center gap-2 mt-1">
-                                <span :class="['text-[10px] px-1.5 py-0.5 rounded', getDocStatusBadge(viewingDocument.status)]">{{ capitalize(viewingDocument.status) }}</span>
+                                <span :class="['text-[10px] px-1.5 py-0.5 rounded', viewingDocument.statusColor]">{{ viewingDocument.formattedStatus }}</span>
                                 <span class="text-[10px] text-zinc-500">{{ capitalize(viewingDocument.type) }}</span>
                                 <span class="text-[10px] text-zinc-600">{{ formatDate(viewingDocument.createdAt) }}</span>
                             </div>
@@ -333,6 +371,9 @@
 <script setup lang="ts">
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
 import { Document } from '~/models/Document';
+import { DocumentType, DocumentStatus } from '../../../config/document';
+import { documentTemplates } from '../../../config/documentTemplates';
+import DocumentCreator from '~/components/documents/DocumentCreator.vue';
 
 definePageMeta({
     layout: 'default',
@@ -361,10 +402,62 @@ const isViewModalOpen = ref(false);
 const viewingDocument = ref<Document | null>(null);
 const uploadingFileName = ref('');
 
+// Search
+const searchQuery = ref('');
+const filteredDocuments = computed(() => {
+    try {
+        const query = (searchQuery.value || '').toLowerCase().trim();
+        console.log('[DEBUG] filteredDocuments run. Query:', query);
+
+        // Always include existing docs that match
+        const matchingDocs = (documents.value || []).filter(doc => {
+            if (!doc) return false;
+            const titleMatch = (doc.title || '').toLowerCase().includes(query);
+            const contentMatch = (doc.content || '').toLowerCase().includes(query);
+            const typeMatch = (doc.type || '').toLowerCase().includes(query);
+            return titleMatch || contentMatch || typeMatch;
+        });
+
+        // If searching, also include matching templates as "new" options
+        if (query) {
+            console.log('[DEBUG] Searching templates. available:', documentTemplates.length);
+
+            const matchingTemplates = documentTemplates.filter(t => 
+                (t.name || '').toLowerCase().includes(query) ||
+                (t.type || '').toLowerCase().includes(query)
+            );
+            
+            console.log('[DEBUG] Matching templates found:', matchingTemplates.length);
+
+            // Map templates to a structure compatible with the view or distinct
+            const templateDocs = matchingTemplates.map(t => ({
+                id: `template-${t.name}`,
+                title: `Create: ${t.name}`,
+                content: t.description || '',
+                type: t.type,
+                status: 'template',
+                createdAt: new Date().toISOString(),
+                isTemplateRef: true,
+                templateId: t.name,
+                typeIcon: 'i-ph-plus-circle-bold text-indigo-400',
+                statusColor: 'bg-indigo-500/20 text-indigo-300',
+                formattedStatus: 'New',
+            }));
+
+            return [...templateDocs, ...matchingDocs];
+        }
+        
+        return matchingDocs;
+    } catch (err) {
+        console.error('[ERROR] filteredDocuments crashed:', err);
+        return [];
+    }
+});
+
 // Form fields
 const newDocTitle = ref('');
-const newDocType = ref('note');
-const newDocStatus = ref('draft');
+const newDocType = ref<DocumentType>(DocumentType.NOTE);
+const newDocStatus = ref<DocumentStatus>(DocumentStatus.DRAFT);
 const newDocContent = ref('');
 
 // Tabs config
@@ -383,8 +476,8 @@ onMounted(async () => {
 const resetForm = () => {
     newDocTitle.value = '';
     newDocContent.value = '';
-    newDocType.value = 'note';
-    newDocStatus.value = 'draft';
+    newDocType.value = DocumentType.NOTE;
+    newDocStatus.value = DocumentStatus.DRAFT;
     showDocForm.value = false;
     isEditMode.value = false;
     editingDocId.value = null;
@@ -404,14 +497,13 @@ const handleCreateOrUpdateDocument = async () => {
             });
         } else {
             // Create
-            const doc = new Document({
+            await createDocument({
                 title: newDocTitle.value.trim(),
                 content: newDocContent.value,
                 type: newDocType.value,
                 status: newDocStatus.value,
                 ownerId: currentUser.value?.uid || ''
             });
-            await createDocument(doc);
         }
         resetForm();
     } catch (e) {
@@ -419,12 +511,17 @@ const handleCreateOrUpdateDocument = async () => {
     }
 };
 
-const openCreateForm = () => {
+const selectedTemplateId = ref<string | undefined>(undefined);
+
+const openCreateForm = (templateId?: string) => {
     resetForm();
+    selectedTemplateId.value = templateId;
     showDocForm.value = true;
 }
 
-const openEditForm = (doc: Document) => {
+const openEditForm = (doc: any) => {
+    // For now, editing existing docs just opens the simple form unless we migrate them to templates
+    // But let's assume we want to use the simple form for edits for now
     newDocTitle.value = doc.title;
     newDocContent.value = doc.content;
     newDocType.value = doc.type;
@@ -433,6 +530,22 @@ const openEditForm = (doc: Document) => {
     editingDocId.value = doc.id;
     isEditMode.value = true;
     showDocForm.value = true;
+};
+
+// --- Factory Actions ---
+const handleFactorySave = async (data: any) => {
+    try {
+        await createDocument({
+            title: data.title,
+            content: data.content,
+            type: data.type || DocumentType.OTHER,
+            status: DocumentStatus.DRAFT,
+            ownerId: currentUser.value?.uid || ''
+        });
+        showDocForm.value = false;
+    } catch (e) {
+        console.error('Failed to create document from factory', e);
+    }
 };
 
 const handleDeleteDocument = async (id: string) => {
@@ -444,7 +557,15 @@ const handleDeleteDocument = async (id: string) => {
     }
 };
 
-const openDocumentView = (doc: Document) => {
+const handlePrintDocument = (doc: any) => {
+    DocumentFactory.print(doc.title, doc.content);
+};
+
+const openDocumentView = (doc: any) => {
+    if (doc.isTemplateRef) {
+        openCreateForm(doc.templateId);
+        return;
+    }
     viewingDocument.value = doc;
     isViewModalOpen.value = true;
 };
@@ -504,24 +625,7 @@ const formatFileSize = (bytes: number) => {
 
 const getFileName = (key: string) => key.split('/').pop() || key;
 
-const getDocTypeIcon = (type: string) => {
-    switch(type) {
-        case 'report': return 'i-ph-chart-bar text-blue-400';
-        case 'template': return 'i-ph-file-code text-purple-400';
-        case 'proposal': return 'i-ph-file-text text-amber-400';
-        case 'note': return 'i-ph-note text-emerald-400';
-        default: return 'i-ph-file text-zinc-400';
-    }
-};
 
-const getDocStatusBadge = (status: string) => {
-    switch(status) {
-        case 'published': return 'bg-emerald-500/10 text-emerald-400';
-        case 'draft': return 'bg-amber-500/10 text-amber-400';
-        case 'archived': return 'bg-zinc-700/50 text-zinc-400';
-        default: return 'bg-zinc-700/50 text-zinc-400';
-    }
-};
 
 const getFileIcon = (key: string) => {
     const ext = key.split('.').pop()?.toLowerCase();

@@ -116,6 +116,7 @@
 <script setup lang="ts">
 import { useThemeStore } from '~/stores/theme';
 import { doc, updateDoc } from 'firebase/firestore';
+import { useFirestore } from 'vuefire';
 
 definePageMeta({
     layout: 'default',

@@ -3,6 +3,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "build": "nuxt build",
     "start": "node .output/server/index.mjs",
     "dev": "nuxt dev --port 2945",
@@ -12,6 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "packageManager": "pnpm@10.24.0",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.987.0",
     "@headlessui/vue": "^1.7.23",

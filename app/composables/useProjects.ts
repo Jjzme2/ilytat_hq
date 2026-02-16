@@ -1,5 +1,7 @@
 import { Project } from '~/models/Project';
 import { where } from 'firebase/firestore';
+import { AppError } from '~/utils/AppError';
+import { Logger } from '~/utils/Logger';
 
 export const useProjects = () => {
     const { tenantId } = useTenant();
@@ -18,7 +20,16 @@ export const useProjects = () => {
     const projects = ref<Project[]>([]);
     const currentProject = ref<Project | null>(null);
     const isLoading = ref(false);
-    const error = ref<string | null>(null);
+    const error = ref<AppError | null>(null);
+
+    const handleError = (e: any, context: string) => {
+        if (e instanceof AppError) {
+            error.value = e;
+        } else {
+            error.value = new AppError(e.message || 'An unexpected error occurred', 'UNKNOWN_ERROR', 500, { originalError: e });
+        }
+        Logger.error(`[useProjects] ${context} violation:`, error.value);
+    };
 
     const fetchProjects = async () => {
         isLoading.value = true;
@@ -29,7 +40,7 @@ export const useProjects = () => {
             // Filter by tenantId to adhere to security rules
             projects.value = await getAll([where('tenantId', '==', tenantId.value)]);
         } catch (e: any) {
-            error.value = e.message;
+            handleError(e, 'fetchProjects');
         } finally {
             isLoading.value = false;
         }
@@ -43,7 +54,7 @@ export const useProjects = () => {
             // But firestore rules will enforce the tenant check
             currentProject.value = await getById(id);
         } catch (e: any) {
-            error.value = e.message;
+            handleError(e, 'fetchProjectById');
         } finally {
             isLoading.value = false;
         }
@@ -53,7 +64,7 @@ export const useProjects = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            if (!tenantId.value) throw new Error("No tenant context");
+            if (!tenantId.value) throw new AppError("No tenant context", "NO_TENANT", 400);
 
             // Ensure tenantId is set before creating
             const data = project.toJSON();
@@ -69,8 +80,8 @@ export const useProjects = () => {
             projects.value.push(newProject);
             return newProject;
         } catch (e: any) {
-            error.value = e.message;
-            throw e;
+            handleError(e, 'createProject');
+            throw error.value; // Re-throw for UI to handle if needed
         } finally {
             isLoading.value = false;
         }
@@ -88,7 +99,18 @@ export const useProjects = () => {
             if (index !== -1 && projects.value[index]) {
                 const existingData = projects.value[index].toJSON();
                 // Creating a new instance with merged data
-                projects.value[index] = new Project({ ...existingData, ...updates });
+                // Note: Project constructor takes partial data safely via schema if we allowed it, 
+                // but strictly it expects full data. We merge existing + updates.
+                // However, updates might be partial. 
+                // We should merge existingData (ProjectData) with updates (Partial<Project>).
+                // But updates are NOT ProjectData, they are Project.
+                // We need to be careful here. 
+                // Best to fetch fresh or merge safely.
+                // For now, simple merge:
+                const merged = { ...existingData, ...updates };
+                // This might fail strict schema parsing if updates has extra fields or if we miss required fields.
+                // ExistingData is valid. Updates are partial.
+                projects.value[index] = new Project(merged);
             }
 
             if (currentProject.value && currentProject.value.id === id) {
@@ -97,8 +119,8 @@ export const useProjects = () => {
             }
 
         } catch (e: any) {
-            error.value = e.message;
-            throw e;
+            handleError(e, 'updateProject');
+            throw error.value;
         } finally {
             isLoading.value = false;
         }
@@ -114,8 +136,8 @@ export const useProjects = () => {
                 currentProject.value = null;
             }
         } catch (e: any) {
-            error.value = e.message;
-            throw e;
+            handleError(e, 'deleteProject');
+            throw error.value;
         } finally {
             isLoading.value = false;
         }
@@ -133,3 +155,4 @@ export const useProjects = () => {
         deleteProject
     };
 };
+

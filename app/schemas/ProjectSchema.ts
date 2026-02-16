@@ -1,22 +1,26 @@
 import { z } from 'zod';
-import { BaseSchema } from './BaseSchema';
+import { BaseSchema, dateSchema } from './BaseSchema';
+import { ProjectStatus } from '../../config/status';
+import { Priority } from '../../config/priority';
 
 export const ProjectSchema = BaseSchema.extend({
     name: z.string().min(1, "Project name is required"),
     description: z.string().default(''),
-    status: z.enum(['active', 'archived', 'pending', 'hold', 'completed']).default('active'),
+    status: z.nativeEnum(ProjectStatus).default(ProjectStatus.ACTIVE),
     association: z.enum(['personal', 'company']).default('company'),
-    priority: z.enum(['low', 'medium', 'high', 'critical']).default('medium'),
+    priority: z.nativeEnum(Priority).default(Priority.MEDIUM),
     tenantId: z.string().min(1, "Tenant ID is required"),
     createdBy: z.string().default(''),
 
-    startDate: z.preprocess((arg) => arg ? new Date(arg as any) : null, z.date().nullable().default(null)),
-    deadline: z.preprocess((arg) => arg ? new Date(arg as any) : null, z.date().nullable().default(null)),
+    startDate: dateSchema.nullable().default(null),
+    deadline: dateSchema.nullable().default(null),
 
     tags: z.array(z.string()).default([]),
     progress: z.number().min(0).max(100).default(0),
-    quickLaunch: z.record(z.string()).default({}),
+    quickLaunch: z.record(z.string(), z.string()).default({}),
     members: z.array(z.string()).default([])
 });
 
+
 export type ProjectData = z.infer<typeof ProjectSchema>;
+

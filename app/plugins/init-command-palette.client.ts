@@ -48,7 +48,7 @@ export default defineNuxtPlugin(() => {
         label: 'Documents',
         icon: 'i-heroicons-document-text',
         group: 'Navigation',
-        action: () => router.push('/foundry')
+        action: () => router.push('/documents')
     });
 
     registerCommand({
@@ -81,7 +81,7 @@ export default defineNuxtPlugin(() => {
         label: 'New Document',
         icon: 'i-heroicons-document-plus',
         group: 'Quick Capture',
-        action: () => router.push('/foundry?create=true')
+        action: () => router.push('/documents?create=true')
     });
 
     // Quick Launch — external links from config

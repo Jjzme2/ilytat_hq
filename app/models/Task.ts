@@ -1,4 +1,7 @@
 import { BaseModel } from './BaseModel';
+import { TaskSchema, type TaskData } from '~/schemas/TaskSchema';
+import { TaskStatus } from '../../config/status';
+import { Priority } from '../../config/priority';
 
 /**
  * Task Model
@@ -7,41 +10,45 @@ import { BaseModel } from './BaseModel';
  * Tasks are concrete steps toward achieving a Goal.
  * Created by tenant admins, assignable to any admin/staff within the tenant.
  */
-export class Task extends BaseModel {
+export class Task extends BaseModel<TaskData> {
     title: string;
     description: string;
     isCompleted: boolean;
-    status: 'todo' | 'in-progress' | 'done' | 'blocked';
-    priority: 'low' | 'medium' | 'high' | 'critical';
+    status: TaskStatus;
+    priority: Priority;
     dueDate: Date | null;
     assigneeId: string | null;
     createdBy: string;
-    goalId: string | null; // The goal this task is a step toward
-    parentTaskId: string | null; // If set, this task is a subtask of the referenced task
+    goalId: string | null;
+    parentTaskId: string | null;
     tags: string[];
     tenantId: string;
     projectId: string;
 
     constructor(data: any = {}) {
-        super(data);
-        this.title = data.title || '';
-        this.description = data.description || '';
-        this.isCompleted = data.isCompleted || false;
-        this.status = data.status || 'todo';
-        this.priority = data.priority || 'medium';
-        this.dueDate = data.dueDate ? new Date(data.dueDate) : null;
-        this.assigneeId = data.assigneeId || null;
-        this.createdBy = data.createdBy || '';
-        this.goalId = data.goalId || null;
-        this.parentTaskId = data.parentTaskId || null;
-        this.tags = Array.isArray(data.tags) ? data.tags : [];
-        this.tenantId = data.tenantId || '';
-        this.projectId = data.projectId || '';
+        const parsed = TaskSchema.parse(data);
+        super(parsed);
+        this.title = parsed.title;
+        this.description = parsed.description;
+        this.isCompleted = parsed.isCompleted;
+        this.status = parsed.status;
+        this.priority = parsed.priority;
+        this.dueDate = parsed.dueDate;
+        this.assigneeId = parsed.assigneeId;
+        this.createdBy = parsed.createdBy;
+        this.goalId = parsed.goalId;
+        this.parentTaskId = parsed.parentTaskId;
+        this.tags = parsed.tags;
+        this.tenantId = parsed.tenantId;
+        this.projectId = parsed.projectId;
     }
 
-    override toJSON() {
+    override toJSON(): TaskData {
         return {
             ...super.toJSON(),
+            id: this.id, // Explicitly include ID
+            createdAt: this.createdAt,
+            updatedAt: this.updatedAt,
             title: this.title,
             description: this.description,
             isCompleted: this.isCompleted,
@@ -57,4 +64,29 @@ export class Task extends BaseModel {
             projectId: this.projectId
         };
     }
+
+    // View Helpers
+    get formattedStatus(): string {
+        return this.status.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
+    }
+
+    get statusColor(): string {
+        switch (this.status) {
+            case TaskStatus.DONE: return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+            case TaskStatus.IN_PROGRESS: return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+            case TaskStatus.BLOCKED: return 'bg-red-500/10 text-red-400 border-red-500/20';
+            case TaskStatus.TODO: default: return 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20';
+        }
+    }
+
+    get priorityColor(): string {
+        switch (this.priority) {
+            case Priority.CRITICAL: return 'bg-red-500/10 text-red-400 border-red-500/20';
+            case Priority.HIGH: return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+            case Priority.MEDIUM: return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+            default: return 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20';
+        }
+    }
 }
+
+

@@ -21,10 +21,10 @@ export const useQuickLaunch = (projectId?: string | null | Ref<string | undefine
     // Fetch project document if projectId is provided
     const projectDocRef = computed(() => {
         const id = typeof projectId === 'string' ? projectId : projectId?.value;
-        // Ensure we have a tenantId and projectId before creating ref
-        // Project path is now: tenants/{tenantId}/projects/{projectId}
-        if (tenant.value?.id && id) {
-            return doc(db, 'tenants', tenant.value.id, 'projects', id);
+        // Ensure we have a projectId before creating ref
+        // Project path is now flattened: projects/{projectId}
+        if (id) {
+            return doc(db, 'projects', id);
         }
         return null;
     });

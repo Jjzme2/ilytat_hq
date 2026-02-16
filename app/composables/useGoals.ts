@@ -1,4 +1,6 @@
 import { Goal } from '~/models/Goal';
+import { AppError } from '~/utils/AppError';
+import { Logger } from '~/utils/Logger';
 import {
     collection,
     addDoc,
@@ -38,8 +40,9 @@ export const useGoals = () => {
             goals.value = snapshot.docs.map(d => new Goal({ ...d.data(), id: d.id }));
             return goals.value;
         } catch (e: any) {
+            Logger.error('Failed to fetch goals', e);
             error.value = e.message;
-            throw e;
+            throw new AppError(e.message, 'GOAL_FETCH_ERROR', e);
         } finally {
             isLoading.value = false;
         }
@@ -51,20 +54,35 @@ export const useGoals = () => {
         try {
             if (!tenantId.value) throw new Error("No tenant context");
 
-            const goalData = new Goal(data).toJSON();
+            // Prepare strict data for validation
+            const rawData = {
+                ...data,
+                tenantId: tenantId.value,
+                projectId: projectId,
+                // Default these for validation, they get overwritten by serverTimestamp in DB
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+
+            // Validate via Model
+            const goalModel = new Goal(rawData);
+            const goalData = goalModel.toJSON();
+
+            // Remove ID if present (shouldn't be for new doc) and set server timestamps
             delete (goalData as any).id;
-            goalData.tenantId = tenantId.value;
-            goalData.projectId = projectId;
-            goalData.createdAt = serverTimestamp() as any;
-            goalData.updatedAt = serverTimestamp() as any;
+            (goalData as any).createdAt = serverTimestamp();
+            (goalData as any).updatedAt = serverTimestamp();
 
             const docRef = await addDoc(collection(db, 'goals'), goalData);
-            const created = new Goal({ ...goalData, id: docRef.id });
+
+            // Return valid Model instance
+            const created = new Goal({ ...goalData, id: docRef.id, createdAt: new Date(), updatedAt: new Date() });
             goals.value.unshift(created);
             return created;
         } catch (e: any) {
+            Logger.error('Failed to create goal', e);
             error.value = e.message;
-            throw e;
+            throw new AppError(e.message, 'GOAL_CREATE_ERROR', e);
         } finally {
             isLoading.value = false;
         }
@@ -81,11 +99,16 @@ export const useGoals = () => {
 
             const index = goals.value.findIndex(g => g.id === goalId);
             if (index !== -1 && goals.value[index]) {
-                goals.value[index] = new Goal({ ...goals.value[index].toJSON(), ...updates });
+                // Merge updates into existing model to maintain reactivity without full reload
+                // Helper: Instantiate new model to validate updates if needed, though partial updates are trickier with strict schema
+                // For now, trust the updates and standard casting
+                const updatedData = { ...goals.value[index].toJSON(), ...updates, updatedAt: new Date() };
+                goals.value[index] = new Goal(updatedData);
             }
         } catch (e: any) {
+            Logger.error('Failed to update goal', e);
             error.value = e.message;
-            throw e;
+            throw new AppError(e.message, 'GOAL_UPDATE_ERROR', e);
         } finally {
             isLoading.value = false;
         }
@@ -98,8 +121,9 @@ export const useGoals = () => {
             await deleteDoc(doc(db, 'goals', goalId));
             goals.value = goals.value.filter(g => g.id !== goalId);
         } catch (e: any) {
+            Logger.error('Failed to delete goal', e);
             error.value = e.message;
-            throw e;
+            throw new AppError(e.message, 'GOAL_DELETE_ERROR', e);
         } finally {
             isLoading.value = false;
         }

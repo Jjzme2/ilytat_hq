@@ -156,7 +156,7 @@ onMounted(async () => {
     }
 });
 
-const selectMessage = (message: InboxMessage) => {
+const selectMessage = (message: any) => {
     selectedMessage.value = message;
     if (!message.read) {
         // Mark as read

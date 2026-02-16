@@ -1,5 +1,5 @@
 <template>
-  <div :class="store.mode">
+  <div>
     <div class="chk-theme min-h-screen bg-primary text-text-primary transition-colors duration-300">
       <NuxtLayout>
         <NuxtPage />
@@ -31,6 +31,13 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopMonitoring();
+});
+
+// Close Command Palette on route change
+const route = useRoute();
+const { close: closeCommandPalette } = useCommandPalette();
+watch(() => route.path, () => {
+  closeCommandPalette();
 });
 </script>
 

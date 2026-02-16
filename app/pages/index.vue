@@ -122,7 +122,7 @@ const { services, checkHealth } = useSystemHealth();
 
 // Repositories
 const inboxRepo = useFirestoreRepository('messages', (data) => new InboxMessage(data));
-const projectRepo = useFirestoreRepository(computed(() => tenantId.value ? `tenants/${tenantId.value}/projects` : null), (data) => new Project(data));
+const projectRepo = useFirestoreRepository('projects', (data) => new Project(data));
 
 // State
 const recentMessages = ref<InboxMessage[]>([]);
@@ -154,6 +154,7 @@ const loadProjects = async () => {
     
     try {
          activeProjects.value = await projectRepo.getAll([
+            where('tenantId', '==', tenantId.value),
             where('status', '==', 'active'),
             where('members', 'array-contains', user.value.uid),
             orderBy('updatedAt', 'desc'),
