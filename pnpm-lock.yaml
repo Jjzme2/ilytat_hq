@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@aws-sdk/client-s3':
         specifier: ^3.987.0
-        version: 3.989.0
+        version: 3.990.0
       '@headlessui/vue':
         specifier: ^1.7.23
         version: 1.7.23(vue@3.5.28)
@@ -158,7 +158,7 @@ packages:
     resolution: {integrity: sha512-4msC33RZsXQpUKR5QR4HnvBSNCPLGHmB55oDiROqqgyOc+TOfVu2xgi5goA7ms6MdZLeEh2905UfWMnMMF4mRg==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/middleware-flexible-checksums@3.972.7':
+'@aws-sdk/middleware-flexible-checksums@3.972.7':
     resolution: {integrity: sha512-YU/5rpz8k2mwFGi2M0px9ChOQZY7Bbow5knB2WLRVPqDM/cG8T5zj55UaWS1qcaFpE7vCX9a9/kvYBlKGcD+KA==}
     engines: {node: '>=20.0.0'}
 
