@@ -152,8 +152,12 @@ service cloud.firestore {
     }
 
     match /activity_logs/{logId} {
-       allow read: if isAuth();
-       allow write: if isAuth(); 
+       // Only allow users to read their own logs or super admins
+       allow read: if isAuth() && (resource.data.userId == request.auth.uid || isSuper());
+       // Only allow creation if logging for self (or super admin)
+       allow create: if isAuth() && (request.resource.data.userId == request.auth.uid || isSuper());
+       // Logs are immutable
+       allow update, delete: if false;
     }
 
     match /_lifecycle_ping/{docId} {
