@@ -100,7 +100,7 @@ const handleLogin = async () => {
         const redirect = router.currentRoute.value.query.redirect as string;
         router.push(redirect || '/');
     } catch (e: any) {
-        console.error(e);
+        Logger.error('[Login] Sign in failed', e);
         error.value = e.message || 'Failed to sign in. Please check your credentials.';
         addToast(error.value, 'error', null, {
            position: 'top-right' 

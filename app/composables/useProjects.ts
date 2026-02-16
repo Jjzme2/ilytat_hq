@@ -11,7 +11,7 @@ export const useProjects = () => {
         update,
         remove
     } = useFirestoreRepository<Project>(
-        computed(() => tenantId.value ? `tenants/${tenantId.value}/projects` : null),
+        'projects',
         (data) => new Project(data)
     );
 

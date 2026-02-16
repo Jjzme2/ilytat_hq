@@ -63,29 +63,29 @@ service cloud.firestore {
     // Projects
     match /projects/{projectId} {
       allow read: if isTenantMember(resource.data.tenantId) || isSuper();
-      allow write: if isTenantMember(resource.data.tenantId) || isSuper();
-      allow create: if isAuth();
+      allow create: if isAuth() && isTenantMember(request.resource.data.tenantId);
+      allow update, delete: if isTenantMember(resource.data.tenantId) || isSuper();
     }
 
     // Goals (Flattened)
     match /goals/{goalId} {
       allow read: if isTenantMember(resource.data.tenantId) || isSuper();
-      allow write: if isTenantMember(resource.data.tenantId) || isSuper();
-      allow create: if isAuth();
+      allow create: if isAuth() && isTenantMember(request.resource.data.tenantId);
+      allow update, delete: if isTenantMember(resource.data.tenantId) || isSuper();
     }
 
     // Tasks (Flattened)
     match /tasks/{taskId} {
       allow read: if isTenantMember(resource.data.tenantId) || isSuper();
-      allow write: if isTenantMember(resource.data.tenantId) || isSuper();
-      allow create: if isAuth();
+      allow create: if isAuth() && isTenantMember(request.resource.data.tenantId);
+      allow update, delete: if isTenantMember(resource.data.tenantId) || isSuper();
     }
 
     // Notes (Flattened)
     match /notes/{noteId} {
       allow read: if isTenantMember(resource.data.tenantId) || isSuper();
-      allow write: if isTenantMember(resource.data.tenantId) || isSuper();
-      allow create: if isAuth();
+      allow create: if isAuth() && isTenantMember(request.resource.data.tenantId);
+      allow update, delete: if isTenantMember(resource.data.tenantId) || isSuper();
     }
 
     // Documents
@@ -98,8 +98,8 @@ service cloud.firestore {
     // Quicklinks (Flattened)
     match /quicklinks/{linkId} {
       allow read: if isTenantMember(resource.data.tenantId) || isDocOwner(resource) || isTenantPublic(resource) || isSuper();
-      allow write: if isTenantMember(resource.data.tenantId) || isDocOwner(resource) || isSuper();
-      allow create: if isAuth(); 
+      allow create: if isAuth() && isTenantMember(request.resource.data.tenantId);
+      allow update, delete: if isTenantMember(resource.data.tenantId) || isDocOwner(resource) || isSuper();
     }
 
     // Events (Dates)
@@ -167,19 +167,19 @@ service cloud.firestore {
     // This allows queryAggregation (count) and cross-path queries
     
     match /{path=**}/tasks/{taskId} {
-      allow read: if isAuth(); 
+      allow read: if isTenantMember(resource.data.tenantId) || isSuper(); 
     }
 
     match /{path=**}/goals/{goalId} {
-      allow read: if isAuth();
+      allow read: if isTenantMember(resource.data.tenantId) || isSuper();
     }
 
     match /{path=**}/projects/{projectId} {
-      allow read: if isAuth();
+      allow read: if isTenantMember(resource.data.tenantId) || isSuper();
     }
 
     match /{path=**}/documents/{docId} {
-      allow read: if isAuth();
+      allow read: if isDocOwner(resource) || isTenantPublic(resource) || isSuper();
     }
   }
 }

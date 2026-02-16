@@ -11,5 +11,8 @@
         "ilytat"
     ],
     "author": "ILYTAT",
-    "license": "ISC"
+    "license": "ISC",
+    "devDependencies": {
+        "nuxt": "^4.3.1"
+    }
 }
