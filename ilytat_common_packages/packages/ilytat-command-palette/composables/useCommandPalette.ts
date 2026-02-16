@@ -26,6 +26,11 @@ const groups = ref<CommandGroup[]>([
     { id: 'general', label: 'General' }
 ]);
 
+// Optimized Sets for O(1) lookups
+const commandIds = new Set<string>();
+// Derive initial group IDs from default groups to avoid duplication
+const groupIds = new Set<string>(groups.value.map(g => g.id));
+
 export const useCommandPalette = () => {
 
     // Actions
@@ -45,20 +50,39 @@ export const useCommandPalette = () => {
     };
 
     const registerCommand = (command: Command) => {
-        // Prevent duplicates
-        if (!commands.value.find(c => c.id === command.id)) {
+        // Prevent duplicates with O(1) lookup
+        if (!commandIds.has(command.id)) {
+            commandIds.add(command.id);
             commands.value.push(command);
         }
     };
 
     const registerGroup = (group: CommandGroup) => {
-        if (!groups.value.find(g => g.id === group.id)) {
+        // Prevent duplicates with O(1) lookup
+        if (!groupIds.has(group.id)) {
+            groupIds.add(group.id);
             groups.value.push(group);
         }
     };
 
     const clearCommandsByGroup = (groupLabel: string) => {
-        commands.value = commands.value.filter(c => c.group !== groupLabel);
+        commands.value = commands.value.filter(c => {
+            if (c.group === groupLabel) {
+                commandIds.delete(c.id);
+                return false;
+            }
+            return true;
+        });
+    };
+
+    // For testing/reset purposes
+    const clearAllCommands = () => {
+        commands.value = [];
+        commandIds.clear();
+        searchQuery.value = '';
+        activeIndex.value = 0;
+        isOpen.value = false;
+        // Note: we don't clear groups as they are often static or default
     };
 
     // Filter Logic
@@ -100,6 +124,7 @@ export const useCommandPalette = () => {
         registerCommand,
         registerGroup,
         clearCommandsByGroup,
-        setActiveIndex
+        setActiveIndex,
+        clearAllCommands
     };
 };
