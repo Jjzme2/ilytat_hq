@@ -1,7 +1,19 @@
-
-import { Document } from '~/models/Document';
-
-/** Shape of a file entry returned by GET /api/docs */
+import { Document as DocumentModel } from '~/models/Document';
+import { AppError } from '~/utils/AppError';
+import { Logger } from '~/utils/Logger';
+import {
+    collection,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    doc,
+    query,
+    where,
+    orderBy,
+    getDocs,
+    serverTimestamp,
+    type QueryConstraint
+} from 'firebase/firestore';
 export interface R2File {
     key: string;
     size: number;
@@ -15,10 +27,10 @@ export const useDocuments = () => {
         create,
         update,
         remove
-    } = useFirestoreRepository<Document>('documents', (data) => new Document(data));
+    } = useFirestoreRepository<DocumentModel>('documents', (data) => new DocumentModel(data));
 
-    const documents = ref<Document[]>([]);
-    const currentDocument = ref<Document | null>(null);
+    const documents = ref<DocumentModel[]>([]);
+    const currentDocument = ref<DocumentModel | null>(null);
     const isLoading = ref(false);
     const error = ref<string | null>(null);
 
@@ -65,41 +77,70 @@ export const useDocuments = () => {
         }
     };
 
-    const createDocument = async (doc: Document) => {
+    const createDocument = async (data: Partial<DocumentModel> & { title: string }) => {
         isLoading.value = true;
         error.value = null;
         try {
-            const newDoc = await create(doc);
+            // In strict mode, we might need tenantId if the document belongs to a tenant.
+            // foundry/index.vue sets ownerId.
+            // If the user wants documents to be tenant-scoped, we should add tenantId here.
+            // Document model has tenantId | null.
+            const { tenantId } = useTenant(); // Get tenantId here inside the function if possible, or assume it's available
+
+            const rawData = {
+                ...data,
+                tenantId: tenantId.value || null,
+                // Default timestamps
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+
+            // Validate
+            const docModel = new DocumentModel(rawData);
+
+            // To support serverTimestamp, we would ideally pass it here. 
+            // But useFirestoreRepository expects Model instance T. 
+            // T.toJSON() returns Date. 
+            // We rely on client-side timestamp for now to satisfy types, or cast.
+            // Actually, if we want serverTimestamp, we need to override toJSON or something.
+            // For now, let's just pass the model. Repository calls toJSON().
+
+            const newDoc = await create(docModel);
             documents.value.push(newDoc);
             return newDoc;
         } catch (e: any) {
+            Logger.error('Failed to create document', e);
             error.value = e.message;
-            throw e;
+            throw new AppError(e.message, 'DOCUMENT_CREATE_ERROR', e);
         } finally {
             isLoading.value = false;
         }
     };
 
-    const updateDocument = async (id: string, updates: Partial<Document>) => {
+    const updateDocument = async (id: string, updates: Partial<DocumentModel>) => {
         isLoading.value = true;
         error.value = null;
         try {
-            await update(id, { ...updates, updatedAt: new Date() });
+            await update(id, { ...updates, updatedAt: serverTimestamp() } as any);
 
             const index = documents.value.findIndex(d => d.id === id);
             if (index !== -1 && documents.value[index]) {
                 const existingData = documents.value[index].toJSON();
-                documents.value[index] = new Document({ ...existingData, ...updates });
+                // Merge updates.
+                const merged = { ...existingData, ...updates, updatedAt: new Date() };
+                documents.value[index] = new DocumentModel(merged);
             }
 
             if (currentDocument.value && currentDocument.value.id === id) {
                 const existingCurrentData = currentDocument.value.toJSON();
-                currentDocument.value = new Document({ ...existingCurrentData, ...updates });
+                const merged = { ...existingCurrentData, ...updates, updatedAt: new Date() };
+                currentDocument.value = new DocumentModel(merged);
             }
 
         } catch (e: any) {
+            Logger.error('Failed to update document', e);
             error.value = e.message;
-            throw e;
+            throw new AppError(e.message, 'DOCUMENT_UPDATE_ERROR', e);
         } finally {
             isLoading.value = false;
         }
@@ -115,8 +156,9 @@ export const useDocuments = () => {
                 currentDocument.value = null;
             }
         } catch (e: any) {
+            Logger.error('Failed to delete document', e);
             error.value = e.message;
-            throw e;
+            throw new AppError(e.message, 'DOCUMENT_DELETE_ERROR', e);
         } finally {
             isLoading.value = false;
         }

@@ -9,7 +9,7 @@
     <!-- Top Bar: Logo, Search, Profile -->
     <header class="h-14 flex items-center justify-between px-4 md:px-6 bg-primary border-b border-border shrink-0">
       <!-- Left: Logo -->
-      <NuxtLink to="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+      <NuxtLink to="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
         <img v-if="tenant?.logo" :src="tenant.logo" alt="Company Logo" class="h-8 w-auto object-contain" />
         <span
           v-else
@@ -32,7 +32,7 @@
       </button>
 
       <!-- Right: Theme Toggle + Profile Badge -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 shrink-0">
         <button @click="themeStore.toggleTheme"
           class="p-1.5 rounded-lg hover:bg-secondary text-text-secondary transition-colors" title="Toggle Theme">
           <svg v-if="themeStore.isDark" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"

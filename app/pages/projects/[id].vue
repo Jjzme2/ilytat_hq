@@ -49,12 +49,13 @@
                 <!-- Status bar -->
                  <div class="flex items-center gap-6 mt-6">
                     <div class="flex items-center gap-2">
-                         <span :class="['w-2.5 h-2.5 rounded-full', getStatusDotColor(currentProject.status)]"></span>
-                         <span class="text-sm text-zinc-300">{{ formatStatus(currentProject.status) }}</span>
+                         <span :class="['text-xs px-2 py-1 rounded-full border', currentProject.statusColor]">
+                             {{ currentProject.formattedStatus }}
+                         </span>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="i-ph-flag text-zinc-500"></span>
-                        <span :class="['text-sm', getPriorityColor(currentProject.priority)]">{{ capitalize(currentProject.priority) }} Priority</span>
+                        <span :class="currentProject.priorityColor">{{ capitalize(currentProject.priority) }} Priority</span>
                     </div>
                     <div class="flex items-center gap-2" v-if="currentProject.deadline">
                         <span class="i-ph-calendar text-zinc-500"></span>
@@ -182,10 +183,10 @@
                                             @change="handleUpdateGoalStatus(goal.id, ($event.target as HTMLSelectElement).value)"
                                             class="text-xs bg-zinc-800 border border-white/10 rounded px-2 py-1 text-zinc-300 focus:outline-none focus:border-blue-500"
                                         >
-                                            <option value="not-started">Not Started</option>
-                                            <option value="in-progress">In Progress</option>
-                                            <option value="achieved">Achieved</option>
-                                            <option value="missed">Missed</option>
+                                            <option :value="GoalStatus.NOT_STARTED">Not Started</option>
+                                            <option :value="GoalStatus.IN_PROGRESS">In Progress</option>
+                                            <option :value="GoalStatus.ACHIEVED">Achieved</option>
+                                            <option :value="GoalStatus.MISSED">Missed</option>
                                         </select>
                                         <button 
                                             @click="handleDeleteGoal(goal.id)" 
@@ -197,8 +198,8 @@
                                     </div>
                                 </div>
                                 <div class="mt-2">
-                                    <span :class="['text-xs px-2 py-0.5 rounded-full', getGoalStatusColor(goal.status)]">
-                                        {{ formatGoalStatus(goal.status) }}
+                                    <span :class="['text-xs px-2 py-0.5 rounded-full', goal.statusColor]">
+                                        {{ goal.formattedStatus }}
                                     </span>
                                 </div>
                             </div>
@@ -235,10 +236,10 @@
                             />
                             <div class="grid grid-cols-2 gap-3">
                                 <select v-model="newTaskPriority" class="bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
-                                    <option value="low">Low</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
-                                    <option value="critical">Critical</option>
+                                    <option :value="Priority.LOW">Low</option>
+                                    <option :value="Priority.MEDIUM">Medium</option>
+                                    <option :value="Priority.HIGH">High</option>
+                                    <option :value="Priority.CRITICAL">Critical</option>
                                 </select>
                                 <select v-model="newTaskGoalId" class="bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
                                     <option value="">No Goal</option>
@@ -278,8 +279,8 @@
                                             <div class="flex-1">
                                                 <h3 :class="['font-medium', task.isCompleted ? 'text-zinc-500 line-through' : 'text-white']">{{ task.title }}</h3>
                                                 <div class="flex items-center gap-2 mt-1">
-                                                    <span :class="['text-[10px] px-1.5 py-0.5 rounded', getTaskPriorityBadge(task.priority)]">{{ capitalize(task.priority) }}</span>
-                                                    <span :class="['text-[10px] px-1.5 py-0.5 rounded', getTaskStatusBadge(task.status)]">{{ formatTaskStatus(task.status) }}</span>
+                                                    <span :class="['text-[10px] px-1.5 py-0.5 rounded border', task.priorityColor]">{{ capitalize(task.priority) }}</span>
+                                                    <span :class="['text-[10px] px-1.5 py-0.5 rounded border', task.statusColor]">{{ task.formattedStatus }}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -537,11 +538,11 @@
                                     v-model="editForm.status"
                                     class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
                                 >
-                                    <option value="active">Active</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="hold">On Hold</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="archived">Archived</option>
+                                    <option :value="ProjectStatus.ACTIVE">Active</option>
+                                    <option :value="ProjectStatus.PENDING">Pending</option>
+                                    <option :value="ProjectStatus.HOLD">On Hold</option>
+                                    <option :value="ProjectStatus.COMPLETED">Completed</option>
+                                    <option :value="ProjectStatus.ARCHIVED">Archived</option>
                                 </select>
                             </div>
                             <div>
@@ -550,10 +551,10 @@
                                     v-model="editForm.priority"
                                     class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
                                 >
-                                    <option value="low">Low</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
-                                    <option value="critical">Critical</option>
+                                    <option :value="Priority.LOW">Low</option>
+                                    <option :value="Priority.MEDIUM">Medium</option>
+                                    <option :value="Priority.HIGH">High</option>
+                                    <option :value="Priority.CRITICAL">Critical</option>
                                 </select>
                             </div>
                         </div>
@@ -614,6 +615,8 @@ import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
 import { Goal } from '~/models/Goal';
 import { Task } from '~/models/Task';
 import { Note } from '~/models/Note';
+import { ProjectStatus, TaskStatus, GoalStatus } from '../../../config/status';
+import { Priority } from '../../../config/priority';
 
 definePageMeta({
     layout: 'default',
@@ -655,7 +658,7 @@ const newGoalDesc = ref('');
 // Task form
 const showTaskForm = ref(false);
 const newTaskTitle = ref('');
-const newTaskPriority = ref<'low' | 'medium' | 'high' | 'critical'>('medium');
+const newTaskPriority = ref<Priority>(Priority.MEDIUM);
 const newTaskGoalId = ref('');
 
 // Subtask form
@@ -676,8 +679,8 @@ const newLinkUrl = ref('');
 const editForm = ref({
     name: '',
     description: '',
-    status: 'active',
-    priority: 'medium',
+    status: ProjectStatus.ACTIVE,
+    priority: Priority.MEDIUM,
     startDate: '',
     deadline: '',
     progress: 0
@@ -792,7 +795,7 @@ const handleCreateGoal = async () => {
 const handleUpdateGoalStatus = async (goalId: string, newStatus: string) => {
     if (!projectId.value) return;
     try {
-        await updateGoal(projectId.value, goalId, { status: newStatus as Goal['status'] });
+        await updateGoal(projectId.value, goalId, { status: newStatus as GoalStatus });
         toastSuccess('Goal status updated');
     } catch (e) {
         console.error('Failed to update goal', e);
@@ -823,7 +826,7 @@ const handleCreateTask = async (parentId?: string) => {
             parentTaskId: parentId || null
         });
         newTaskTitle.value = '';
-        newTaskPriority.value = 'medium';
+        newTaskPriority.value = Priority.MEDIUM;
         newTaskGoalId.value = '';
         showTaskForm.value = false;
         toastSuccess('Task created');
@@ -854,13 +857,13 @@ const toggleSubtaskForm = (taskId: string) => {
     newSubtaskTitle.value = '';
 };
 
-const handleToggleTask = async (task: Task) => {
+const handleToggleTask = async (task: any) => {
     if (!projectId.value) return;
     try {
         const newCompleted = !task.isCompleted;
         await updateTask(projectId.value, task.id, {
             isCompleted: newCompleted,
-            status: newCompleted ? 'done' : 'todo'
+            status: newCompleted ? TaskStatus.DONE : TaskStatus.TODO
         });
     } catch (e) {
         console.error('Failed to toggle task', e);
@@ -934,7 +937,6 @@ const handleDeleteLink = async (linkId: string) => {
     }
 };
 
-// --- UI Helpers ---
 const formatDate = (date: Date | string | null) => {
     if (!date) return '';
     return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -942,64 +944,9 @@ const formatDate = (date: Date | string | null) => {
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-const formatStatus = (status: string) => {
-    if (status === 'hold') return 'On Hold';
-    return capitalize(status);
-};
-
-const getStatusDotColor = (status: string) => {
-    switch(status) {
-        case 'active': return 'bg-emerald-500';
-        case 'pending': return 'bg-amber-500';
-        case 'completed': return 'bg-blue-500';
-        case 'archived': return 'bg-zinc-500';
-        case 'hold': return 'bg-red-500';
-        default: return 'bg-zinc-500';
-    }
-};
-
-const getPriorityColor = (priority: string) => {
-     switch(priority) {
-        case 'high': return 'text-amber-400';
-        case 'critical': return 'text-red-400 font-bold';
-        case 'medium': return 'text-blue-400';
-        default: return 'text-zinc-500';
-    }
-};
-
-const getGoalStatusColor = (status: string) => {
-    switch(status) {
-        case 'not-started': return 'bg-zinc-700/50 text-zinc-400';
-        case 'in-progress': return 'bg-blue-500/10 text-blue-400';
-        case 'achieved': return 'bg-emerald-500/10 text-emerald-400';
-        case 'missed': return 'bg-red-500/10 text-red-400';
-        default: return 'bg-zinc-700/50 text-zinc-400';
-    }
-};
-
-const formatGoalStatus = (status: string) => {
-    return status.split('-').map(capitalize).join(' ');
-};
-
-const getTaskPriorityBadge = (priority: string) => {
-    switch(priority) {
-        case 'critical': return 'bg-red-500/10 text-red-400';
-        case 'high': return 'bg-amber-500/10 text-amber-400';
-        case 'medium': return 'bg-blue-500/10 text-blue-400';
-        default: return 'bg-zinc-700/50 text-zinc-400';
-    }
-};
-
-const getTaskStatusBadge = (status: string) => {
-    switch(status) {
-        case 'done': return 'bg-emerald-500/10 text-emerald-400';
-        case 'in-progress': return 'bg-blue-500/10 text-blue-400';
-        case 'blocked': return 'bg-red-500/10 text-red-400';
-        default: return 'bg-zinc-700/50 text-zinc-400';
-    }
-};
-
-const formatTaskStatus = (status: string) => {
-    return status.split('-').map(capitalize).join(' ');
-};
 </script>
+
+<script lang="ts">
+
+</script>
+

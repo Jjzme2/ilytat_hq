@@ -1,4 +1,5 @@
 import { BaseModel } from './BaseModel';
+import { NoteSchema, type NoteData } from '~/schemas/NoteSchema';
 
 /**
  * Note Model
@@ -7,25 +8,29 @@ import { BaseModel } from './BaseModel';
  * Free-form notes attached to a project for capturing ideas,
  * meeting notes, or any contextual information.
  */
-export class Note extends BaseModel {
+export class Note extends BaseModel<NoteData> {
     title: string;
     content: string;
     createdBy: string;
-    tenantId: string | null;
-    projectId: string | null;
+    tenantId: string;
+    projectId: string;
 
     constructor(data: any = {}) {
-        super(data);
-        this.title = data.title || '';
-        this.content = data.content || '';
-        this.createdBy = data.createdBy || '';
-        this.tenantId = data.tenantId || null;
-        this.projectId = data.projectId || null;
+        const parsed = NoteSchema.parse(data);
+        super(parsed);
+        this.title = parsed.title;
+        this.content = parsed.content;
+        this.createdBy = parsed.createdBy;
+        this.tenantId = parsed.tenantId;
+        this.projectId = parsed.projectId;
     }
 
-    override toJSON() {
+    override toJSON(): NoteData {
         return {
             ...super.toJSON(),
+            id: this.id,
+            createdAt: this.createdAt,
+            updatedAt: this.updatedAt,
             title: this.title,
             content: this.content,
             createdBy: this.createdBy,

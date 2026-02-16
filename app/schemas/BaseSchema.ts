@@ -3,7 +3,10 @@ import { z } from 'zod';
 /**
  * Helper to coerce Firestore Timestamp or Date strings/numbers into Date objects.
  */
-const dateSchema = z.preprocess((arg) => {
+/**
+ * Helper to coerce Firestore Timestamp or Date strings/numbers into Date objects.
+ */
+export const dateSchema = z.preprocess((arg) => {
     if (typeof arg === 'string' || typeof arg === 'number') return new Date(arg);
     if (arg && typeof arg === 'object' && 'seconds' in arg && 'nanoseconds' in arg) {
         // Handle Firestore Timestamp
@@ -11,6 +14,7 @@ const dateSchema = z.preprocess((arg) => {
     }
     return arg;
 }, z.date());
+
 
 export const BaseSchema = z.object({
     id: z.string().optional().default(''), // ID often comes from doc metadata, not body

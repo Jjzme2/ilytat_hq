@@ -55,7 +55,8 @@
 // useToast is auto-imported from the ilytat-notifications Nuxt layer
 
 definePageMeta({
-    layout: 'auth'
+    layout: 'auth',
+    middleware: ['guest']
 });
 
 const email = ref('');

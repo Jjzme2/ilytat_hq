@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
             if (response.Body) {
                 setResponseHeader(event, 'Content-Type', response.ContentType || 'application/octet-stream');
                 if (response.ContentLength) {
-                    setResponseHeader(event, 'Content-Length', String(response.ContentLength));
+                    setResponseHeader(event, 'Content-Length', response.ContentLength);
                 }
                 return sendStream(event, response.Body as any);
             }

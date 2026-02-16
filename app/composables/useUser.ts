@@ -2,6 +2,7 @@
 import { User } from '~/models/User';
 import { type User as FirebaseUser, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, sendEmailVerification } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import { useFirestore } from 'vuefire';
 
 
 export const useUser = () => {
