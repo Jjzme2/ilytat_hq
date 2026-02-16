@@ -3,7 +3,7 @@ import { useCommandPalette } from '#imports'
 import { quicklaunch } from '../../config/quicklaunch'
 
 export default defineNuxtPlugin(() => {
-    const { registerCommand, registerGroup, open, toggle } = useCommandPalette();
+    const { registerCommand, registerCommands, registerGroup, open, toggle } = useCommandPalette();
     const router = useRouter();
 
     // Register Groups
@@ -85,15 +85,14 @@ export default defineNuxtPlugin(() => {
     });
 
     // Quick Launch — external links from config
-    for (const [label, url] of Object.entries(quicklaunch)) {
-        registerCommand({
-            id: `ql-${label.replace(/\s+/g, '-').toLowerCase()}`,
-            label: label,
-            icon: 'i-heroicons-arrow-top-right-on-square',
-            group: 'Quick Launch',
-            action: () => window.open(url, '_blank')
-        });
-    }
+    const qlCommands = Object.entries(quicklaunch).map(([label, url]) => ({
+        id: `ql-${label.replace(/\s+/g, '-').toLowerCase()}`,
+        label: label,
+        icon: 'i-heroicons-arrow-top-right-on-square',
+        group: 'Quick Launch',
+        action: () => window.open(url, '_blank')
+    }));
+    registerCommands(qlCommands);
 
     // Theme Actions
     registerCommand({
