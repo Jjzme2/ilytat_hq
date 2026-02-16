@@ -1,5 +1,7 @@
 
 import { Document } from '~/models/Document';
+import { where } from 'firebase/firestore';
+import { useTenant } from './useTenant';
 
 /** Shape of a file entry returned by GET /api/docs */
 export interface R2File {
@@ -17,6 +19,7 @@ export const useDocuments = () => {
         remove
     } = useFirestoreRepository<Document>('documents', (data) => new Document(data));
 
+    const { tenantId } = useTenant();
     const documents = ref<Document[]>([]);
     const currentDocument = ref<Document | null>(null);
     const isLoading = ref(false);
@@ -31,7 +34,12 @@ export const useDocuments = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            documents.value = await getAll();
+            if (!tenantId.value) {
+                documents.value = [];
+                return;
+            }
+            // OPTIMIZATION: Filter by tenantId to prevent loading all documents
+            documents.value = await getAll([where('tenantId', '==', tenantId.value)]);
         } catch (e: any) {
             error.value = e.message;
         } finally {
@@ -44,8 +52,15 @@ export const useDocuments = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            const allDocs = await getAll();
-            documents.value = allDocs.filter(d => d.projectId === projectId);
+            if (!tenantId.value) {
+                documents.value = [];
+                return;
+            }
+            // OPTIMIZATION: Use Firestore query instead of client-side filtering
+            documents.value = await getAll([
+                where('tenantId', '==', tenantId.value),
+                where('projectId', '==', projectId)
+            ]);
         } catch (e: any) {
             error.value = e.message;
         } finally {
@@ -69,6 +84,9 @@ export const useDocuments = () => {
         isLoading.value = true;
         error.value = null;
         try {
+            if (!tenantId.value) throw new Error("No tenant context");
+            doc.tenantId = tenantId.value;
+
             const newDoc = await create(doc);
             documents.value.push(newDoc);
             return newDoc;
@@ -130,8 +148,16 @@ export const useDocuments = () => {
         isLoadingR2.value = true;
         r2Error.value = null;
         try {
+            const token = await user.value?.getIdToken();
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+
             const params = prefix ? `?prefix=${encodeURIComponent(prefix)}` : '';
-            const data = await $fetch<{ files: R2File[]; count: number }>(`/api/docs${params}`);
+            const data = await $fetch<{ files: R2File[]; count: number }>(`/api/docs${params}`, {
+                headers
+            });
             r2Files.value = data.files;
         } catch (e: any) {
             r2Error.value = e.data?.message || e.message || 'Failed to fetch R2 documents';
@@ -148,6 +174,12 @@ export const useDocuments = () => {
         isLoadingR2.value = true;
         r2Error.value = null;
         try {
+            const token = await user.value?.getIdToken();
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+
             const formData = new FormData();
             formData.append('file', file);
             if (key) {
@@ -156,7 +188,8 @@ export const useDocuments = () => {
 
             const result = await $fetch<{ success: boolean; key: string; size: number; contentType: string }>('/api/docs', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers
             });
 
             // Refresh the file list after upload
@@ -177,7 +210,16 @@ export const useDocuments = () => {
         isLoadingR2.value = true;
         r2Error.value = null;
         try {
-            await $fetch(`/api/docs?key=${encodeURIComponent(key)}`, { method: 'DELETE' });
+            const token = await user.value?.getIdToken();
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+
+            await $fetch(`/api/docs?key=${encodeURIComponent(key)}`, {
+                method: 'DELETE',
+                headers
+            });
             r2Files.value = r2Files.value.filter(f => f.key !== key);
         } catch (e: any) {
             r2Error.value = e.data?.message || e.message || 'Failed to delete file';

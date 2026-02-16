@@ -31,7 +31,7 @@ function getClient() {
 }
 
 export default defineEventHandler(async (event) => {
-    // 🛡️ Security: Ensure the user is authenticated before allowing upload
+    // Require authentication
     await verifyAdminToken(event);
 
     const config = useRuntimeConfig();

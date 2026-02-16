@@ -29,7 +29,7 @@ function getClient() {
 }
 
 export default defineEventHandler(async (event) => {
-    // 🛡️ Security: Ensure the user is authenticated before allowing deletion
+    // Require authentication
     await verifyAdminToken(event);
 
     const config = useRuntimeConfig();
