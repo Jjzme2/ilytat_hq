@@ -3,63 +3,53 @@ import { useCommandPalette } from '#imports'
 import { quicklaunch } from '../../config/quicklaunch'
 
 export default defineNuxtPlugin(() => {
-    const { registerCommand, registerGroup, open, toggle } = useCommandPalette();
+    const { registerCommands, registerGroup, open, toggle } = useCommandPalette();
     const router = useRouter();
 
     // Register Groups
     // registerGroup({ id: 'navigation', label: 'Navigation' }); // Already default
     // registerGroup({ id: 'actions', label: 'Actions' });
 
+    const commands = [];
+
     // Navigation Commands
-    registerCommand({
+    commands.push({
         id: 'nav-dashboard',
         label: 'Dashboard',
         icon: 'i-heroicons-home',
         group: 'Navigation',
         action: () => router.push('/')
-    });
-
-    registerCommand({
+    }, {
         id: 'nav-admin',
         label: 'Admin Panel',
         icon: 'i-heroicons-cog',
         group: 'Navigation',
         action: () => router.push('/admin')
-    });
-
-    registerCommand({
+    }, {
         id: 'nav-inbox',
         label: 'Inbox',
         icon: 'i-heroicons-inbox',
         group: 'Navigation',
         action: () => router.push('/inbox')
-    });
-
-    registerCommand({
+    }, {
         id: 'nav-projects',
         label: 'Projects',
         icon: 'i-heroicons-rectangle-group',
         group: 'Navigation',
         action: () => router.push('/projects')
-    });
-
-    registerCommand({
+    }, {
         id: 'nav-documents',
         label: 'Documents',
         icon: 'i-heroicons-document-text',
         group: 'Navigation',
         action: () => router.push('/documents')
-    });
-
-    registerCommand({
+    }, {
         id: 'nav-settings',
         label: 'Settings',
         icon: 'i-heroicons-adjustments-horizontal',
         group: 'Navigation',
         action: () => router.push('/settings')
-    });
-
-    registerCommand({
+    }, {
         id: 'nav-finance',
         label: 'Finance',
         icon: 'i-heroicons-banknotes',
@@ -68,15 +58,13 @@ export default defineNuxtPlugin(() => {
     });
 
     // Quick Capture — creation shortcuts
-    registerCommand({
+    commands.push({
         id: 'create-project',
         label: 'New Project',
         icon: 'i-heroicons-plus-circle',
         group: 'Quick Capture',
         action: () => router.push('/projects?create=true')
-    });
-
-    registerCommand({
+    }, {
         id: 'create-document',
         label: 'New Document',
         icon: 'i-heroicons-document-plus',
@@ -86,7 +74,7 @@ export default defineNuxtPlugin(() => {
 
     // Quick Launch — external links from config
     for (const [label, url] of Object.entries(quicklaunch)) {
-        registerCommand({
+        commands.push({
             id: `ql-${label.replace(/\s+/g, '-').toLowerCase()}`,
             label: label,
             icon: 'i-heroicons-arrow-top-right-on-square',
@@ -96,7 +84,7 @@ export default defineNuxtPlugin(() => {
     }
 
     // Theme Actions
-    registerCommand({
+    commands.push({
         id: 'action-theme-toggle',
         label: 'Toggle Theme',
         icon: 'i-heroicons-sun',
@@ -108,7 +96,7 @@ export default defineNuxtPlugin(() => {
         }
     });
 
-    registerCommand({
+    commands.push({
         id: 'action-logout',
         label: 'Sign Out',
         icon: 'i-heroicons-arrow-left-on-rectangle',
@@ -121,7 +109,7 @@ export default defineNuxtPlugin(() => {
 
     // Dev Tools (conditional?)
     if (process.dev) {
-        registerCommand({
+        commands.push({
             id: 'dev-test-toast',
             label: 'Test Dev Toast',
             icon: 'i-heroicons-beaker',
@@ -130,9 +118,7 @@ export default defineNuxtPlugin(() => {
                 const { dev } = useToast();
                 dev('Test Dev Toast', { foo: 'bar', timestamp: Date.now() });
             }
-        });
-
-        registerCommand({
+        }, {
             id: 'dev-test-success',
             label: 'Test Success Toast',
             icon: 'i-heroicons-check-circle',
@@ -144,5 +130,6 @@ export default defineNuxtPlugin(() => {
         });
     }
 
-});
+    registerCommands(commands);
 
+});
