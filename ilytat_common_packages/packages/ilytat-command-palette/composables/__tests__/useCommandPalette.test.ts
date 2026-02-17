@@ -44,6 +44,28 @@ describe('useCommandPalette', () => {
         expect(commands.value).toHaveLength(1)
     })
 
+    it('registerCommands adds multiple commands in batch', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        const newCommands = [
+            { id: '1', label: 'One', action: () => { } },
+            { id: '2', label: 'Two', action: () => { } }
+        ]
+        registerCommands(newCommands)
+        expect(commands.value).toHaveLength(2)
+        expect(commands.value[0].id).toBe('1')
+        expect(commands.value[1].id).toBe('2')
+    })
+
+    it('registerCommands prevents duplicates in batch', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        const newCommands = [
+             { id: '1', label: 'One', action: () => { } },
+             { id: '1', label: 'One Duplicate', action: () => { } }
+        ]
+        registerCommands(newCommands)
+        expect(commands.value).toHaveLength(1)
+    })
+
     it('filteredCommands filters by label', () => {
         const { registerCommand, filteredCommands, searchQuery } = useCommandPalette()
         registerCommand({ id: 'a', label: 'Dashboard', action: () => { } })
