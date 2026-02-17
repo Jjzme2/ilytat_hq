@@ -2,6 +2,11 @@
   "name": "ilytat_hq",
   "type": "module",
   "private": true,
+  "packageManager": "pnpm@10.24.0",
+  "engines": {
+    "node": "20.x",
+    "pnpm": "10.x"
+  },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "build": "nuxt build",
@@ -13,13 +18,13 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "packageManager": "pnpm@10.24.0",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.987.0",
     "@headlessui/vue": "^1.7.23",
     "@pinia/nuxt": "^0.11.3",
     "@vueuse/core": "^14.2.1",
     "@vueuse/nuxt": "^14.2.1",
+    "date-fns": "^4.1.0",
     "firebase": "^12.9.0",
     "firebase-admin": "^13.6.1",
     "nuxt": "^4.3.1",
