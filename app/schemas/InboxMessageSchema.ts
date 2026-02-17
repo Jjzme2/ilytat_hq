@@ -5,7 +5,7 @@ export const InboxMessageSchema = BaseSchema.extend({
     from: z.string().default('System'),
     fromId: z.string().default(''),
     to: z.string().default(''),
-    subject: z.string().min(1, "Subject is required"),
+    subject: z.string().min(1, "Subject is required").default('(No Subject)'),
     body: z.string().default(''),
     read: z.boolean().default(false),
     archived: z.boolean().default(false),

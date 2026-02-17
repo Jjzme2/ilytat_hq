@@ -9,7 +9,8 @@ export default defineNuxtConfig({
     './ilytat_common_packages/packages/ilytat-notifications',
     './ilytat_common_packages/packages/ilytat-admin-panel',
     './ilytat_common_packages/packages/ilytat-finance',
-    './ilytat_common_packages/packages/ilytat-logger'
+    './ilytat_common_packages/packages/ilytat-logger',
+    './ilytat_common_packages/packages/ilytat-theme'
   ],
   future: {
     compatibilityVersion: 4,
@@ -60,7 +61,9 @@ export default defineNuxtConfig({
   alias: {
     '~/config': fileURLToPath(new URL('./config', import.meta.url)),
     '@admin': fileURLToPath(new URL('./ilytat_common_packages/packages/ilytat-admin-panel', import.meta.url)),
-    '@ilytat/notifications': fileURLToPath(new URL('./ilytat_common_packages/packages/ilytat-notifications/index.ts', import.meta.url))
+    '@ilytat/notifications': fileURLToPath(new URL('./ilytat_common_packages/packages/ilytat-notifications/index.ts', import.meta.url)),
+    '@theme': fileURLToPath(new URL('./ilytat_common_packages/packages/ilytat-theme', import.meta.url)),
+    '@messaging': fileURLToPath(new URL('./ilytat_common_packages/packages/ilytat-messaging', import.meta.url))
   },
   css: [
     '~/assets/css/main.css'
@@ -81,6 +84,9 @@ export default defineNuxtConfig({
     cloudflareR2SecretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
     cloudflareR2AccountId: process.env.CLOUDFLARE_R2_ACCOUNT_ID,
     cloudflareR2BucketName: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+    plaidClientId: process.env.NUXT_PLAID_CLIENT_ID,
+    plaidSecret: process.env.NUXT_PLAID_SECRET,
+    plaidEnv: process.env.NUXT_PLAID_ENV || 'sandbox',
     public: {
       firebaseApiKey: process.env.FIREBASE_API_KEY,
       firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN,

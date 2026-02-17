@@ -11,9 +11,14 @@ export class Tenant extends BaseModel {
     name: string;
     domain: string;
     logo: string;
+    filesUrl: string;
     plan: 'free' | 'pro' | 'enterprise';
     memberIds: string[];
     quickLaunch: Record<string, string>;
+
+    missionStatement: string;
+    pillars: string[];
+    coreValues: string[];
 
     // Subcollections:
     // - projects: Collection<Project>
@@ -24,9 +29,13 @@ export class Tenant extends BaseModel {
         this.name = data.name || '';
         this.domain = data.domain || '';
         this.logo = data.logo || '';
+        this.filesUrl = data.filesUrl || '';
         this.plan = data.plan || 'free';
         this.memberIds = Array.isArray(data.memberIds) ? data.memberIds : [];
         this.quickLaunch = data.quickLaunch || {};
+        this.missionStatement = data.missionStatement || '';
+        this.pillars = Array.isArray(data.pillars) ? data.pillars : [];
+        this.coreValues = Array.isArray(data.coreValues) ? data.coreValues : [];
     }
 
     override toJSON() {
@@ -37,7 +46,11 @@ export class Tenant extends BaseModel {
             logo: this.logo,
             plan: this.plan,
             memberIds: this.memberIds,
-            quickLaunch: this.quickLaunch
+            quickLaunch: this.quickLaunch,
+            missionStatement: this.missionStatement,
+            pillars: this.pillars,
+            coreValues: this.coreValues,
+            filesUrl: this.filesUrl
         };
     }
 }

@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="pointer-events-auto w-full max-w-xs overflow-hidden rounded-xl shadow-xl ring-1 transition-all duration-500 transform translate-y-0 opacity-100"
+    class="pointer-events-auto w-full max-w-xs overflow-hidden rounded-xl shadow-2xl ring-1 transition-all duration-500 transform translate-y-0 opacity-100 backdrop-blur-lg"
     :class="[
       typeClasses,
       toast.dismissible ? 'pr-8' : ''
@@ -11,25 +11,25 @@
       <div class="flex items-start">
         <!-- Icon based on type -->
         <div class="flex-shrink-0">
-          <svg v-if="toast.type === 'success'" class="h-5 w-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg v-if="toast.type === 'success'" class="h-5 w-5 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <svg v-else-if="toast.type === 'error'" class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg v-else-if="toast.type === 'error'" class="h-5 w-5 text-red-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <svg v-else-if="toast.type === 'warning'" class="h-5 w-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <svg v-else-if="toast.type === 'warning'" class="h-5 w-5 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
-          <svg v-else-if="toast.type === 'info'" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg v-else-if="toast.type === 'info'" class="h-5 w-5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <svg v-else-if="toast.type === 'dev'" class="h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          <svg v-else-if="toast.type === 'dev'" class="h-5 w-5 text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
           </svg>
         </div>
 
         <div class="ml-3 w-0 flex-1 pt-0.5">
-          <p class="text-sm font-medium leading-5" :class="textTitleClass">
+          <p class="text-sm font-semibold leading-5" :class="textTitleClass">
              {{ toast.type === 'dev' ? '[DEV] ' : '' }}{{ toast.message }}
           </p>
           <!-- Dev Data Dump -->
@@ -43,7 +43,8 @@
           <button 
             type="button" 
             @click="$emit('dismiss', toast.id)"
-            class="inline-flex rounded-md bg-transparent text-gray-400 hover:text-gray-300 focus:outline-none transition-colors"
+            class="inline-flex rounded-md bg-transparent hover:bg-white/10 p-0.5 transition-colors"
+            :class="dismissClass"
           >
             <span class="sr-only">Close</span>
             <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -66,27 +67,49 @@ const props = defineProps<{
 
 defineEmits(['dismiss']);
 
+/**
+ * High-contrast colored backgrounds for each toast type.
+ * These do NOT rely on Tailwind's `dark:` mode — they always look good
+ * against both light and dark app themes.
+ */
 const typeClasses = computed(() => {
-    // Solid backgrounds for maximum readability
-    const base = 'border-l-4 shadow-xl';
+    const base = 'border-l-4 shadow-2xl';
     
     switch (props.toast.type) {
         case 'success':
-            return `${base} bg-white dark:bg-zinc-900 border-l-emerald-500 ring-1 ring-black/10 dark:ring-white/15`;
+            return `${base} bg-emerald-950/95 border-l-emerald-400 ring-emerald-500/30`;
         case 'error':
-            return `${base} bg-white dark:bg-zinc-900 border-l-red-500 ring-1 ring-black/10 dark:ring-white/15`;
+            return `${base} bg-red-950/95 border-l-red-400 ring-red-500/30`;
         case 'warning':
-            return `${base} bg-white dark:bg-zinc-900 border-l-amber-500 ring-1 ring-black/10 dark:ring-white/15`;
+            return `${base} bg-amber-950/95 border-l-amber-400 ring-amber-500/30`;
         case 'info':
-            return `${base} bg-white dark:bg-zinc-900 border-l-blue-500 ring-1 ring-black/10 dark:ring-white/15`;
+            return `${base} bg-blue-950/95 border-l-blue-400 ring-blue-500/30`;
         case 'dev':
-            return `${base} bg-zinc-900 text-zinc-300 ring-1 ring-zinc-700 font-mono border-l-purple-500`;
+            return `${base} bg-purple-950/95 border-l-purple-400 ring-purple-500/30 font-mono`;
         default:
-            return 'bg-white dark:bg-zinc-900 ring-1 ring-black/10 dark:ring-white/15';
+            return `${base} bg-zinc-900/95 ring-white/15`;
     }
 });
 
 const textTitleClass = computed(() => {
-    return props.toast.type === 'dev' ? 'text-purple-300 font-medium' : 'text-zinc-800 dark:text-zinc-100 font-medium';
+    switch (props.toast.type) {
+        case 'success': return 'text-emerald-100';
+        case 'error': return 'text-red-100';
+        case 'warning': return 'text-amber-100';
+        case 'info': return 'text-blue-100';
+        case 'dev': return 'text-purple-200 font-medium';
+        default: return 'text-zinc-100';
+    }
+});
+
+const dismissClass = computed(() => {
+    switch (props.toast.type) {
+        case 'success': return 'text-emerald-300 hover:text-emerald-100';
+        case 'error': return 'text-red-300 hover:text-red-100';
+        case 'warning': return 'text-amber-300 hover:text-amber-100';
+        case 'info': return 'text-blue-300 hover:text-blue-100';
+        case 'dev': return 'text-purple-300 hover:text-purple-100';
+        default: return 'text-zinc-400 hover:text-zinc-200';
+    }
 });
 </script>

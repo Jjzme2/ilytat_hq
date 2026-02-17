@@ -1,68 +1,8 @@
 @import "tailwindcss";
 
-@theme {
-  /* Dynamic Theme Variables mapped to Tailwind v4 theme */
-  --color-primary: var(--bg-primary);
-  --color-secondary: var(--bg-secondary);
-  --color-tertiary: var(--bg-tertiary);
-
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-tertiary: var(--text-tertiary);
-
-  --color-accent-primary: var(--accent-primary);
-  --color-accent-secondary: var(--accent-secondary);
-
-  --color-border-color: var(--border-color);
-}
-
-:root {
-  /* Base Variables */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f3f4f6;
-  --bg-tertiary: #e5e7eb;
-
-  --text-primary: #1f2937;
-  --text-secondary: #4b5563;
-  --text-tertiary: #9ca3af;
-
-  --accent-primary: #3b82f6;
-  --accent-secondary: #60a5fa;
-
-  --border-color: #e5e7eb;
-
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-}
-
-.dark {
-  --bg-primary: #111827;
-  --bg-secondary: #1f2937;
-  --bg-tertiary: #374151;
-
-  --text-primary: #f9fafb;
-  --text-secondary: #d1d5db;
-  --text-tertiary: #9ca3af;
-
-  --accent-primary: #60a5fa;
-  --accent-secondary: #3b82f6;
-
-  --border-color: #374151;
-
-  --glass-bg: rgba(17, 24, 39, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
-
-/* Glassmorphism Utility */
-@utility glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-}
+/* 
+  Theme variables and utilities are now provided by @ilytat/theme 
+*/
 
 /* Keyframe Animations */
 @keyframes fade-in {
@@ -87,6 +27,30 @@
   }
 }
 
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 /* Animation Utilities */
 @utility animate-fade-in {
   animation: fade-in 0.5s ease-out forwards;
@@ -96,9 +60,64 @@
   animation: slide-up 0.4s ease-out forwards;
 }
 
+@utility animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out forwards;
+}
 
-/* Smooth Transitions */
+@utility animate-slide-in-left {
+  animation: slide-in-left 0.3s ease-out forwards;
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@utility animate-scale-in {
+  animation: scale-in 0.2s ease-out forwards;
+}
+
+/* Safe area for notched devices (bottom nav) */
+@utility safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Hide scrollbar for horizontal scroll containers */
+@utility scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Touch-friendly: show actions on mobile without hover */
+@media (max-width: 767px) {
+
+  .group:hover .opacity-0,
+  .group\/sub:hover .opacity-0 {
+    opacity: 1 !important;
+  }
+
+  /* Make all hover-revealed action buttons visible on touch */
+  .group .opacity-0.group-hover\:opacity-100 {
+    opacity: 0.8 !important;
+  }
+}
+
+
 /* Smooth Transitions - Specific elements only to avoid performance issues and layout glitches */
-button, a, input, .transition-colors {
+button,
+a,
+input,
+.transition-colors {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }

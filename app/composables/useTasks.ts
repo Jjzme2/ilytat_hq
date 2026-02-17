@@ -29,7 +29,7 @@ export const useTasks = () => {
         Logger.error(`[useTasks] ${context} violation:`, error.value);
     };
 
-    const fetchTasks = async (projectId: string, constraints: QueryConstraint[] = []) => {
+    const fetchTasks = async (projectId?: string, constraints: QueryConstraint[] = []) => {
         isLoading.value = true;
         error.value = null;
         try {
@@ -37,10 +37,13 @@ export const useTasks = () => {
 
             const finalConstraints = [
                 where('tenantId', '==', tenantId.value),
-                where('projectId', '==', projectId),
                 orderBy('createdAt', 'desc'),
                 ...constraints
             ];
+
+            if (projectId) {
+                finalConstraints.push(where('projectId', '==', projectId));
+            }
 
             tasks.value = await getAll(finalConstraints);
             return tasks.value;

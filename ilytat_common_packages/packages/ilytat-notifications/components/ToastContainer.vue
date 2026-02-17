@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <!-- Top Left -->
-    <TransitionGroup name="toast" tag="div" v-if="topLeftToasts.length > 0" class="fixed top-0 left-0 z-[51] flex flex-col gap-4 p-4 items-start w-full max-w-xs pointer-events-none">
+    <TransitionGroup name="toast" tag="div" v-if="topLeftToasts.length > 0" class="fixed top-0 left-0 z-[9999] flex flex-col gap-4 p-4 items-start w-full max-w-xs pointer-events-none">
         <ToastItem 
             v-for="toast in topLeftToasts" 
             :key="toast.id" 
@@ -11,7 +11,7 @@
     </TransitionGroup>
 
     <!-- Top Center -->
-    <TransitionGroup name="toast" tag="div" v-if="topCenterToasts.length > 0" class="fixed top-0 left-1/2 -translate-x-1/2 z-[51] flex flex-col gap-4 p-4 items-center w-full max-w-xs pointer-events-none">
+    <TransitionGroup name="toast" tag="div" v-if="topCenterToasts.length > 0" class="fixed top-0 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-4 p-4 items-center w-full max-w-xs pointer-events-none">
         <ToastItem 
             v-for="toast in topCenterToasts" 
             :key="toast.id" 
@@ -21,7 +21,7 @@
     </TransitionGroup>
 
     <!-- Top Right -->
-    <TransitionGroup name="toast" tag="div" v-if="topRightToasts.length > 0" class="fixed top-0 right-0 z-[51] flex flex-col gap-4 p-4 items-end w-full max-w-xs pointer-events-none">
+    <TransitionGroup name="toast" tag="div" v-if="topRightToasts.length > 0" class="fixed top-0 right-0 z-[9999] flex flex-col gap-4 p-4 items-end w-full max-w-xs pointer-events-none">
         <ToastItem 
             v-for="toast in topRightToasts" 
             :key="toast.id" 
@@ -31,7 +31,7 @@
     </TransitionGroup>
 
     <!-- Bottom Left -->
-    <TransitionGroup name="toast" tag="div" v-if="bottomLeftToasts.length > 0" class="fixed bottom-0 left-0 z-[51] flex flex-col-reverse gap-4 p-4 items-start w-full max-w-xs pointer-events-none">
+    <TransitionGroup name="toast" tag="div" v-if="bottomLeftToasts.length > 0" class="fixed bottom-0 left-0 z-[9999] flex flex-col-reverse gap-4 p-4 mb-20 md:mb-0 items-start w-full max-w-xs pointer-events-none">
         <ToastItem 
             v-for="toast in bottomLeftToasts" 
             :key="toast.id" 
@@ -41,7 +41,7 @@
     </TransitionGroup>
 
     <!-- Bottom Center -->
-    <TransitionGroup name="toast" tag="div" v-if="bottomCenterToasts.length > 0" class="fixed bottom-0 left-1/2 -translate-x-1/2 z-[51] flex flex-col-reverse gap-4 p-4 items-center w-full max-w-xs pointer-events-none">
+    <TransitionGroup name="toast" tag="div" v-if="bottomCenterToasts.length > 0" class="fixed bottom-0 left-1/2 -translate-x-1/2 z-[9999] flex flex-col-reverse gap-4 p-4 mb-20 md:mb-0 items-center w-full max-w-xs pointer-events-none">
         <ToastItem 
             v-for="toast in bottomCenterToasts" 
             :key="toast.id" 
@@ -51,7 +51,7 @@
     </TransitionGroup>
 
     <!-- Bottom Right -->
-    <TransitionGroup name="toast" tag="div" v-if="bottomRightToasts.length > 0" class="fixed bottom-0 right-0 z-[9999] flex flex-col-reverse gap-4 p-4 items-end w-full max-w-xs pointer-events-none">
+    <TransitionGroup name="toast" tag="div" v-if="bottomRightToasts.length > 0" class="fixed bottom-0 right-0 z-[9999] flex flex-col-reverse gap-4 p-4 mb-20 md:mb-0 items-end w-full max-w-xs pointer-events-none">
         <ToastItem 
             v-for="toast in bottomRightToasts" 
             :key="toast.id" 

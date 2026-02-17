@@ -1,0 +1,12 @@
+{
+    "name": "@ilytat/messaging",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Enterprise-grade real-time messaging for ILYTAT applications",
+    "main": "./composables/useMessaging.ts",
+    "exports": {
+        "./composables": "./composables/index.ts",
+        "./components": "./components/index.ts",
+        "./types": "./types/index.ts"
+    }
+}

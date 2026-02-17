@@ -18,8 +18,8 @@
         <!-- Content -->
         <template v-else-if="currentProject">
             <!-- Header -->
-            <header class="flex-none px-6 py-6 border-b border-white/10 bg-zinc-900/50 backdrop-blur-sm">
-                <div class="flex items-start justify-between">
+            <header class="flex-none px-4 md:px-6 py-4 md:py-6 border-b border-white/10 bg-zinc-900/50 backdrop-blur-sm">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                     <div>
                         <div class="flex items-center gap-2 mb-2">
                              <button @click="router.push('/projects')" class="text-zinc-500 hover:text-white transition-colors">
@@ -27,10 +27,10 @@
                             </button>
                             <span class="text-xs font-mono text-zinc-500 uppercase tracking-widest">Project</span>
                         </div>
-                        <h1 class="text-3xl font-bold text-white">{{ currentProject.name }}</h1>
+                        <h1 class="text-2xl md:text-3xl font-bold text-white">{{ currentProject.name }}</h1>
                     </div>
                     
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 md:gap-3">
                         <button 
                             @click="openEditModal"
                             class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm font-medium transition-colors border border-white/5"
@@ -47,7 +47,7 @@
                 </div>
 
                 <!-- Status bar -->
-                 <div class="flex items-center gap-6 mt-6">
+                 <div class="flex flex-wrap items-center gap-3 md:gap-6 mt-4 md:mt-6">
                     <div class="flex items-center gap-2">
                          <span :class="['text-xs px-2 py-1 rounded-full border', currentProject.statusColor]">
                              {{ currentProject.formattedStatus }}
@@ -65,14 +65,14 @@
             </header>
 
             <!-- Tab Navigation -->
-            <div class="flex-none border-b border-white/10 bg-zinc-900/30 px-6">
-                <nav class="flex gap-1 -mb-px">
+            <div class="flex-none border-b border-white/10 bg-zinc-900/30 px-3 md:px-6 overflow-x-auto scrollbar-none">
+                <nav class="flex gap-1 -mb-px min-w-max">
                     <button 
                         v-for="tab in tabs" 
                         :key="tab.id"
                         @click="activeTab = tab.id"
                         :class="[
-                            'px-4 py-3 text-sm font-medium border-b-2 transition-colors',
+                            'px-3 md:px-4 py-2.5 md:py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
                             activeTab === tab.id 
                                 ? 'border-blue-500 text-blue-400' 
                                 : 'border-transparent text-zinc-500 hover:text-zinc-300 hover:border-zinc-600'
@@ -88,8 +88,8 @@
             </div>
 
             <!-- Main -->
-            <main class="flex-1 overflow-y-auto p-6 scrollbar-thin">
-                <div class="max-w-4xl space-y-8">
+            <main class="flex-1 overflow-y-auto p-3 md:p-6 scrollbar-thin">
+                <div class="max-w-4xl space-y-6 md:space-y-8">
                     
                     <!-- Overview Tab -->
                     <div v-if="activeTab === 'overview'">
@@ -201,6 +201,26 @@
                                     <span :class="['text-xs px-2 py-0.5 rounded-full', goal.statusColor]">
                                         {{ goal.formattedStatus }}
                                     </span>
+                                    
+                                    <!-- Time Tracking -->
+                                    <div class="flex items-center gap-2 ml-4">
+                                        <button 
+                                            v-if="activeLog && activeLog.goalId === goal.id"
+                                            @click="stopTracking"
+                                            class="flex items-center gap-1 px-2 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded text-xs transition-colors border border-red-500/10"
+                                        >
+                                            <span class="i-ph-stop-circle-fill animate-pulse"></span>
+                                            Stop Timer
+                                        </button>
+                                        <button 
+                                            v-else
+                                            @click="startTracking({ id: goal.id, type: 'goal', projectId: goal.projectId, title: goal.title })"
+                                            class="flex items-center gap-1 px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded text-xs transition-colors border border-white/5"
+                                        >
+                                            <span class="i-ph-play-circle"></span>
+                                            Time
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -507,106 +527,108 @@
         </template>
         
         <!-- Edit Modal -->
-        <Dialog :open="isEditModalOpen" @close="isEditModalOpen = false" class="relative z-50">
-             <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" aria-hidden="true" />
-             <div class="fixed inset-0 flex items-center justify-center p-4">
-                <DialogPanel v-if="currentProject" class="w-full max-w-lg rounded-2xl bg-zinc-900 border border-white/10 p-6 shadow-xl">
-                    <DialogTitle class="text-xl font-bold text-white mb-4">Edit Project</DialogTitle>
-                    
-                    <form @submit.prevent="handleUpdate" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-medium text-zinc-400 mb-1">Project Name</label>
-                            <input 
-                                v-model="editForm.name" 
-                                type="text" 
-                                required
-                                class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-zinc-400 mb-1">Description</label>
-                            <textarea 
-                                v-model="editForm.description" 
-                                rows="3"
-                                class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                            ></textarea>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                             <div>
-                                <label class="block text-xs font-medium text-zinc-400 mb-1">Status</label>
-                                <select 
-                                    v-model="editForm.status"
+        <ClientOnly>
+            <Dialog :open="isEditModalOpen" @close="isEditModalOpen = false" class="relative z-50">
+                 <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" aria-hidden="true" />
+                 <div class="fixed inset-0 flex items-center justify-center p-4">
+                    <DialogPanel v-if="currentProject" class="w-full max-w-lg rounded-2xl bg-zinc-900 border border-white/10 p-6 shadow-xl">
+                        <DialogTitle class="text-xl font-bold text-white mb-4">Edit Project</DialogTitle>
+                        
+                        <form @submit.prevent="handleUpdate" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-400 mb-1">Project Name</label>
+                                <input 
+                                    v-model="editForm.name" 
+                                    type="text" 
+                                    required
                                     class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                                >
-                                    <option :value="ProjectStatus.ACTIVE">Active</option>
-                                    <option :value="ProjectStatus.PENDING">Pending</option>
-                                    <option :value="ProjectStatus.HOLD">On Hold</option>
-                                    <option :value="ProjectStatus.COMPLETED">Completed</option>
-                                    <option :value="ProjectStatus.ARCHIVED">Archived</option>
-                                </select>
+                                />
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-zinc-400 mb-1">Priority</label>
-                                <select 
-                                    v-model="editForm.priority"
+                                <label class="block text-xs font-medium text-zinc-400 mb-1">Description</label>
+                                <textarea 
+                                    v-model="editForm.description" 
+                                    rows="3"
                                     class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                                >
-                                    <option :value="Priority.LOW">Low</option>
-                                    <option :value="Priority.MEDIUM">Medium</option>
-                                    <option :value="Priority.HIGH">High</option>
-                                    <option :value="Priority.CRITICAL">Critical</option>
-                                </select>
+                                ></textarea>
                             </div>
-                        </div>
-                         <div class="grid grid-cols-2 gap-4">
-                             <div>
-                                <label class="block text-xs font-medium text-zinc-400 mb-1">Start Date</label>
-                                <input 
-                                    v-model="editForm.startDate" 
-                                    type="date"
-                                    class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                                />
+                            <div class="grid grid-cols-2 gap-4">
+                                 <div>
+                                    <label class="block text-xs font-medium text-zinc-400 mb-1">Status</label>
+                                    <select 
+                                        v-model="editForm.status"
+                                        class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                                    >
+                                        <option :value="ProjectStatus.ACTIVE">Active</option>
+                                        <option :value="ProjectStatus.PENDING">Pending</option>
+                                        <option :value="ProjectStatus.HOLD">On Hold</option>
+                                        <option :value="ProjectStatus.COMPLETED">Completed</option>
+                                        <option :value="ProjectStatus.ARCHIVED">Archived</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-400 mb-1">Priority</label>
+                                    <select 
+                                        v-model="editForm.priority"
+                                        class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                                    >
+                                        <option :value="Priority.LOW">Low</option>
+                                        <option :value="Priority.MEDIUM">Medium</option>
+                                        <option :value="Priority.HIGH">High</option>
+                                        <option :value="Priority.CRITICAL">Critical</option>
+                                    </select>
+                                </div>
                             </div>
-                             <div>
-                                <label class="block text-xs font-medium text-zinc-400 mb-1">Deadline</label>
-                                <input 
-                                    v-model="editForm.deadline" 
-                                    type="date"
-                                    class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                                />
+                             <div class="grid grid-cols-2 gap-4">
+                                 <div>
+                                    <label class="block text-xs font-medium text-zinc-400 mb-1">Start Date</label>
+                                    <input 
+                                        v-model="editForm.startDate" 
+                                        type="date"
+                                        class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                                    />
+                                </div>
+                                 <div>
+                                    <label class="block text-xs font-medium text-zinc-400 mb-1">Deadline</label>
+                                    <input 
+                                        v-model="editForm.deadline" 
+                                        type="date"
+                                        class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                                    />
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                             <label class="block text-xs font-medium text-zinc-400 mb-1">Progress ({{ editForm.progress }}%)</label>
-                             <input 
-                                v-model.number="editForm.progress" 
-                                type="range" 
-                                min="0" 
-                                max="100"
-                                class="w-full accent-blue-500"
-                             />
-                        </div>
+                            <div>
+                                 <label class="block text-xs font-medium text-zinc-400 mb-1">Progress ({{ editForm.progress }}%)</label>
+                                 <input 
+                                    v-model.number="editForm.progress" 
+                                    type="range" 
+                                    min="0" 
+                                    max="100"
+                                    class="w-full accent-blue-500"
+                                 />
+                            </div>
 
-                        <div class="flex justify-end gap-3 mt-6">
-                            <button 
-                                type="button" 
-                                @click="isEditModalOpen = false"
-                                class="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                type="submit" 
-                                :disabled="isUpdating"
-                                class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-                            >
-                                {{ isUpdating ? 'Saving...' : 'Save Changes' }}
-                            </button>
-                        </div>
-                    </form>
-                </DialogPanel>
-             </div>
-        </Dialog>
+                            <div class="flex justify-end gap-3 mt-6">
+                                <button 
+                                    type="button" 
+                                    @click="isEditModalOpen = false"
+                                    class="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    :disabled="isUpdating"
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                                >
+                                    {{ isUpdating ? 'Saving...' : 'Save Changes' }}
+                                </button>
+                            </div>
+                        </form>
+                    </DialogPanel>
+                 </div>
+            </Dialog>
+        </ClientOnly>
     </div>
 </template>
 
@@ -643,7 +665,11 @@ const { tasks, isLoading: tasksLoading, fetchTasks, createTask, updateTask, dele
 const { notes, isLoading: notesLoading, fetchNotes, createNote, deleteNote } = useNotes();
 
 // --- Quick Launch Links ---
+// --- Quick Launch Links ---
 const { links: quickLinks, isLoading: quickLinksLoading, fetchLinks: fetchQuickLinks, createLink: createQuickLink, deleteLink: deleteQuickLink } = useQuickLaunchLinks();
+
+// --- Time Tracking ---
+const { activeLog, startTracking, stopTracking, init: initTimeTracking } = useTimeTracking();
 
 // --- UI State ---
 const activeTab = ref('overview');
@@ -711,6 +737,7 @@ onMounted(async () => {
             fetchTasks(id).catch(e => console.error('Failed to load tasks', e));
             fetchNotes(id).catch(e => console.error('Failed to load notes', e));
             fetchQuickLinks(id).catch(e => console.error('Failed to load quick links', e));
+            initTimeTracking();
         }
     }
 });

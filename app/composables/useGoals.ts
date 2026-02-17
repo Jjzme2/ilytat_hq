@@ -23,17 +23,24 @@ export const useGoals = () => {
     const isLoading = ref(false);
     const error = ref<string | null>(null);
 
-    const fetchGoals = async (projectId: string, constraints: QueryConstraint[] = []) => {
+    const fetchGoals = async (projectId?: string, constraints: QueryConstraint[] = []) => {
         isLoading.value = true;
         error.value = null;
         try {
             if (!tenantId.value) return;
 
+            const baseConstraints = [
+                where('tenantId', '==', tenantId.value),
+                orderBy('createdAt', 'desc')
+            ];
+
+            if (projectId) {
+                baseConstraints.push(where('projectId', '==', projectId));
+            }
+
             const q = query(
                 collection(db, 'goals'),
-                where('tenantId', '==', tenantId.value),
-                where('projectId', '==', projectId),
-                orderBy('createdAt', 'desc'),
+                ...baseConstraints,
                 ...constraints
             );
             const snapshot = await getDocs(q);

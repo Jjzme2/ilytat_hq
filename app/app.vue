@@ -9,23 +9,20 @@
 </template>
 
 <script setup lang="ts">
-import { useThemeStore } from '~/stores/theme';
+import { useIlytatTheme } from '@theme/composables/useIlytatTheme'; // Explicit import to ensure it's found if auto-import fails or just to be safe with the alias
 import { useSessionTimeout } from '~/composables/useSessionTimeout';
 // Provide Admin Adapter for UI Library
 import { FirebaseAdminAdapter } from '~/services/firebaseAdminAdapter'
 import { AdminAdapterKey } from '@admin/types/AdminAdapter'
 
-const store = useThemeStore();
+const { initTheme } = useIlytatTheme();
 const { startMonitoring, stopMonitoring } = useSessionTimeout();
 provide(AdminAdapterKey, new FirebaseAdminAdapter())
 
 // Initialize theme on mount to prevent hydration mismatch if possible,
 // though Pinia + VueUse usually handles this well on client-side.
 onMounted(() => {
-  const savedTheme = localStorage.getItem('vueuse-color-scheme');
-  if (savedTheme) {
-    store.SetTheme(savedTheme as 'light' | 'dark' | 'auto');
-  }
+  initTheme();
   startMonitoring();
 });
 

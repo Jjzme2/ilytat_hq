@@ -14,6 +14,9 @@ import {
     serverTimestamp,
     type QueryConstraint
 } from 'firebase/firestore';
+import { useFirestore } from 'vuefire';
+import { useUser } from './useUser';
+import { useTenant } from './useTenant';
 export interface R2File {
     key: string;
     size: number;
@@ -22,12 +25,15 @@ export interface R2File {
 
 export const useDocuments = () => {
     const {
-        getAll,
         getById,
         create,
         update,
         remove
     } = useFirestoreRepository<DocumentModel>('documents', (data) => new DocumentModel(data));
+
+    const db = useFirestore();
+    const { user } = useUser();
+    const { tenantId } = useTenant();
 
     const documents = ref<DocumentModel[]>([]);
     const currentDocument = ref<DocumentModel | null>(null);
@@ -43,8 +49,48 @@ export const useDocuments = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            documents.value = await getAll();
+            if (!user.value) {
+                documents.value = [];
+                return;
+            }
+
+            const docsRef = collection(db, 'documents');
+            const promises = [];
+
+            // 1. Personal Documents (Owner)
+            const personalQuery = query(
+                docsRef,
+                where('ownerId', '==', user.value.uid)
+            );
+            promises.push(getDocs(personalQuery));
+
+            // 2. Tenant Public Documents (if tenant exists)
+            if (tenantId.value) {
+                const tenantQuery = query(
+                    docsRef,
+                    where('tenantId', '==', tenantId.value),
+                    where('access', '==', 'public')
+                );
+                promises.push(getDocs(tenantQuery));
+            }
+
+            const snapshots = await Promise.all(promises);
+            const docMap = new Map<string, DocumentModel>();
+
+            snapshots.forEach(snap => {
+                snap.docs.forEach(docSnap => {
+                    const data = docSnap.data();
+                    data.id = docSnap.id;
+                    // Provide a default for required fields if missing in raw data, though Model expects fully shaped data
+                    // DocumentModel constructor should handle it.
+                    docMap.set(docSnap.id, new DocumentModel(data));
+                });
+            });
+
+            documents.value = Array.from(docMap.values());
+
         } catch (e: any) {
+            Logger.error('Failed to fetch documents', e);
             error.value = e.message;
         } finally {
             isLoading.value = false;
@@ -56,9 +102,47 @@ export const useDocuments = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            const allDocs = await getAll();
-            documents.value = allDocs.filter(d => d.projectId === projectId);
+            if (!user.value) {
+                documents.value = [];
+                return;
+            }
+
+            const docsRef = collection(db, 'documents');
+            const promises = [];
+
+            // 1. Personal Project Documents
+            const personalQuery = query(
+                docsRef,
+                where('ownerId', '==', user.value.uid),
+                where('projectId', '==', projectId)
+            );
+            promises.push(getDocs(personalQuery));
+
+            // 2. Tenant Public Project Documents
+            if (tenantId.value) {
+                const tenantQuery = query(
+                    docsRef,
+                    where('tenantId', '==', tenantId.value),
+                    where('projectId', '==', projectId),
+                    where('access', '==', 'public')
+                );
+                promises.push(getDocs(tenantQuery));
+            }
+
+            const snapshots = await Promise.all(promises);
+            const docMap = new Map<string, DocumentModel>();
+
+            snapshots.forEach(snap => {
+                snap.docs.forEach(docSnap => {
+                    const data = docSnap.data();
+                    data.id = docSnap.id;
+                    docMap.set(docSnap.id, new DocumentModel(data));
+                });
+            });
+
+            documents.value = Array.from(docMap.values());
         } catch (e: any) {
+            Logger.error('Failed to fetch project documents', e);
             error.value = e.message;
         } finally {
             isLoading.value = false;

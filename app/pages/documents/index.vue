@@ -1,17 +1,17 @@
 <template>
     <div class="h-full flex flex-col">
         <!-- Header -->
-        <header class="flex-none px-6 py-4 border-b border-white/10 flex justify-between items-center bg-zinc-900/50 backdrop-blur-sm sticky top-0 z-10">
+        <header class="flex-none px-4 md:px-6 py-3 md:py-4 border-b border-white/10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-zinc-900/50 backdrop-blur-sm sticky top-0 z-10">
             <div>
                 <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-300">
-                    Foundry
+                    Documents
                 </h1>
                 <p class="text-sm text-zinc-400 mt-1">Manage documents and files</p>
             </div>
         </header>
 
         <!-- Tab Navigation -->
-        <div class="flex-none border-b border-white/10 bg-zinc-900/30 px-6">
+        <div class="flex-none border-b border-white/10 bg-zinc-900/30 px-3 md:px-6 overflow-x-auto scrollbar-none">
             <nav class="flex gap-1 -mb-px">
                 <button 
                     v-for="tab in tabs" 
@@ -34,7 +34,7 @@
         </div>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto p-6 scrollbar-thin">
+        <main class="flex-1 overflow-y-auto p-3 md:p-6 scrollbar-thin">
             <div class="max-w-5xl space-y-6">
 
                 <!-- Documents Tab (Firestore) -->
@@ -228,14 +228,14 @@
                     </div>
 
                     <!-- Loading -->
-                    <div v-if="isLoadingR2 && r2Files.length === 0 && !uploadingFileName" class="flex justify-center py-8">
+                    <div v-if="isLoadingR2 && displayedFiles.length === 0 && !uploadingFileName" class="flex justify-center py-8">
                         <div class="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
                     </div>
 
                     <!-- Files List View -->
-                    <div v-else-if="r2Files.length > 0 && viewMode === 'list'" class="space-y-2">
+                    <div v-else-if="displayedFiles.length > 0 && viewMode === 'list'" class="space-y-2">
                          <div 
-                            v-for="file in r2Files" 
+                            v-for="file in displayedFiles" 
                             :key="file.key" 
                             class="group flex items-center gap-4 p-4 bg-zinc-900/40 border border-white/5 rounded-xl hover:border-indigo-500/20 transition-colors"
                         >
@@ -248,7 +248,7 @@
                             </div>
 
                             <div class="flex-1 min-w-0">
-                                <h3 class="text-white text-sm font-medium truncate">{{ getFileName(file.key) }}</h3>
+                                <h3 class="text-white text-sm font-medium truncate">{{ file.name || getFileName(file.key) }}</h3>
                                 <p class="text-[10px] text-zinc-500">{{ formatFileSize(file.size) }} · {{ formatDate(file.lastModified) }}</p>
                             </div>
                             <div class="flex items-center gap-2">
@@ -278,9 +278,9 @@
                     </div>
 
                     <!-- Files Grid View -->
-                    <div v-else-if="r2Files.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div v-else-if="displayedFiles.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         <div 
-                            v-for="file in r2Files" 
+                            v-for="file in displayedFiles" 
                             :key="file.key" 
                             class="group relative aspect-square bg-zinc-900/40 border border-white/5 rounded-xl overflow-hidden hover:border-indigo-500/30 transition-all"
                         >
@@ -301,7 +301,7 @@
 
                             <!-- Footer Info -->
                             <div class="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/90 to-transparent">
-                                <h3 class="text-white text-xs font-medium truncate">{{ getFileName(file.key) }}</h3>
+                                <h3 class="text-white text-xs font-medium truncate">{{ file.name || getFileName(file.key) }}</h3>
                                 <p class="text-[10px] text-zinc-400">{{ formatFileSize(file.size) }}</p>
                             </div>
 
@@ -463,7 +463,7 @@ const newDocContent = ref('');
 // Tabs config
 const tabs = computed(() => [
     { id: 'documents', label: 'Documents', count: documents.value.length },
-    { id: 'files', label: 'Files', count: r2Files.value.length }
+    { id: 'files', label: 'Files', count: displayedFiles.value.length }
 ]);
 
 // --- Init ---
@@ -652,4 +652,50 @@ const getFileType = (key: string) => {
     if (['xls', 'xlsx'].includes(ext || '')) return 'xls';
     return 'other';
 };
+
+// --- Custom File Fetching ---
+const { tenant } = useTenant();
+
+// Override or augment fetchR2Documents to use tenant.filesUrl
+// Since useDocuments is a composable, we might need to handle this here or update the composable.
+// Updating the component is safer for now to avoid breaking other things, but we need to inject the data.
+// Let's watch R2Files or just manually fetch if filesUrl is present.
+
+const externalFiles = ref<any[]>([]);
+
+watch(() => tenant.value?.filesUrl, async (url) => {
+    if (url) {
+        try {
+            isLoadingR2.value = true;
+            const res = await fetch(url);
+            if (res.ok) {
+                const data = await res.json();
+                // Expecting array of objects. Map to our structure.
+                externalFiles.value = data.map((f: any) => ({
+                    key: f.url || f.key, // Use URL as key if absolute
+                    size: f.size || 0,
+                    lastModified: f.date || f.lastModified || new Date().toISOString(),
+                    isExternal: true,
+                    name: f.name
+                }));
+            }
+        } catch (e) {
+            console.error("Failed to fetch external files", e);
+            r2Error.value = "Failed to load external files";
+        } finally {
+            isLoadingR2.value = false;
+        }
+    }
+}, { immediate: true });
+
+// computed combined files
+const displayedFiles = computed(() => {
+    if (tenant.value?.filesUrl && externalFiles.value.length > 0) {
+        return externalFiles.value;
+    }
+    return r2Files.value;
+});
+
+// Update template to use displayedFiles instead of r2Files
+
 </script>

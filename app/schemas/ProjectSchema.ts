@@ -11,6 +11,8 @@ export const ProjectSchema = BaseSchema.extend({
     priority: z.nativeEnum(Priority).default(Priority.MEDIUM),
     tenantId: z.string().min(1, "Tenant ID is required"),
     createdBy: z.string().default(''),
+    ownerId: z.string().default(''), // Critical for permissions
+    roles: z.record(z.string(), z.string()).default({}), // Map of uid -> role (owner, editor, viewer)
 
     startDate: dateSchema.nullable().default(null),
     deadline: dateSchema.nullable().default(null),

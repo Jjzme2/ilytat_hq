@@ -7,7 +7,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         const originalWarn = console.warn;
 
         console.warn = (...args) => {
-            const msg = args.join(' ');
+            const msg = args.map(a => typeof a === 'symbol' ? a.toString() : String(a)).join(' ');
 
             // Suppress Hydration node mismatch warnings caused by layout switching
             if (msg.includes('Hydration node mismatch') ||

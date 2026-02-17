@@ -68,6 +68,7 @@ const showPassword = ref(false);
 
 const { signIn } = useUser();
 const { add: addToast } = useToast();
+const route = useRoute();
 const router = useRouter();
 
 const handleLogin = async () => {
@@ -94,4 +95,13 @@ const handleLogin = async () => {
         isLoading.value = false;
     }
 };
+
+onMounted(() => {
+    if (route.query.reason === 'timeout') {
+        addToast('You have been logged out due to inactivity.', 'warning', null, {
+            position: 'top-center',
+            duration: 5000
+        });
+    }
+});
 </script>

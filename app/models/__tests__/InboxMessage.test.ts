@@ -4,10 +4,10 @@ import { InboxMessage } from '../InboxMessage'
 describe('InboxMessage', () => {
     it('sets correct defaults', () => {
         const m = new InboxMessage()
-        expect(m.from).toBe('')
+        expect(m.from).toBe('System')
         expect(m.fromId).toBe('')
         expect(m.to).toBe('')
-        expect(m.subject).toBe('')
+        expect(m.subject).toBe('(No Subject)')
         expect(m.body).toBe('')
         expect(m.read).toBe(false)
         expect(m.archived).toBe(false)

@@ -21,6 +21,10 @@ import { meetingNotes } from "./_templates/meetingNotes";
 import { pnl } from "./_templates/pnl";
 import { strategicPivot } from "./_templates/strategicPivot";
 import { personalProject } from "./_templates/personalProject";
+import { projectRetrospective } from "./_templates/projectRetrospective";
+import { featureSpec } from "./_templates/featureSpec";
+import { marketingPlan } from "./_templates/marketingPlan";
+import { subcontractorAgreement } from "./_templates/subcontractorAgreement";
 
 // ---------------------------------------------------------------------------
 // 2. Types & Models
@@ -88,4 +92,8 @@ export const documentTemplates: DocumentTemplateModel[] = [
     new DocumentTemplateModel(pnl),
     new DocumentTemplateModel(strategicPivot),
     new DocumentTemplateModel(personalProject),
+    new DocumentTemplateModel(projectRetrospective),
+    new DocumentTemplateModel(featureSpec),
+    new DocumentTemplateModel(marketingPlan),
+    new DocumentTemplateModel(subcontractorAgreement),
 ];

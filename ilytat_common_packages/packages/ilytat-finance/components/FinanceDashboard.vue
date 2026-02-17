@@ -82,7 +82,8 @@
                         <div>
                             <div class="flex items-center gap-2">
                                 <p class="font-medium text-text-primary">{{ acc.name }}</p>
-                                <span v-if="acc.scope === 'business'" class="px-2 py-0.5 rounded text-[10px] bg-blue-500/10 text-blue-500 font-bold uppercase tracking-wider">Business</span>
+                                <span v-if="acc.scope === 'tenant'" class="px-2 py-0.5 rounded text-[10px] bg-blue-500/10 text-blue-500 font-bold uppercase tracking-wider">Tenant</span>
+                                <span v-if="acc.scope === 'project'" class="px-2 py-0.5 rounded text-[10px] bg-purple-500/10 text-purple-500 font-bold uppercase tracking-wider">Project</span>
                             </div>
                             <p class="text-xs text-text-tertiary capitalize">{{ acc.type }}</p>
                         </div>
@@ -216,7 +217,8 @@
                             <label class="block text-xs font-medium text-text-secondary uppercase mb-1">Scope</label>
                             <select v-model="accountForm.scope" class="w-full bg-secondary border border-border-color rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-accent-primary">
                                 <option value="personal">Personal</option>
-                                <option value="business" :disabled="!isAdmin">Business {{ !isAdmin ? '(Admin Only)' : '' }}</option>
+                                <option value="tenant" :disabled="!isAdmin">Tenant {{ !isAdmin ? '(Admin Only)' : '' }}</option>
+                                <option value="project" :disabled="!isAdmin">Project {{ !isAdmin ? '(Admin Only)' : '' }}</option>
                             </select>
                         </div>
                     </div>
@@ -323,7 +325,7 @@ const accountForm = reactive({
     type: 'checking' as Account['type'],
     balance: 0,
     currency: 'USD',
-    scope: 'personal' as 'personal' | 'business'
+    scope: 'personal' as Account['scope']
 });
 
 const budgetForm = reactive({
@@ -386,7 +388,9 @@ const submitTransaction = async () => {
     const payload = { 
         ...transactionForm, 
         date: new Date(transactionForm.date || new Date()),
-        status: 'cleared' as const 
+        status: 'cleared' as const,
+        ownerId: user.value?.uid || '',
+        scope: 'personal' as Account['scope']
     };
     try {
         if (editingTransaction.value) {
@@ -425,11 +429,15 @@ const openAccountModal = (acc?: Account) => {
 const closeAccountModal = () => showAccountModal.value = false;
 
 const submitAccount = async () => {
+    const payload = {
+        ...accountForm,
+        ownerId: user.value?.uid || ''
+    };
     try {
         if (editingAccount.value) {
-            await updateAccount(editingAccount.value, accountForm);
+            await updateAccount(editingAccount.value, payload);
         } else {
-            await addAccount(accountForm);
+            await addAccount(payload);
         }
         closeAccountModal();
     } catch (e: any) {
@@ -446,7 +454,7 @@ const openBudgetModal = (budget?: Budget) => {
         budgetForm.amount = budget.amount;
         budgetForm.category = budget.category || 'Food';
         budgetForm.period = budget.period;
-        budgetForm.startDate = new Date(budget.startDate as any).toISOString().split('T')[0];
+        budgetForm.startDate = budget.startDate ? new Date(budget.startDate as any).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
         budgetForm.endDate = budget.endDate ? new Date(budget.endDate as any).toISOString().split('T')[0] : '';
     } else {
         editingBudget.value = null;
@@ -467,7 +475,10 @@ const submitBudget = async () => {
     const payload = {
         ...budgetForm,
         startDate: new Date(budgetForm.startDate || new Date()),
-        endDate: budgetForm.endDate ? new Date(budgetForm.endDate) : undefined
+        endDate: budgetForm.endDate ? new Date(budgetForm.endDate) : undefined,
+        ownerId: user.value?.uid || '',
+        scope: 'personal' as Account['scope'],
+        spent: 0
     };
     try {
         if (editingBudget.value) {

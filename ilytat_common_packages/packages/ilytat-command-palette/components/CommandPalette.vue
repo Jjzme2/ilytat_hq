@@ -25,7 +25,7 @@
         </div>
 
         <!-- Command List -->
-        <div v-if="filteredCommands.length > 0" class="max-h-96 overflow-y-auto py-2 scroll-py-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border-color/50 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-border-color">
+        <div v-if="filteredCommands.length > 0" class="max-h-[60vh] overflow-y-auto py-2 scroll-py-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/40">
           <div v-for="(groupCommands, groupName) in groupedCommands" :key="groupName">
             <div v-if="groupName !== 'general'"
               class="px-4 py-2 text-xs font-semibold text-text-tertiary uppercase tracking-wider">
@@ -89,7 +89,8 @@ const {
   activeIndex,
   close,
   filteredCommands,
-  groupedCommands
+  groupedCommands,
+  handleGlobalShortcut
 } = useCommandPalette();
 
 const searchInput = ref<HTMLInputElement | null>(null);
@@ -141,10 +142,15 @@ watch(isOpen, async (val) => {
 
 // Global Shortcut Listener
 const onKeydown = (e: KeyboardEvent) => {
+  // Ctrl/Cmd + K toggles the palette
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
     e.preventDefault();
     isOpen.value = !isOpen.value;
+    return;
   }
+
+  // Delegate all other shortcuts to the command palette engine
+  handleGlobalShortcut(e);
 };
 
 onMounted(() => {
@@ -155,3 +161,4 @@ onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown);
 });
 </script>
+

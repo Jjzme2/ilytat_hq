@@ -1,167 +1,284 @@
 <template>
-    <div class="h-full flex flex-col">
-        <!-- Header -->
-        <header class="flex-none px-6 py-4 border-b border-white/10 flex justify-between items-center bg-zinc-900/50 backdrop-blur-sm sticky top-0 z-10">
-            <div>
-                <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-300">
-                    Inbox
-                </h1>
-                <p class="text-sm text-zinc-400 mt-1">Communications and notifications</p>
-            </div>
-             <div class="flex gap-2">
-                 <button class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm transition-colors border border-white/5">
-                    Compose
-                 </button>
-             </div>
-        </header>
+    <div class="h-full flex flex-col md:flex-row overflow-hidden">
+        <!-- Conversation List Panel -->
+        <div 
+            class="border-r border-white/5 flex flex-col bg-zinc-900/20 transition-all duration-200"
+            :class="[
+                activeConversationId && isMobile ? 'hidden' : 'flex',
+                isMobile ? 'w-full h-full' : 'w-80 shrink-0'
+            ]"
+        >
+            <ConversationList 
+                :conversations="conversationList"
+                :active-id="activeConversationId"
+                :current-user-uid="user?.uid || ''"
+                @select="selectConversation"
+                @new-conversation="showNewConvoModal = true"
+            />
+        </div>
 
-        <!-- Main Content -->
-        <main class="flex-1 flex overflow-hidden">
-            <!-- Sidebar / Message List -->
-            <div class="w-80 border-r border-white/5 flex flex-col bg-zinc-900/20">
-                 <!-- Search -->
-                 <div class="p-4 border-b border-white/5">
-                     <div class="relative">
-                         <span class="absolute left-3 top-2.5 i-ph-magnifying-glass text-zinc-500"></span>
-                         <input 
+        <!-- Message Thread Panel -->
+        <div 
+            class="flex-1 flex flex-col transition-all duration-200"
+            :class="[
+                !activeConversationId && isMobile ? 'hidden' : 'flex',
+                isMobile ? 'w-full animate-slide-in-right' : ''
+            ]"
+        >
+            <template v-if="activeConversationId && activeConversation">
+                <!-- Thread header -->
+                <header class="flex-none px-4 py-3 border-b border-white/10 flex items-center gap-3 bg-zinc-900/50 backdrop-blur-sm">
+                    <!-- Mobile back button -->
+                    <button 
+                        v-if="isMobile"
+                        @click="activeConversationId = null"
+                        class="p-1.5 rounded-lg text-blue-400 hover:bg-white/5 transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Conversation name -->
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-sm font-bold text-white truncate">{{ activeConversation.name || conversationDisplayName }}</h2>
+                        <p v-if="typingText" class="text-xs text-amber-400 italic">{{ typingText }}</p>
+                        <p v-else class="text-xs text-zinc-500">{{ activeConversation.participants.length }} participants</p>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-1">
+                        <button 
+                            @click="togglePin" 
+                            class="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 transition-colors" 
+                            :title="isPinned ? 'Unpin' : 'Pin'"
+                        >
+                            {{ isPinned ? '📌' : '📍' }}
+                        </button>
+                        <button 
+                            @click="toggleMute"
+                            class="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 transition-colors"
+                            :title="isMuted ? 'Unmute' : 'Mute'"
+                        >
+                            {{ isMuted ? '🔔' : '🔕' }}
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Messages -->
+                <MessageThread 
+                    :messages="activeMessages"
+                    :typing-users="activeConversation.typingUsers || []"
+                    :participant-names="activeConversation.participantNames || {}"
+                    @reply="handleReply"
+                    @react="handleReact"
+                    @toggle-reaction="handleToggleReaction"
+                />
+
+                <!-- Composer -->
+                <MessageComposer
+                    :replying-to="replyingTo"
+                    @send="handleSend"
+                    @typing="handleTyping"
+                    @cancel-reply="replyingTo = null"
+                />
+            </template>
+
+            <!-- Empty state -->
+            <div v-else class="flex-1 flex flex-col items-center justify-center text-zinc-500 p-8">
+                <span class="text-5xl mb-4">💬</span>
+                <h3 class="text-lg font-bold text-white mb-1">Your Messages</h3>
+                <p class="text-sm text-zinc-400 text-center max-w-xs">Select a conversation or start a new one to begin messaging.</p>
+                <button 
+                    @click="showNewConvoModal = true"
+                    class="mt-4 px-4 py-2 rounded-lg bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors"
+                >
+                    Start New Conversation
+                </button>
+            </div>
+        </div>
+
+        <!-- New Conversation Modal -->
+        <div v-if="showNewConvoModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div class="bg-zinc-900 rounded-xl border border-white/10 w-full max-w-md p-6 shadow-2xl">
+                <h2 class="text-lg font-bold text-white mb-4">New Conversation</h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Participant Email or UID</label>
+                        <input 
+                            v-model="newConvoParticipant" 
                             type="text" 
-                            placeholder="Search messages..." 
-                            class="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors"
+                            placeholder="user@example.com"
+                            class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
                         />
-                     </div>
-                 </div>
-
-                 <!-- List -->
-                 <div class="flex-1 overflow-y-auto scrollbar-thin">
-                     <!-- Loading State -->
-                     <div v-if="loading" class="p-4 text-center text-zinc-500">
-                         Loading messages...
-                     </div>
-                     <!-- Empty State -->
-                     <div v-else-if="messages.length === 0" class="p-4 text-center text-zinc-500">
-                         No messages found.
-                     </div>
-                     <!-- Message Items -->
-                     <div 
-                        v-else
-                        v-for="message in messages" 
-                        :key="message.id"
-                        @click="selectMessage(message)"
-                        class="p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group"
-                        :class="{'bg-blue-500/5 border-l-2 border-l-blue-500': selectedMessage?.id === message.id}"
-                     >
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="font-medium text-zinc-200 text-sm">{{ message.from || 'System' }}</span>
-                            <!-- Assuming date is available or using dummy -->
-                            <span class="text-xs text-zinc-500">Today</span>
-                        </div>
-                        <p class="text-sm text-zinc-400 font-medium truncate">{{ message.subject }}</p>
-                        <p class="text-xs text-zinc-500 line-clamp-2 mt-1">
-                            {{ message.body }}
-                        </p>
-                     </div>
-                 </div>
-            </div>
-
-            <!-- Message Detail -->
-            <div class="flex-1 bg-zinc-900/10 flex flex-col">
-                <template v-if="selectedMessage">
-                    <!-- Message Header -->
-                    <div class="p-6 border-b border-white/5">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h2 class="text-xl font-bold text-white mb-2">{{ selectedMessage.subject }}</h2>
-                                <div class="flex items-center gap-2 text-sm text-zinc-400">
-                                    <span>From: <span class="text-blue-400">{{ selectedMessage.from }}</span></span>
-                                    <span>&bull;</span>
-                                    <span>To: <span class="text-zinc-300">{{ selectedMessage.to }}</span></span>
-                                </div>
-                            </div>
-                            <div class="flex gap-2 text-zinc-500">
-                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Archive">
-                                    <span class="i-ph-archive"></span>
-                                </button>
-                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Delete">
-                                    <span class="i-ph-trash"></span>
-                                </button>
-                            </div>
-                        </div>
                     </div>
-
-                    <!-- Message Body -->
-                    <div class="flex-1 p-8 overflow-y-auto">
-                        <div class="prose prose-invert prose-sm max-w-none text-zinc-300">
-                            <!-- Safely rendering HTML content or text -->
-                            <div v-html="selectedMessage.body"></div>
-                        </div>
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Conversation Name (optional)</label>
+                        <input 
+                            v-model="newConvoName" 
+                            type="text" 
+                            placeholder="Team Chat"
+                            class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+                        />
                     </div>
-
-                    <!-- Reply Area -->
-                    <div class="p-6 border-t border-white/5 bg-zinc-900/30">
-                        <div class="relative">
-                            <textarea 
-                                v-model="replyText"
-                                rows="3" 
-                                placeholder="Type your reply..."
-                                class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors resize-none"
-                            ></textarea>
-                            <div class="absolute bottom-3 right-3 flex items-center gap-2">
-                                <button class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition-colors">
-                                    Send Reply
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-                <div v-else class="flex-1 flex items-center justify-center text-zinc-500">
-                    Select a message to view details
+                </div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button @click="showNewConvoModal = false" class="px-4 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition text-sm">Cancel</button>
+                    <button @click="createNewConversation" class="px-4 py-2 rounded-lg bg-amber-500 text-black font-medium text-sm hover:bg-amber-400 transition">Create</button>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { InboxMessage } from '~/models/InboxMessage';
-import { useFirestoreRepository } from '~/composables/useFirestoreRepository';
-import { useCurrentUser } from 'vuefire';
-import { orderBy, where } from 'firebase/firestore';
+/**
+ * Inbox page — real-time messaging powered by ilytat-messaging package.
+ * 
+ * Intent: Replaces the old inbox (which used InboxMessage model + useFirestoreRepository)
+ * with the enterprise messaging composable. Supports real-time conversations, 
+ * typing indicators, read receipts, and reactions.
+ */
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useCurrentUser } from 'vuefire'
+import { useMessaging } from '@messaging/composables/useMessaging'
+import type { Message, Conversation } from '@messaging/types'
 
 definePageMeta({
     layout: 'default',
     middleware: ['auth']
 });
 
-const user = useCurrentUser();
-const inboxRepo = useFirestoreRepository('messages', (data) => new InboxMessage(data));
-const messages = ref<InboxMessage[]>([]);
-const selectedMessage = ref<InboxMessage | null>(null);
-const loading = ref(true);
-const replyText = ref('');
+const user = useCurrentUser()
+const {
+    conversations,
+    activeConversationId,
+    activeMessages,
+    totalUnread,
+    loadMessages,
+    sendMessage,
+    startTyping,
+    stopTyping,
+    addReaction,
+    removeReaction,
+    createConversation,
+    muteConversation,
+    pinConversation
+} = useMessaging()
 
-onMounted(async () => {
-    try {
-        if (user.value) {
-            // Filter by recipientUid to match security rules
-            messages.value = await inboxRepo.getAll([
-                where('recipientUid', '==', user.value.uid),
-                orderBy('createdAt', 'desc')
-            ]);
-        }
-    } catch (error) {
-        console.error('Failed to load messages:', error);
-    } finally {
-        loading.value = false;
-    }
-});
+const replyingTo = ref<Message | null>(null)
+const showNewConvoModal = ref(false)
+const newConvoParticipant = ref('')
+const newConvoName = ref('')
 
-const selectMessage = (message: any) => {
-    selectedMessage.value = message;
-    if (!message.read) {
-        // Mark as read
-        message.read = true;
-        inboxRepo.update(message.id, { read: true });
+// Mobile detection
+const isMobile = ref(false)
+const mediaQuery = typeof window !== 'undefined' ? window.matchMedia('(max-width: 767px)') : null
+const updateMobile = () => { isMobile.value = mediaQuery?.matches ?? false }
+
+onMounted(() => {
+    updateMobile()
+    mediaQuery?.addEventListener('change', updateMobile)
+})
+onUnmounted(() => {
+    mediaQuery?.removeEventListener('change', updateMobile)
+})
+
+// Conversation helpers
+const conversationList = computed(() => conversations.value || [])
+
+const activeConversation = computed(() => {
+    if (!activeConversationId.value) return null
+    return conversationList.value.find((c: Conversation) => c.id === activeConversationId.value) || null
+})
+
+const conversationDisplayName = computed(() => {
+    const conv = activeConversation.value
+    if (!conv || !user.value) return 'Unknown'
+    const otherNames = Object.entries(conv.participantNames || {})
+        .filter(([uid]: [string, unknown]) => uid !== user.value!.uid)
+        .map(([, name]: [string, unknown]) => name as string)
+    return otherNames.join(', ') || 'Unknown'
+})
+
+const isPinned = computed(() => {
+    if (!user.value || !activeConversation.value) return false
+    return activeConversation.value.isPinned?.[user.value.uid] || false
+})
+
+const isMuted = computed(() => {
+    if (!user.value || !activeConversation.value) return false
+    return activeConversation.value.isMuted?.[user.value.uid] || false
+})
+
+const typingText = computed(() => {
+    const conv = activeConversation.value
+    if (!conv || !user.value) return ''
+    const typers = (conv.typingUsers || [])
+        .filter(uid => uid !== user.value!.uid)
+        .map(uid => conv.participantNames?.[uid] || 'Someone')
+    if (typers.length === 0) return ''
+    if (typers.length === 1) return `${typers[0]} is typing...`
+    return `${typers.join(', ')} are typing...`
+})
+
+// Actions
+function selectConversation(id: string) {
+    activeConversationId.value = id
+    loadMessages(id)
+}
+
+async function handleSend(body: string, replyTo?: { id: string; preview: string }) {
+    if (!activeConversationId.value) return
+    await sendMessage(activeConversationId.value, body, 'text', replyTo)
+    replyingTo.value = null
+}
+
+function handleTyping() {
+    if (!activeConversationId.value) return
+    startTyping(activeConversationId.value)
+}
+
+function handleReply(msg: Message) {
+    replyingTo.value = msg
+}
+
+function handleReact(_msg: Message) {
+    // Future: open emoji picker
+}
+
+async function handleToggleReaction(messageId: string, emoji: string) {
+    const msg = activeMessages.value.find((m: Message) => m.id === messageId)
+    if (!msg || !user.value) return
+    const hasReacted = msg.reactions?.some((r: { emoji: string; userUid: string }) => r.emoji === emoji && r.userUid === user.value!.uid)
+    if (hasReacted) {
+        await removeReaction(messageId, emoji)
+    } else {
+        await addReaction(messageId, emoji)
     }
-};
+}
+
+function togglePin() {
+    if (!activeConversationId.value) return
+    pinConversation(activeConversationId.value, !isPinned.value)
+}
+
+function toggleMute() {
+    if (!activeConversationId.value) return
+    muteConversation(activeConversationId.value, !isMuted.value)
+}
+
+async function createNewConversation() {
+    if (!newConvoParticipant.value.trim()) return
+    const id = await createConversation(
+        [newConvoParticipant.value.trim()],
+        { [newConvoParticipant.value.trim()]: newConvoParticipant.value.trim() },
+        'direct',
+        { name: newConvoName.value || undefined }
+    )
+    showNewConvoModal.value = false
+    newConvoParticipant.value = ''
+    newConvoName.value = ''
+    selectConversation(id)
+}
 </script>

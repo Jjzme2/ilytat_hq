@@ -1,7 +1,5 @@
 <template>
-    <NuxtLayout name="default">
-        <FinanceDashboard />
-    </NuxtLayout>
+    <FinanceDashboard />
 </template>
 
 <script setup lang="ts">
@@ -10,3 +8,4 @@ definePageMeta({
     middleware: ['auth']
 });
 </script>
+

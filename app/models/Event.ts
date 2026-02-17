@@ -1,47 +1,61 @@
 import { BaseModel } from './BaseModel';
+import { EventSchema, type EventData } from '../schemas/EventSchema';
+import { z } from 'zod';
 
-export class Event extends BaseModel {
+export class Event extends BaseModel<EventData> {
     title: string;
     description: string;
-    start: string; // ISO String
-    end: string | null; // ISO String
-    allDay: boolean;
-    type: 'reminder' | 'meeting' | 'deadline' | 'block';
-    tenantId: string | null;
+    start: Date;
+    end: Date;
+    isAllDay: boolean;
+    location: string;
+    recurrenceRule: string | null;
+    userId: string;
+    tenantId: string;
     projectId: string | null;
-    ownerId: string;
-    access: 'public' | 'private' | 'project';
-    recurrence: string | null; // RRULE string or simple 'daily', 'weekly' etc.
+    color: string;
+    type: 'event';
 
-    constructor(data: any = {}) {
-        super(data);
-        this.title = data.title || '';
-        this.description = data.description || '';
-        this.start = data.start || new Date().toISOString();
-        this.end = data.end || null;
-        this.allDay = data.allDay || false;
-        this.type = data.type || 'reminder';
-        this.tenantId = data.tenantId || null;
-        this.projectId = data.projectId || null;
-        this.ownerId = data.ownerId || '';
-        this.access = data.access || 'private';
-        this.recurrence = data.recurrence || null;
+    constructor(data: Partial<EventData> = {}) {
+        const parsed = EventSchema.parse(data);
+        super(parsed);
+
+        this.title = parsed.title;
+        this.description = parsed.description;
+        this.start = parsed.start;
+        this.end = parsed.end;
+        this.isAllDay = parsed.isAllDay;
+        this.location = parsed.location;
+        this.recurrenceRule = parsed.recurrenceRule;
+        this.userId = parsed.userId;
+        this.tenantId = parsed.tenantId;
+        this.projectId = parsed.projectId;
+        this.color = parsed.color;
+        this.type = parsed.type as 'event';
     }
 
-    override toJSON() {
+    // Helpers
+    get durationMinutes() {
+        if (!this.end || !this.start) return 0;
+        const diff = this.end.getTime() - this.start.getTime();
+        return Math.floor(diff / 1000 / 60);
+    }
+
+    toJSON(): EventData & { id: string; createdAt: Date; updatedAt: Date } {
         return {
             ...super.toJSON(),
             title: this.title,
             description: this.description,
             start: this.start,
             end: this.end,
-            allDay: this.allDay,
-            type: this.type,
+            isAllDay: this.isAllDay,
+            location: this.location,
+            recurrenceRule: this.recurrenceRule,
+            userId: this.userId,
             tenantId: this.tenantId,
             projectId: this.projectId,
-            ownerId: this.ownerId,
-            access: this.access,
-            recurrence: this.recurrence
+            color: this.color,
+            type: this.type
         };
     }
 }

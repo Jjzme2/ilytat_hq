@@ -9,7 +9,8 @@ import {
     deleteDoc,
     query,
     type DocumentData,
-    type QueryConstraint
+    type QueryConstraint,
+    type QueryCompositeFilterConstraint
 } from 'firebase/firestore';
 import { Logger } from '~/utils/Logger';
 import { AppError, NetworkError, NotFoundError, PermissionError } from '~/utils/AppError';
@@ -64,12 +65,12 @@ export const useFirestoreRepository = <T extends { id: string, toJSON: () => any
         throw lastError;
     };
 
-    const getAll = async (constraints: QueryConstraint[] = []): Promise<T[]> => {
+    const getAll = async (constraints: (QueryConstraint | QueryCompositeFilterConstraint)[] = []): Promise<T[]> => {
         const path = getCollectionName();
         return withRetry(async () => {
             try {
                 Logger.debug(`[Firestore] getAll: ${path}`);
-                const q = query(collection(db, path), ...constraints);
+                const q = query(collection(db, path), ...constraints as any);
                 const querySnapshot = await getDocs(q);
                 return querySnapshot.docs.map(doc => {
                     const data = doc.data();

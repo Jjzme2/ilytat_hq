@@ -1,10 +1,11 @@
 import { Project } from '~/models/Project';
-import { where } from 'firebase/firestore';
+import { where, or } from 'firebase/firestore';
 import { AppError } from '~/utils/AppError';
 import { Logger } from '~/utils/Logger';
 
 export const useProjects = () => {
     const { tenantId } = useTenant();
+    const { user, isAdmin } = useUser();
 
     const {
         getAll,
@@ -35,10 +36,29 @@ export const useProjects = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            if (!tenantId.value) return;
+            if (!user.value?.uid) {
+                Logger.warn('[useProjects] fetchProjects: No user UID');
+                return;
+            }
 
-            // Filter by tenantId to adhere to security rules
-            projects.value = await getAll([where('tenantId', '==', tenantId.value)]);
+            Logger.debug(`[useProjects] fetchProjects: Fetching for user ${user.value.uid} tenant=${tenantId.value} isAdmin=${isAdmin.value}`);
+
+            // Updated Security: 
+            // 1. Members array allows cross-tenant personal projects
+            // 2. Database admins can see all projects in their tenant
+            if (isAdmin.value && tenantId.value) {
+                Logger.debug('[useProjects] fetchProjects: Using OR query for Admin');
+                projects.value = await getAll([
+                    or(
+                        where('members', 'array-contains', user.value.uid),
+                        where('tenantId', '==', tenantId.value)
+                    )
+                ]);
+            } else {
+                Logger.debug('[useProjects] fetchProjects: Using simple member query');
+                projects.value = await getAll([where('members', 'array-contains', user.value.uid)]);
+            }
+            Logger.debug(`[useProjects] fetchProjects: Retrieved ${projects.value.length} projects`);
         } catch (e: any) {
             handleError(e, 'fetchProjects');
         } finally {
@@ -64,16 +84,33 @@ export const useProjects = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            if (!tenantId.value) throw new AppError("No tenant context", "NO_TENANT", 400);
+            // Allow creation without tenantId for personal projects, unless explicitly required
+            // if (!tenantId.value) throw new AppError("No tenant context", "NO_TENANT", 400);
 
-            // Ensure tenantId is set before creating
             const data = project.toJSON();
-            data.tenantId = tenantId.value;
 
-            // Automatically add creator to members if not present
-            const { user } = useUser();
-            if (user.value?.uid && !data.members.includes(user.value.uid)) {
-                data.members.push(user.value.uid);
+            // Only force tenantId if it's available and not already set (or if we want to enforce it for tenant contexts)
+            // Ideally, the caller sets the tenantId if it's a tenant project.
+            // If tenantId is available in global state, we default to it, but allow it to be null/undefined for personal items.
+            // However, the previous logic enforced it. 
+            // User request: "default to a personal project" when at /projects
+
+            if (!data.tenantId && tenantId.value) {
+                // Check if we should enforce tenant? 
+                // For now, let's assume if tenantId is present in context, we use it, 
+                // UNLESS the project data explicitly set it to null (which toJSON might not carry if undefined).
+                // Logic: use data.tenantId if set, else use global tenantId.
+                data.tenantId = tenantId.value;
+            }
+
+            // If still no tenantId, it's a personal project (tenantId: null/undefined)
+
+            // Set Owner & Roles
+            const userId = user.value?.uid;
+            if (userId) {
+                if (!data.ownerId) data.ownerId = userId;
+                if (!data.members.includes(userId)) data.members.push(userId);
+                if (!data.roles[userId]) data.roles[userId] = 'owner';
             }
 
             const newProject = await create(new Project(data));
