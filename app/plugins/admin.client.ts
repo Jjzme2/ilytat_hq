@@ -1,8 +1,6 @@
 import { defineNuxtPlugin } from '#app';
 import { shallowRef, resolveComponent } from 'vue';
 import OrganizationSettings from '~/components/admin/tabs/OrganizationSettings.vue';
-import AdminGoals from '~/components/admin/tabs/AdminGoals.vue';
-import AdminTasks from '~/components/admin/tabs/AdminTasks.vue';
 import AdminSchedule from '~/components/admin/tabs/AdminSchedule.vue';
 import AdminFinance from '~/components/admin/tabs/AdminFinance.vue';
 
@@ -30,21 +28,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     });
 
     // Register New Analytics/Management Modules
-    registerTab({
-        id: 'goals',
-        label: 'Goals',
-        icon: '🎯',
-        component: shallowRef(AdminGoals),
-        order: 15
-    });
-
-    registerTab({
-        id: 'tasks',
-        label: 'Tasks',
-        icon: '✅',
-        component: shallowRef(AdminTasks),
-        order: 14 // Before Goals
-    });
 
     registerTab({
         id: 'schedule',
