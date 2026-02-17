@@ -12,11 +12,7 @@ import { getAuth } from 'firebase-admin/auth'
 import { verifyAdminAccess, ensureAdminInitialized } from '../../utils/adminAuth'
 
 export default defineEventHandler(async (event) => {
-    try {
-        await verifyAdminAccess(event)
-    } catch {
-        // Local dev fallback
-    }
+    await verifyAdminAccess(event)
 
     ensureAdminInitialized()
     const auth = getAuth()
