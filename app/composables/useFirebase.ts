@@ -17,8 +17,8 @@ export const useFirebase = () => {
 
     // VueFire composables might return Refs or instances depending on version/context.
     // Safe unwrap: check if it has .value (isRef)
-    const _db = isRef(db) ? db.value : db;
-    const _auth = isRef(auth) ? auth.value : auth;
+    const _db = (isRef(db) ? db.value : db) as import('firebase/firestore').Firestore;
+    const _auth = (isRef(auth) ? auth.value : auth) as import('firebase/auth').Auth;
 
     return { app, db: _db, auth: _auth };
 };

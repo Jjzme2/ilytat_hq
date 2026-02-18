@@ -23,7 +23,7 @@ const NEON_PRESETS: PresetConfig[] = [
     { seed: 'neon-magenta-rush', name: 'Magenta Rush', category: 'neon' },
     { seed: 'neon-electric-lime', name: 'Electric Lime', category: 'neon' },
     { seed: 'neon-hot-pink', name: 'Hot Pink', category: 'neon' },
-    { seed: 'neon-deep-violet', name: 'Deep Violet', category: 'neon' },
+    { seed: 'neon-deep-amethyst', name: 'Deep Amethyst', category: 'neon' },
     { seed: 101010, name: 'Neon Midnight', category: 'neon' },
     { seed: 202020, name: 'Laser Grid', category: 'neon' },
     { seed: 303030, name: 'Toxic Green', category: 'neon' },

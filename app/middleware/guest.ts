@@ -1,25 +1,20 @@
 import { getCurrentUser } from 'vuefire'
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
-    // If we're on the server, we might not have auth state unless using session cookies.
-    // We'll let the client-side handle the redirect to be safe and consistent with auth.ts
-    if (import.meta.server) {
-        return;
-    }
+    // Validating auth on the server is tricky without session cookies.
+    // We defer to client-side.
+    if (import.meta.server) return;
 
-    const { ensureUserIsReady } = useUser();
-
-    // 1. Check for Firebase Auth session
-    const fUser = await getCurrentUser();
-
-    // 2. If user is logged in, redirect them away
-    if (fUser) {
-        Logger.info(`[GuestMiddleware] User is already logged in. Redirecting to dashboard.`);
-
-        // Check for a 'redirect' query param to return them to where they were trying to go, 
-        // though typically coming to login/signup means they want to go to dashboard if already logged in.
-        // For 'guest' middleware, usually we just want to send them to the dashboard.
-        const returnTo = to.query.redirect as string || '/';
-        return navigateTo(returnTo);
+    try {
+        const user = await getCurrentUser();
+        if (user) {
+            Logger.info('[GuestMiddleware] User is already authenticated. Redirecting.');
+            const returnTo = (to.query.redirect as string) || '/';
+            // Use replace to avoid browser history sticking on login page
+            return navigateTo(returnTo, { replace: true });
+        }
+    } catch (error) {
+        // If getting user fails, assume they are guest and allow access to login
+        Logger.warn('[GuestMiddleware] Error checking auth status:', error);
     }
 });

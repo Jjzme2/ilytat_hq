@@ -318,7 +318,7 @@ export const glassThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-crystal-glass',
-        name: 'Crystal',
+        name: 'Diamond Crystal',
         category: 'glass',
         isDark: false,
         colors: {
@@ -339,7 +339,7 @@ export const glassThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-prism-glass',
-        name: 'Prism',
+        name: 'Spectrum Prism',
         category: 'glass',
         isDark: true,
         colors: {
@@ -360,7 +360,7 @@ export const glassThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-lens-glass',
-        name: 'Lens',
+        name: 'Optical Lens',
         category: 'glass',
         isDark: false,
         colors: {
@@ -381,7 +381,7 @@ export const glassThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-mirror-glass',
-        name: 'Mirror',
+        name: 'Polished Mirror',
         category: 'glass',
         isDark: false,
         colors: {
@@ -402,7 +402,7 @@ export const glassThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-shard-glass',
-        name: 'Shard',
+        name: 'Obsidian Shard',
         category: 'glass',
         isDark: true,
         colors: {
@@ -423,7 +423,7 @@ export const glassThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-frost-glass',
-        name: 'Frost',
+        name: 'Arctic Frost',
         category: 'glass',
         isDark: true,
         colors: {
@@ -444,7 +444,7 @@ export const glassThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-dew-glass',
-        name: 'Dew',
+        name: 'Morning Dew',
         category: 'glass',
         isDark: true,
         colors: {
@@ -465,7 +465,7 @@ export const glassThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-rain-glass',
-        name: 'Rain',
+        name: 'Midnight Rain',
         category: 'glass',
         isDark: true,
         colors: {
@@ -486,7 +486,7 @@ export const glassThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-ice-glass',
-        name: 'Ice',
+        name: 'Glacial Ice',
         category: 'glass',
         isDark: false,
         colors: {
@@ -507,7 +507,7 @@ export const glassThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-vapor-glass',
-        name: 'Vapor',
+        name: 'Ethereal Vapor',
         category: 'glass',
         isDark: false,
         colors: {

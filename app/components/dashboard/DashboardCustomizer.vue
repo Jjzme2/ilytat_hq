@@ -15,23 +15,48 @@
       </div>
 
       <div v-else class="space-y-4">
-        <p class="text-sm text-text-secondary mb-4">Select which widgets to display on your dashboard.</p>
+        <p class="text-sm text-text-secondary mb-4">Toggle widgets on/off and drag to reorder.</p>
         
-        <div class="space-y-2">
-          <div v-for="widget in availableWidgets" :key="widget.id" class="flex items-center justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
-            <span class="font-medium text-text-primary capitalize">{{ getWidgetName(widget.id) }}</span>
-            <button 
-              @click="handleToggle(widget.id, !widget.enabled)"
-              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary/50"
-              :class="widget.enabled ? 'bg-accent-primary' : 'bg-zinc-600'"
-            >
-              <span 
-                class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                :class="widget.enabled ? 'translate-x-6' : 'translate-x-1'"
-              />
-            </button>
-          </div>
-        </div>
+        <draggable
+          v-model="localWidgets"
+          item-key="id"
+          handle=".customizer-drag-handle"
+          ghost-class="opacity-30"
+          :animation="200"
+          class="space-y-2"
+          @end="onReorderEnd"
+        >
+          <template #item="{ element }">
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
+              <!-- Drag handle -->
+              <button
+                class="customizer-drag-handle flex-shrink-0 text-text-tertiary hover:text-text-primary cursor-grab active:cursor-grabbing transition-colors"
+                title="Drag to reorder"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="9" cy="5" r="1.5" /><circle cx="15" cy="5" r="1.5" />
+                  <circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" />
+                  <circle cx="9" cy="19" r="1.5" /><circle cx="15" cy="19" r="1.5" />
+                </svg>
+              </button>
+
+              <!-- Widget name -->
+              <span class="flex-1 font-medium text-text-primary capitalize">{{ getWidgetName(element.id) }}</span>
+
+              <!-- Toggle -->
+              <button 
+                @click="handleToggle(element.id, !element.enabled)"
+                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary/50 flex-shrink-0"
+                :class="element.enabled ? 'bg-accent-primary' : 'bg-zinc-600'"
+              >
+                <span 
+                  class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                  :class="element.enabled ? 'translate-x-6' : 'translate-x-1'"
+                />
+              </button>
+            </div>
+          </template>
+        </draggable>
       </div>
 
       <div class="mt-8 flex justify-end">
@@ -47,13 +72,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import draggable from 'vuedraggable';
 import { useUserPreferences } from '~/composables/useUserPreferences';
 import { ALL_MODULES } from '../../config/modules';
+import type { DashboardWidget } from '~/models/UserPreference';
 
 defineEmits(['close']);
 
-const { preferences, isLoading, loadPreferences, toggleWidget } = useUserPreferences();
+const { preferences, isLoading, loadPreferences, toggleWidget, reorderWidgets } = useUserPreferences();
+
+/**
+ * Local copy of widgets for v-model binding with draggable.
+ * Includes all widgets (enabled and disabled) so the user can reorder everything.
+ */
+const localWidgets = ref<DashboardWidget[]>([]);
 
 // Ensure preferences are loaded
 onMounted(() => {
@@ -62,27 +95,25 @@ onMounted(() => {
     }
 });
 
-const availableWidgets = computed(() => {
+const allWidgets = computed(() => {
     if (!preferences.value) return [];
     
-    // Create a map of existing widgets for O(1) lookup
-    const existingWidgetsMap = new Map(preferences.value.dashboardLayout.map(w => [w.id, w]));
-    
     // Merge existing layout with any new modules from ALL_MODULES
-    const mergedWidgets = ALL_MODULES.map(module => {
-        const existing = existingWidgetsMap.get(module.id);
+    const existingMap = new Map(preferences.value.dashboardLayout.map(w => [w.id, w]));
+    
+    const merged = ALL_MODULES.map(module => {
+        const existing = existingMap.get(module.id);
         if (existing) return existing;
-        
-        // New module not in preferences yet
-        return {
-            id: module.id,
-            enabled: false,
-            order: 999 // Put at end
-        };
+        return { id: module.id, enabled: false, order: 999 };
     });
 
-    return mergedWidgets.sort((a, b) => a.order - b.order);
+    return merged.sort((a, b) => a.order - b.order);
 });
+
+// Keep localWidgets in sync with preferences
+watch(allWidgets, (widgets) => {
+    localWidgets.value = [...widgets];
+}, { immediate: true });
 
 const getWidgetName = (id: string) => {
     const module = ALL_MODULES.find(m => m.id === id);
@@ -91,5 +122,13 @@ const getWidgetName = (id: string) => {
 
 const handleToggle = async (id: string, enabled: boolean) => {
     await toggleWidget(id, enabled);
+};
+
+/**
+ * On drag end in the customizer, persist the new order including both
+ * enabled and disabled widgets so the full ordering is saved.
+ */
+const onReorderEnd = async () => {
+    await reorderWidgets(localWidgets.value);
 };
 </script>

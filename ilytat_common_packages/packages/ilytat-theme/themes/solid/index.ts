@@ -318,7 +318,7 @@ export const solidThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-crimson-solid',
-        name: 'Crimson',
+        name: 'Royal Crimson',
         category: 'solid',
         isDark: true,
         colors: {
@@ -339,7 +339,7 @@ export const solidThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-azure-solid',
-        name: 'Azure',
+        name: 'Deep Azure',
         category: 'solid',
         isDark: true,
         colors: {
@@ -360,7 +360,7 @@ export const solidThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-slate-solid',
-        name: 'Slate',
+        name: 'Graphite Slate',
         category: 'solid',
         isDark: true,
         colors: {
@@ -381,7 +381,7 @@ export const solidThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-khaki-solid',
-        name: 'Khaki',
+        name: 'Desert Khaki',
         category: 'solid',
         isDark: false,
         colors: {
@@ -402,7 +402,7 @@ export const solidThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-olive-solid',
-        name: 'Olive',
+        name: 'Safari Olive',
         category: 'solid',
         isDark: true,
         colors: {
@@ -423,7 +423,7 @@ export const solidThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-mauve-solid',
-        name: 'Mauve',
+        name: 'Twilight Mauve',
         category: 'solid',
         isDark: true,
         colors: {
@@ -444,7 +444,7 @@ export const solidThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-taupe-solid',
-        name: 'Taupe',
+        name: 'Sandstone Taupe',
         category: 'solid',
         isDark: true,
         colors: {
@@ -465,7 +465,7 @@ export const solidThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-cyan-solid',
-        name: 'Cyan',
+        name: 'Arctic Cyan',
         category: 'solid',
         isDark: true,
         colors: {
@@ -486,7 +486,7 @@ export const solidThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-lime-solid',
-        name: 'Lime',
+        name: 'Electric Lime',
         category: 'solid',
         isDark: true,
         colors: {
@@ -507,7 +507,7 @@ export const solidThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-denim-solid',
-        name: 'Denim',
+        name: 'Raw Denim',
         category: 'solid',
         isDark: true,
         colors: {

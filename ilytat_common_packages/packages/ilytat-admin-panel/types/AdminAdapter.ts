@@ -45,6 +45,7 @@ export interface AdminAdapter {
     inviteUser(email: string, role: string): Promise<void>
     updateUserStatus(uid: string, disabled: boolean): Promise<void>
     resetUserPassword(uid: string): Promise<string | void> // Returns link if generated, or void if email sent
+    forceUserReset(uid: string): Promise<void>
     assignUserToTenant(uid: string, tenantId: string): Promise<void>
     sendMessage(uid: string, message: string): Promise<void>
     updateUser(uid: string, data: Partial<AdminUser>): Promise<void>

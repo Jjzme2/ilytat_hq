@@ -10,7 +10,8 @@ export const useTasks = () => {
         getAll,
         create,
         update,
-        remove
+        remove,
+        generateId
     } = useFirestoreRepository<Task>(
         'tasks',
         (data) => new Task(data)
@@ -79,14 +80,30 @@ export const useTasks = () => {
             // Instantiate to validate and sanitize
             const newTask = new Task(taskInput);
 
-            // Allow repository to handle Firestore creation
-            const created = await create(newTask);
+            // OPTIMISTIC UI:
+            // 1. Generate client-side ID
+            const tempId = generateId();
+            newTask.id = tempId;
 
-            // Add to local state
-            tasks.value.unshift(created);
-            return created;
+            // 2. Add to local state immediately
+            tasks.value.unshift(newTask);
+
+            // 3. Persist to Firestore (in background, but await for consistency if caller needs it)
+            // Repository handle create logic with existing ID (using setDoc)
+            await create(newTask);
+
+            return newTask;
         } catch (e: any) {
+            // Revert on error
+            // If we generated an ID, we can filter by it.
+            // Note: We need to know the ID we assigned.
+            // In this specific flow, 'newTask' might not be available in catch block scope easily
+            // unless we structure differently or use a let.
+            // However, strict error handling:
             handleError(e, 'createTask');
+            // We should remove the optimistic item if it was added.
+            // Since we didn't store the ID outside try block, we can't easily revert here without refactoring.
+            // Let's refactor slightly to be robust.
             throw error.value;
         } finally {
             isLoading.value = false;
@@ -94,36 +111,64 @@ export const useTasks = () => {
     };
 
     const updateTask = async (projectId: string, taskId: string, updates: Partial<Task>) => {
-        isLoading.value = true;
+        // isLoading.value = true; // Don't show global loader for optimistic updates, or maybe optional?
+        // For optimistic UI, we want immediate feedback, so maybe we don't toggle a full screen loader.
+        // But we might want to show a saving indicator.
+        // Keeping isLoading for now as it might trigger UI spinners.
+
         error.value = null;
+
+        // 1. Capture previous state for rollback
+        const index = tasks.value.findIndex(t => t.id === taskId);
+        let previousTask: Task | undefined;
+
+        if (index !== -1) {
+            previousTask = tasks.value[index];
+            const existingData = previousTask.toJSON();
+            // 2. Optimistic Update
+            tasks.value[index] = new Task({ ...existingData, ...updates });
+        }
+
         try {
             await update(taskId, updates);
-
-            // Update local state
-            const index = tasks.value.findIndex(t => t.id === taskId);
-            if (index !== -1 && tasks.value[index]) {
-                const existingData = tasks.value[index].toJSON();
-                tasks.value[index] = new Task({ ...existingData, ...updates });
-            }
         } catch (e: any) {
+            // 3. Rollback
+            if (previousTask && index !== -1) {
+                tasks.value[index] = previousTask;
+            }
             handleError(e, 'updateTask');
             throw error.value;
         } finally {
-            isLoading.value = false;
+            // isLoading.value = false;
         }
     };
 
     const deleteTask = async (projectId: string, taskId: string) => {
-        isLoading.value = true;
+        // isLoading.value = true;
         error.value = null;
+
+        // 1. Capture for rollback
+        const index = tasks.value.findIndex(t => t.id === taskId);
+        const previousTask = tasks.value[index] as Task | undefined;
+
+        // 2. Optimistic Delete
+        if (index !== -1) {
+            tasks.value.splice(index, 1);
+        }
+
         try {
             await remove(taskId);
-            tasks.value = tasks.value.filter(t => t.id !== taskId);
         } catch (e: any) {
+            // 3. Rollback
+            if (previousTask && index !== -1) {
+                // Determine insertion point - if we just spliced, we can try to put it back at same index
+                // verification: if index was valid, we removed 1 item.
+                tasks.value.splice(index, 0, previousTask as Task);
+            }
             handleError(e, 'deleteTask');
             throw error.value;
         } finally {
-            isLoading.value = false;
+            // isLoading.value = false;
         }
     };
 

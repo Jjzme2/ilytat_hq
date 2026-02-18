@@ -318,7 +318,7 @@ export const natureThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-moss-nature',
-        name: 'Moss',
+        name: 'Verdant Moss',
         category: 'nature',
         isDark: false,
         colors: {
@@ -339,7 +339,7 @@ export const natureThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-fern-nature',
-        name: 'Fern',
+        name: 'Silver Fern',
         category: 'nature',
         isDark: false,
         colors: {
@@ -360,7 +360,7 @@ export const natureThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-bark-nature',
-        name: 'Bark',
+        name: 'Ancient Bark',
         category: 'nature',
         isDark: true,
         colors: {
@@ -381,7 +381,7 @@ export const natureThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-leaf-nature',
-        name: 'Leaf',
+        name: 'Autumn Leaf',
         category: 'nature',
         isDark: true,
         colors: {
@@ -402,7 +402,7 @@ export const natureThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-petal-nature',
-        name: 'Petal',
+        name: 'Midnight Petal',
         category: 'nature',
         isDark: true,
         colors: {
@@ -423,7 +423,7 @@ export const natureThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-root-nature',
-        name: 'Root',
+        name: 'Earthy Root',
         category: 'nature',
         isDark: false,
         colors: {
@@ -444,7 +444,7 @@ export const natureThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-soil-nature',
-        name: 'Soil',
+        name: 'Deep Soil',
         category: 'nature',
         isDark: false,
         colors: {
@@ -465,7 +465,7 @@ export const natureThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-river-nature',
-        name: 'River',
+        name: 'Glacial River',
         category: 'nature',
         isDark: true,
         colors: {
@@ -486,7 +486,7 @@ export const natureThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-lake-nature',
-        name: 'Lake',
+        name: 'Alpine Lake',
         category: 'nature',
         isDark: true,
         colors: {
@@ -507,7 +507,7 @@ export const natureThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-peak-nature',
-        name: 'Peak',
+        name: 'Obsidian Peak',
         category: 'nature',
         isDark: true,
         colors: {

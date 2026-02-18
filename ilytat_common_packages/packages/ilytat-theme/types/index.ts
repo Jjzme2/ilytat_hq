@@ -25,10 +25,26 @@ export interface ThemeColors {
     '--glass-bg': string
     '--glass-border': string
     '--glass-shadow': string
+    '--border-radius': string
+    '--glass-blur': string
+    '--glass-opacity': string
 }
 
 export type ThemeTexture = 'noise' | 'dots' | 'lines' | 'none'
 export type ThemeDensity = 'low' | 'medium' | 'high'
+
+export interface ThemeOptions {
+    category?: ThemeCategory
+    forceDark?: boolean
+    texture?: ThemeTexture
+    density?: ThemeDensity
+    baseHue?: number
+    saturationScale?: number // 0 to 2
+    brightnessScale?: number // 0 to 2
+    borderRadius?: number // 0 to 32px
+    glassBlur?: number // 0 to 40px
+    glassOpacity?: number // 0 to 1
+}
 
 export interface IlytatTheme {
     id: string
@@ -38,6 +54,7 @@ export interface IlytatTheme {
     colors: ThemeColors
     texture?: ThemeTexture
     density?: ThemeDensity
+    options?: Partial<ThemeOptions> // Store the options used to generate it
     meta?: {
         description?: string
         tags?: string[]

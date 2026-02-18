@@ -10,7 +10,8 @@ import {
     query,
     type DocumentData,
     type QueryConstraint,
-    type QueryCompositeFilterConstraint
+    type QueryCompositeFilterConstraint,
+    setDoc
 } from 'firebase/firestore';
 import { useFirestore } from 'vuefire';
 import { Logger } from '~/utils/Logger';
@@ -108,6 +109,14 @@ export const useFirestoreRepository = <T extends { id: string, toJSON: () => any
             try {
                 Logger.info(`[Firestore] create: ${path}`);
                 const json = item.toJSON();
+
+                // If ID exists, it's an optimistic creation or specific ID requirement
+                if (item.id) {
+                    const docRef = doc(db, path, item.id);
+                    await setDoc(docRef, json);
+                    return item;
+                }
+
                 delete json.id; // Let Firestore generate ID
 
                 const docRef = await addDoc(collection(db, path), json);
@@ -117,6 +126,11 @@ export const useFirestoreRepository = <T extends { id: string, toJSON: () => any
                 throw e;
             }
         });
+    };
+
+    const generateId = (): string => {
+        const path = getCollectionName();
+        return doc(collection(db, path)).id;
     };
 
     const update = async (id: string, item: Partial<T>): Promise<void> => {
@@ -162,6 +176,7 @@ export const useFirestoreRepository = <T extends { id: string, toJSON: () => any
         create,
         update,
         remove,
-        getDocRef
+        getDocRef,
+        generateId
     };
 };

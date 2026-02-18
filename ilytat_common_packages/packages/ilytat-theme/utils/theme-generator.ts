@@ -13,6 +13,18 @@ export class ThemeGenerator {
     private seed: number
     private seedState: number
 
+    private readonly ADJECTIVES = [
+        'Midnight', 'Velvet', 'Golden', 'Deep', 'Frozen', 'Radiant', 'Silent', 'Vibrant',
+        'Ancient', 'Neon', 'Cosmic', 'Solar', 'Arctic', 'Oceanic', 'Emerald', 'Ruby',
+        'Amber', 'Obsidian', 'Marble', 'Slate', 'Mystic', 'Phantom', 'Ethereal', 'Savage'
+    ]
+
+    private readonly NOUNS = [
+        'Whisper', 'Ember', 'Mist', 'Void', 'Serenity', 'Pulse', 'Dream', 'Horizon',
+        'Abyss', 'Gateway', 'Peak', 'Fragment', 'Crystal', 'Glow', 'Shadow', 'Light',
+        'Vortex', 'Stardust', 'Echo', 'Tide', 'Garden', 'Tower', 'Aura', 'Edge'
+    ]
+
     constructor(seed: number | string) {
         if (typeof seed === 'string') {
             this.seed = this.hashString(seed)
@@ -77,12 +89,7 @@ export class ThemeGenerator {
     /**
      * Generate a theme based on the seed
      */
-    public generate(options?: {
-        category?: ThemeCategory,
-        forceDark?: boolean,
-        texture?: import('../types').ThemeTexture,
-        density?: import('../types').ThemeDensity
-    }): IlytatTheme {
+    public generate(options?: import('../types').ThemeOptions): IlytatTheme {
         this.reset()
 
         const categories: ThemeCategory[] = ['cyberpunk', 'nature', 'luxury', 'glass', 'minimal', 'solid', 'gradient', 'abstract', 'harmony', 'mosaic', 'neon', 'vintage']
@@ -95,28 +102,43 @@ export class ThemeGenerator {
             isDark = this.determineDarkMode(finalCategory)
         }
 
-        const baseColor = this.generateBaseColor(finalCategory)
-        const palette = this.generatePalette(baseColor, isDark, finalCategory)
+        const baseColor = this.generateBaseColor(finalCategory, options?.baseHue)
+        const palette = this.generatePalette(baseColor, isDark, finalCategory, options)
 
         const texture = options?.texture ?? this.determineTexture(finalCategory)
         const density = options?.density ?? this.determineDensity(finalCategory)
 
-        const appBg = this.generateAppBg(palette, finalCategory, isDark, texture, density)
+        const appBg = this.generateAppBg(palette as any, finalCategory, isDark, texture, density)
 
         const capitalizedCategory = finalCategory.charAt(0).toUpperCase() + finalCategory.slice(1)
 
         return {
-            id: `gen-${this.seed}-${finalCategory}`,
-            name: `${capitalizedCategory} ${this.seed}`,
+            id: `gen-${this.finalSeed}-${finalCategory}`,
+            name: this.generateName(finalCategory),
             category: finalCategory,
             isDark,
             texture,
             density,
             colors: {
                 ...palette,
-                '--app-bg': appBg
-            }
+                '--app-bg': appBg,
+                '--border-radius': `${options?.borderRadius ?? 8}px`,
+                '--glass-blur': `${options?.glassBlur ?? 16}px`,
+                '--glass-opacity': `${options?.glassOpacity ?? (isDark ? 0.6 : 0.7)}`,
+            },
+            options
         }
+    }
+
+    private get finalSeed(): number {
+        return typeof this.seed === 'string' ? this.hashString(this.seed) : this.seed
+    }
+
+    private generateName(category: ThemeCategory): string {
+        this.reset() // Ensure deterministic name
+        const adj = this.ADJECTIVES[this.randomRange(0, this.ADJECTIVES.length - 1)]
+        const noun = this.NOUNS[this.randomRange(0, this.NOUNS.length - 1)]
+        return `${adj} ${noun}`
     }
 
     private determineDarkMode(category: ThemeCategory): boolean {
@@ -130,8 +152,8 @@ export class ThemeGenerator {
         return this.randomRange(0, 100) > 50
     }
 
-    private generateBaseColor(category: ThemeCategory): string {
-        const hue = this.randomRange(0, 360)
+    private generateBaseColor(category: ThemeCategory, hueOverride?: number): string {
+        const hue = hueOverride ?? this.randomRange(0, 360)
 
         switch (category) {
             case 'cyberpunk':
@@ -181,8 +203,18 @@ export class ThemeGenerator {
         }
     }
 
-    private generatePalette(base: string, isDark: boolean, category: ThemeCategory): Omit<ThemeColors, '--app-bg'> {
-        const c = colord(base)
+    private generatePalette(base: string, isDark: boolean, category: ThemeCategory, options?: import('../types').ThemeOptions): Omit<ThemeColors, '--app-bg' | '--border-radius' | '--glass-blur' | '--glass-opacity'> {
+        let c = colord(base)
+
+        // Apply advanced adjustments
+        if (options?.saturationScale !== undefined) {
+            c = c.saturate(options.saturationScale - 1)
+        }
+        if (options?.brightnessScale !== undefined) {
+            // Brightness scaling: 0.5 to 1.5
+            const hsl = c.toHsl()
+            c = colord({ ...hsl, l: Math.min(100, Math.max(0, hsl.l * options.brightnessScale)) })
+        }
 
         let bgPrimary, bgSecondary, bgTertiary, textPrimary, textSecondary, textTertiary
         let accentPrimary, accentSecondary, borderColor, glassBg, glassBorder, glassShadow
@@ -233,9 +265,9 @@ export class ThemeGenerator {
                 bgTertiary = colord(bgPrimary).lighten(0.1).toHex()
             }
 
-            textPrimary = '#ffffff'
-            textSecondary = 'rgba(255, 255, 255, 0.7)'
-            textTertiary = 'rgba(255, 255, 255, 0.45)'
+            textPrimary = isDark ? '#ffffff' : '#000000'
+            textSecondary = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
+            textTertiary = isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.45)'
 
             glassBg = colord(bgPrimary).alpha(0.6).toHex()
             glassBorder = 'rgba(255, 255, 255, 0.08)'
@@ -269,7 +301,7 @@ export class ThemeGenerator {
             glassBg = 'rgba(255, 255, 255, 0.7)'
             glassBorder = 'rgba(255, 255, 255, 0.5)'
             glassShadow = '0 8px 32px 0 rgba(0, 0, 0, 0.05)'
-            borderColor = 'rgba(0, 0, 0, 0.06)'
+            borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
         }
 
         return {

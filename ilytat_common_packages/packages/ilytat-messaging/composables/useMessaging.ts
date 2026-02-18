@@ -28,6 +28,7 @@ export const useMessaging = () => {
     const activeMessages = ref<Message[]>([])
     const typingTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
     const messageListeners: (() => void)[] = []
+    const conversationsLimit = ref(20)
 
     // --- CONVERSATIONS ---
     const conversations = useCollection<Conversation>(
@@ -36,11 +37,16 @@ export const useMessaging = () => {
             return query(
                 collection(db, 'conversations'),
                 where('participants', 'array-contains', user.value.uid),
-                orderBy('updatedAt', 'desc')
+                orderBy('updatedAt', 'desc'),
+                limit(conversationsLimit.value)
             )
         }),
         { ssrKey: 'messaging-conversations' }
     )
+
+    function loadMoreConversations() {
+        conversationsLimit.value += 20
+    }
 
     const totalUnread = computed(() => {
         if (!user.value) return 0
@@ -273,7 +279,7 @@ export const useMessaging = () => {
 
         const convData: Omit<Conversation, 'id'> = {
             type,
-            name: options?.name || (type === 'direct' ? undefined : 'New Group'),
+            name: options?.name || (type === 'direct' ? null : 'New Group'),
             participants: allParticipants,
             participantNames: {
                 ...participantNames,
@@ -281,8 +287,8 @@ export const useMessaging = () => {
             },
             unreadCounts: Object.fromEntries(allParticipants.map(uid => [uid, 0])),
             typingUsers: [],
-            projectId: options?.projectId,
-            tenantId: options?.tenantId,
+            projectId: options?.projectId || null,
+            tenantId: options?.tenantId || null,
             createdAt: new Date(),
             updatedAt: new Date()
         }
@@ -345,6 +351,7 @@ export const useMessaging = () => {
         // Conversations
         createConversation,
         muteConversation,
-        pinConversation
+        pinConversation,
+        loadMoreConversations
     }
 }

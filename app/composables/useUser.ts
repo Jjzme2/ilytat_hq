@@ -63,7 +63,9 @@ export const useUser = () => {
                             photoURL: userData.photoURL || fUser.photoURL,
                             roles: userData.roles || ['user'],
                             tenantId: userData.tenantId || null,
-                            bio: userData.bio || ''
+                            bio: userData.bio || '',
+                            username: userData.username || null,
+                            employeeId: userData.employeeId || null
                         });
                         Logger.info(`[useUser] User profile loaded for ${fUser.email}`);
                     } catch (e) {
@@ -111,7 +113,9 @@ export const useUser = () => {
                     photoURL: userData.photoURL || result.user.photoURL,
                     roles: userData.roles || ['user'],
                     tenantId: userData.tenantId || null,
-                    bio: userData.bio || ''
+                    bio: userData.bio || '',
+                    username: userData.username || null,
+                    employeeId: userData.employeeId || null
                 });
             }
         } catch (e) {

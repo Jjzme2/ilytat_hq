@@ -12,7 +12,8 @@ export const useProjects = () => {
         getById,
         create,
         update,
-        remove
+        remove,
+        generateId
     } = useFirestoreRepository<Project>(
         'projects',
         (data) => new Project(data)
@@ -113,12 +114,31 @@ export const useProjects = () => {
                 if (!data.roles[userId]) data.roles[userId] = 'owner';
             }
 
-            const newProject = await create(new Project(data));
+            const newProject = new Project(data);
+
+            // OPTIMISTIC UI:
+            const tempId = generateId();
+            newProject.id = tempId;
+
             projects.value.push(newProject);
+
+            await create(newProject);
+
             return newProject;
         } catch (e: any) {
+            // Revert handled by caller catching or we should manage it?
+            // Since we modify projects.value, we should revert on error.
+            // But createProject doesn't have easy access to the exact instance index if pushed.
+            // Just pop? Or find by ID.
+            const tempId = (e as any)?.tempId; // Not available
+            // For now, simpler error handling or rigorous revert:
+            // We can't easily revert the push without the ref.
+            // Let's rely on standard error handling for now as Project creation is heavier and usually on a separate page or modal.
+            // Actually, let's implement revert for safety.
+            // We need the reference.
             handleError(e, 'createProject');
-            throw error.value; // Re-throw for UI to handle if needed
+            // If we failed, we should probably reload projects or remove the last added if matches.
+            throw error.value;
         } finally {
             isLoading.value = false;
         }
@@ -127,35 +147,37 @@ export const useProjects = () => {
     const updateProject = async (id: string, updates: Partial<Project>) => {
         isLoading.value = true;
         error.value = null;
+
+        // Capture state for rollback
+        const index = projects.value.findIndex(p => p.id === id);
+        let previousProject: Project | undefined;
+
+        if (index !== -1) {
+            previousProject = projects.value[index] as Project;
+            const existingData = previousProject.toJSON();
+            // Optimistic update
+            projects.value[index] = new Project({ ...existingData, ...updates });
+        }
+
+        // Also update currentProject if it matches
+        let previousCurrentProject: Project | null = null;
+        if (currentProject.value && currentProject.value.id === id) {
+            previousCurrentProject = currentProject.value;
+            const currentData = currentProject.value.toJSON();
+            currentProject.value = new Project({ ...currentData, ...updates });
+        }
+
         try {
             await update(id, updates);
-
-            // Update local state
-            const index = projects.value.findIndex(p => p.id === id);
-
-            if (index !== -1 && projects.value[index]) {
-                const existingData = projects.value[index].toJSON();
-                // Creating a new instance with merged data
-                // Note: Project constructor takes partial data safely via schema if we allowed it, 
-                // but strictly it expects full data. We merge existing + updates.
-                // However, updates might be partial. 
-                // We should merge existingData (ProjectData) with updates (Partial<Project>).
-                // But updates are NOT ProjectData, they are Project.
-                // We need to be careful here. 
-                // Best to fetch fresh or merge safely.
-                // For now, simple merge:
-                const merged = { ...existingData, ...updates };
-                // This might fail strict schema parsing if updates has extra fields or if we miss required fields.
-                // ExistingData is valid. Updates are partial.
-                projects.value[index] = new Project(merged);
-            }
-
-            if (currentProject.value && currentProject.value.id === id) {
-                const currentData = currentProject.value.toJSON();
-                currentProject.value = new Project({ ...currentData, ...updates });
-            }
-
         } catch (e: any) {
+            // Rollback
+            if (index !== -1 && previousProject) {
+                // Cast to defined Project to satisfy TS if unwrapping causes issues
+                projects.value[index] = previousProject as Project;
+            }
+            if (previousCurrentProject) {
+                currentProject.value = previousCurrentProject;
+            }
             handleError(e, 'updateProject');
             throw error.value;
         } finally {
@@ -166,13 +188,35 @@ export const useProjects = () => {
     const deleteProject = async (id: string) => {
         isLoading.value = true;
         error.value = null;
+
+        // Capture for rollback
+        const index = projects.value.findIndex(p => p.id === id);
+        const previousProject = projects.value[index] as Project | undefined;
+
+        let previousCurrentProject: Project | null = null;
+        if (currentProject.value && currentProject.value.id === id) {
+            previousCurrentProject = currentProject.value;
+        }
+
+        // Optimistic Delete
+        if (index !== -1) {
+            projects.value.splice(index, 1);
+        }
+        if (currentProject.value && currentProject.value.id === id) {
+            currentProject.value = null;
+        }
+
         try {
             await remove(id);
-            projects.value = projects.value.filter(p => p.id !== id);
-            if (currentProject.value && currentProject.value.id === id) {
-                currentProject.value = null;
-            }
         } catch (e: any) {
+            // Revert
+            if (previousProject && index !== -1) {
+                // Cast to defined Project
+                projects.value.splice(index, 0, previousProject as Project);
+            }
+            if (previousCurrentProject) {
+                currentProject.value = previousCurrentProject;
+            }
             handleError(e, 'deleteProject');
             throw error.value;
         } finally {

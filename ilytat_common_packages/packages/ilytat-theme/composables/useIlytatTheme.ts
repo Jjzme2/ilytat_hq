@@ -66,6 +66,9 @@ export const useIlytatTheme = () => {
 
                     if (fsThemes.length > 0) {
                         customThemes.value = fsThemes
+                    } else {
+                        // Explicitly clear if the collection is empty
+                        customThemes.value = []
                     }
                 }, (error) => {
                     // Handle permission denied gracefully
@@ -100,6 +103,10 @@ export const useIlytatTheme = () => {
                 }, (error) => {
                     console.error("User theme sync error:", error.message)
                 })
+            } else {
+                // No user logged in: Clear custom themes from local storage to prevent privacy leak
+                console.log('UseIlytatTheme: No user session, clearing custom themes')
+                customThemes.value = []
             }
         }, { immediate: true })
     }

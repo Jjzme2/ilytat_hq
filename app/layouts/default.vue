@@ -4,6 +4,7 @@
       <CommandPalette />
       <ToastContainer />
       <QuickLaunchManager />
+      <ContextMenu />
     </ClientOnly>
 
     <!-- Top Bar: Logo, Search, Profile -->
@@ -11,8 +12,7 @@
       <!-- Left: Logo -->
       <NuxtLink to="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
         <img v-if="tenant?.logo" :src="tenant.logo" alt="Company Logo" class="h-7 md:h-8 w-auto object-contain" />
-        <span
-          v-else
+        <span v-else
           class="text-lg md:text-xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
           HQ.ILYTAT
         </span>
@@ -44,62 +44,66 @@
       <div class="flex items-center gap-2 md:gap-3 shrink-0">
         <!-- Theme Controls — Full on desktop -->
         <div class="hidden md:flex items-center bg-secondary/50 rounded-lg p-0.5 border border-border">
-            <button @click="applyTheme('luxury-platinum')" 
-                class="p-1 px-2 rounded-md hover:bg-white/10 text-text-secondary transition-colors" title="Light Theme">
-                <span class="text-xs">☀︎</span>
-            </button>
-            <div class="w-px h-3 bg-border mx-0.5"></div>
-            <button @click="applyTheme('luxury-midnight-silk')" 
-                class="p-1 px-2 rounded-md hover:bg-white/10 text-text-secondary transition-colors" title="Dark Theme">
-                <span class="text-xs">☾</span>
-            </button>
-            <div class="w-px h-3 bg-border mx-0.5"></div>
-            <button @click="applyFavorite" 
-                class="p-1 px-2 rounded-md hover:bg-white/10 text-rose-400 transition-colors" title="Favorite Theme">
-                <span class="text-xs">❤︎</span>
-            </button>
+          <button @click="applyTheme('luxury-platinum')"
+            class="p-1 px-2 rounded-md hover:bg-white/10 text-text-secondary transition-colors" title="Light Theme">
+            <span class="text-xs">☀︎</span>
+          </button>
+          <div class="w-px h-3 bg-border mx-0.5"></div>
+          <button @click="applyTheme('luxury-midnight-silk')"
+            class="p-1 px-2 rounded-md hover:bg-white/10 text-text-secondary transition-colors" title="Dark Theme">
+            <span class="text-xs">☾</span>
+          </button>
+          <div class="w-px h-3 bg-border mx-0.5"></div>
+          <button @click="applyFavorite" class="p-1 px-2 rounded-md hover:bg-white/10 text-rose-400 transition-colors"
+            title="Favorite Theme">
+            <span class="text-xs">❤︎</span>
+          </button>
         </div>
 
         <!-- Theme Controls — Cycle button on mobile -->
-        <button @click="cycleTheme" class="md:hidden p-2 rounded-lg hover:bg-secondary text-text-secondary transition-colors" title="Cycle Theme">
+        <button @click="cycleTheme"
+          class="md:hidden p-2 rounded-lg hover:bg-secondary text-text-secondary transition-colors" title="Cycle Theme">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
           </svg>
         </button>
 
-        <button @click="handleLogout" 
-          class="p-1.5 rounded-lg hover:bg-secondary text-text-secondary transition-colors" title="Sign Out">
+        <button @click="handleLogout" class="p-1.5 rounded-lg hover:bg-secondary text-text-secondary transition-colors"
+          title="Sign Out">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
         </button>
 
         <NuxtLink to="/settings" class="flex items-center gap-2 hover:opacity-80 transition-opacity group">
           <div
-            class="w-8 h-8 rounded-full bg-accent-primary flex items-center justify-center text-white text-sm font-bold group-hover:ring-2 ring-accent-secondary transition-all">
-            JJ
+            class="w-8 h-8 rounded-full bg-accent-primary flex items-center justify-center text-white text-xs font-bold group-hover:ring-2 ring-accent-secondary transition-all">
+            {{ userInitials }}
           </div>
         </NuxtLink>
       </div>
     </header>
 
     <!-- Main Content — extra bottom padding on mobile for tab bar -->
-    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-secondary p-3 md:p-6 pb-20 md:pb-6">
-      <slot />
+    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-secondary p-3 md:p-6 pb-20 md:pb-6 relative touch-pan-y">
+      <PullToAction>
+        <slot />
+      </PullToAction>
     </main>
 
     <!-- Mobile Bottom Tab Bar -->
-    <nav class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-primary/95 backdrop-blur-xl border-t border-border safe-area-bottom">
+    <nav
+      class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-primary/95 backdrop-blur-xl border-t border-border safe-area-bottom">
       <div class="flex items-center justify-around h-16">
-        <NuxtLink 
-          v-for="tab in mobileNav" 
-          :key="tab.path" 
-          :to="tab.path"
+        <NuxtLink v-for="tab in mobileNav" :key="tab.path" :to="tab.path"
           class="flex flex-col items-center justify-center gap-0.5 w-full h-full transition-all duration-200 group"
-          :class="isActiveRoute(tab.path) ? 'text-accent-primary' : 'text-text-tertiary'"
-        >
-          <component :is="tab.icon" class="w-5 h-5 transition-transform duration-200" :class="isActiveRoute(tab.path) ? 'scale-110' : 'group-active:scale-90'" />
-          <span class="text-[10px] font-medium" :class="isActiveRoute(tab.path) ? 'text-accent-primary' : 'text-text-tertiary'">{{ tab.label }}</span>
+          :class="isActiveRoute(tab.path) ? 'text-accent-primary' : 'text-text-tertiary'">
+          <component :is="tab.icon" class="w-5 h-5 transition-transform duration-200"
+            :class="isActiveRoute(tab.path) ? 'scale-110' : 'group-active:scale-90'" />
+          <span class="text-[10px] font-medium"
+            :class="isActiveRoute(tab.path) ? 'text-accent-primary' : 'text-text-tertiary'">{{ tab.label }}</span>
           <div v-if="isActiveRoute(tab.path)" class="absolute bottom-1 w-1 h-1 rounded-full bg-accent-primary"></div>
         </NuxtLink>
       </div>
@@ -117,6 +121,24 @@ const { tenant } = useTenant();
 const { open: openCommandPalette } = useCommandPalette();
 const { isModuleEnabled } = useModules();
 const route = useRoute();
+
+// Scroll-Driven Nav Logic
+const mainContent = ref<HTMLElement | null>(null);
+const { directions, y } = useScroll(mainContent);
+const showNav = ref(true);
+
+watch(directions, (newDirecton) => {
+  if (newDirecton.bottom) {
+    showNav.value = false;
+  } else if (newDirecton.top) {
+    showNav.value = true;
+  }
+});
+
+// Always show nav at the top
+watch(y, (newY) => {
+  if (newY < 50) showNav.value = true;
+});
 
 const handleLogout = async () => {
   await userStore.signOut();
@@ -193,5 +215,15 @@ const mobileNav = computed(() => {
     const moduleId = moduleMap[tab.path];
     return !moduleId || isModuleEnabled(moduleId);
   });
+});
+
+const userInitials = computed(() => {
+  const name = userStore.user.value?.displayName || '';
+  if (!name) return 'NU';
+  const parts = name.split(' ').filter(p => p.trim());
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
 });
 </script>

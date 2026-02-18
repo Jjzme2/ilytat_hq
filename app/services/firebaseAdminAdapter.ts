@@ -103,6 +103,15 @@ export class FirebaseAdminAdapter implements AdminAdapter {
         return result.link
     }
 
+    async forceUserReset(uid: string): Promise<void> {
+        const token = await (await useCurrentUser().value?.getIdToken())
+        await $fetch('/api/admin/user-action', {
+            method: 'POST',
+            body: { uid, action: 'force-reset' },
+            headers: { Authorization: `Bearer ${token}` }
+        })
+    }
+
     async assignUserToTenant(uid: string, tenantId: string): Promise<void> {
         const token = await (await useCurrentUser().value?.getIdToken())
         await $fetch('/api/admin/user-action', {

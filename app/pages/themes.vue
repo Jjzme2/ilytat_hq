@@ -48,17 +48,18 @@
           <div class="space-y-2">
             <label class="block text-sm font-medium text-text-secondary">Category Override (Optional)</label>
             <div class="flex flex-wrap gap-2">
-              <button
+                <button
                 v-for="cat in categories"
                 :key="cat"
                 @click="selectedCategory = selectedCategory === cat ? undefined : cat"
                 :class="[
-                  'px-3 py-1 rounded-full text-xs font-medium transition-all',
+                  'px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 border shadow-sm',
                   selectedCategory === cat 
-                    ? 'bg-accent-primary text-bg-primary' 
-                    : 'bg-bg-tertiary text-text-secondary hover:bg-bg-secondary'
+                    ? 'bg-accent-primary text-bg-primary border-accent-primary scale-105 ring-2 ring-accent-primary/20' 
+                    : 'bg-bg-tertiary text-text-secondary border-transparent hover:bg-bg-secondary hover:border-border-color'
                 ]"
               >
+                <span v-if="selectedCategory === cat" class="text-[10px]">✓</span>
                 {{ capitalize(cat) }}
               </button>
             </div>
@@ -69,16 +70,22 @@
              <div class="flex gap-2 bg-bg-tertiary p-1 rounded-lg inline-flex">
                 <button 
                     @click="forceDark = false"
-                    :class="['px-4 py-1 rounded-md text-sm transition-colors', !forceDark ? 'bg-bg-primary shadow-sm text-text-primary' : 'text-text-secondary hover:text-text-primary']"
-                >Light</button>
+                    :class="['px-4 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1', !forceDark ? 'bg-bg-primary shadow-sm text-text-primary ring-1 ring-accent-primary/50' : 'text-text-secondary hover:text-text-primary']"
+                >
+                  <span v-if="!forceDark" class="text-[10px]">☀️</span> Light
+                </button>
                 <button 
                      @click="forceDark = true"
-                    :class="['px-4 py-1 rounded-md text-sm transition-colors', forceDark ? 'bg-bg-primary shadow-sm text-text-primary' : 'text-text-secondary hover:text-text-primary']"
-                >Dark</button>
+                    :class="['px-4 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1', forceDark ? 'bg-bg-primary shadow-sm text-text-primary ring-1 ring-accent-primary/50' : 'text-text-secondary hover:text-text-primary']"
+                >
+                   <span v-if="forceDark" class="text-[10px]">🌙</span> Dark
+                </button>
                 <button 
                      @click="forceDark = undefined"
-                    :class="['px-4 py-1 rounded-md text-sm transition-colors', forceDark === undefined ? 'bg-bg-primary shadow-sm text-text-primary' : 'text-text-secondary hover:text-text-primary']"
-                >Auto</button>
+                    :class="['px-4 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1', forceDark === undefined ? 'bg-bg-primary shadow-sm text-text-primary ring-1 ring-accent-primary/50' : 'text-text-secondary hover:text-text-primary']"
+                >
+                  <span v-if="forceDark === undefined" class="text-[10px]">🌓</span> Auto
+                </button>
             </div>
           </div>
 
@@ -87,35 +94,114 @@
             <label class="block text-sm font-medium text-text-secondary">Texture & Density</label>
             <div class="flex flex-col gap-2">
                  <div class="flex flex-wrap gap-2">
-                    <button
+                        <button
                         v-for="tex in textures"
                         :key="tex"
                         @click="selectedTexture = selectedTexture === tex ? undefined : tex"
                         :class="[
-                        'px-3 py-1 rounded-full text-xs font-medium transition-all capitalize',
+                        'px-3 py-1.5 rounded-full text-xs font-bold transition-all capitalize flex items-center gap-1.5 border shadow-sm',
                         selectedTexture === tex 
-                            ? 'bg-accent-primary text-bg-primary' 
-                            : 'bg-bg-tertiary text-text-secondary hover:bg-bg-secondary'
+                            ? 'bg-accent-primary text-bg-primary border-accent-primary scale-105 ring-2 ring-accent-primary/20' 
+                            : 'bg-bg-tertiary text-text-secondary border-transparent hover:bg-bg-secondary hover:border-border-color'
                         ]"
                     >
+                        <span v-if="selectedTexture === tex" class="text-[10px]">✓</span>
                         {{ tex }}
                     </button>
                  </div>
                  <div class="flex flex-wrap gap-2">
-                    <button
+                        <button
                         v-for="den in densities"
                         :key="den"
                         @click="selectedDensity = selectedDensity === den ? undefined : den"
                          :class="[
-                        'px-3 py-1 rounded-full text-xs font-medium transition-all capitalize',
+                        'px-3 py-1.5 rounded-full text-xs font-bold transition-all capitalize flex items-center gap-1.5 border shadow-sm',
                         selectedDensity === den 
-                            ? 'bg-accent-secondary text-bg-primary' 
-                            : 'bg-bg-tertiary text-text-secondary hover:bg-bg-secondary'
+                            ? 'bg-accent-secondary text-bg-primary border-accent-secondary scale-105 ring-2 ring-accent-secondary/20' 
+                            : 'bg-bg-tertiary text-text-secondary border-transparent hover:bg-bg-secondary hover:border-border-color'
                         ]"
                     >
+                        <span v-if="selectedDensity === den" class="text-[10px]">✓</span>
                         {{ den }}
                     </button>
                  </div>
+            </div>
+          </div>
+          <!-- Advanced Options (Collapsible) -->
+          <div class="space-y-4 pt-4 border-t border-border-color">
+            <button 
+                @click="showAdvanced = !showAdvanced"
+                class="flex items-center justify-between w-full text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors"
+            >
+                <span>Advanced Controls</span>
+                <span :class="['transition-transform duration-300', showAdvanced ? 'rotate-180' : '']">▼</span>
+            </button>
+
+            <div v-if="showAdvanced" class="space-y-6 pt-2">
+                <!-- Color Controls -->
+                <div class="space-y-4">
+                    <p class="text-xs font-bold text-text-tertiary uppercase tracking-wider">Color Dynamics</p>
+                    
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[10px] font-bold">
+                            <label>Base Hue</label>
+                            <span>{{ advanced.baseHue }}°</span>
+                        </div>
+                        <input v-model.number="advanced.baseHue" type="range" min="0" max="360" class="w-full accent-accent-primary" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] font-bold">
+                                <label>Saturation</label>
+                                <span>{{ advanced.saturationScale }}x</span>
+                            </div>
+                            <input v-model.number="advanced.saturationScale" type="range" min="0" max="2" step="0.1" class="w-full accent-accent-primary" />
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] font-bold">
+                                <label>Brightness</label>
+                                <span>{{ advanced.brightnessScale }}x</span>
+                            </div>
+                            <input v-model.number="advanced.brightnessScale" type="range" min="0.5" max="1.5" step="0.1" class="w-full accent-accent-primary" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shape & Effects -->
+                <div class="space-y-4">
+                    <p class="text-xs font-bold text-text-tertiary uppercase tracking-wider">Aesthetics</p>
+                    
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[10px] font-bold">
+                            <label>Border Radius</label>
+                            <span>{{ advanced.borderRadius }}px</span>
+                        </div>
+                        <input v-model.number="advanced.borderRadius" type="range" min="0" max="32" class="w-full accent-accent-secondary" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] font-bold">
+                                <label>Glass Blur</label>
+                                <span>{{ advanced.glassBlur }}px</span>
+                            </div>
+                            <input v-model.number="advanced.glassBlur" type="range" min="0" max="40" class="w-full accent-accent-secondary" />
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] font-bold">
+                                <label>Opacity</label>
+                                <span>{{ Math.round(advanced.glassOpacity * 100) }}%</span>
+                            </div>
+                            <input v-model.number="advanced.glassOpacity" type="range" min="0" max="1" step="0.05" class="w-full accent-accent-secondary" />
+                        </div>
+                    </div>
+                </div>
+
+                <button 
+                    @click="resetAdvanced"
+                    class="text-[10px] text-rose-400 hover:text-rose-500 font-bold uppercase tracking-widest"
+                >Reset Advanced</button>
             </div>
           </div>
 
@@ -140,11 +226,24 @@
 
                 <!-- Theme Preview Card -->
                 <div 
-                    class="h-64 rounded-2xl border relative overflow-hidden transition-all duration-500"
-                    :style="previewStyles"
+                    class="h-64 relative overflow-hidden transition-all duration-500 shadow-lg border"
+                    :style="{ 
+                        ...previewStyles, 
+                        borderRadius: generatedTheme.colors['--border-radius'] 
+                    }"
                 >
                     <!-- Mock UI inside preview -->
-                    <div class="absolute inset-4 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-[var(--glass-shadow)] p-4 flex flex-col gap-4">
+                    <div 
+                        class="absolute inset-4 p-4 flex flex-col gap-4 border transition-all duration-500"
+                        :style="{
+                            backgroundColor: generatedTheme.colors['--glass-bg'],
+                            borderColor: generatedTheme.colors['--glass-border'],
+                            boxShadow: generatedTheme.colors['--glass-shadow'],
+                            borderRadius: `calc(${generatedTheme.colors['--border-radius']} * 0.8)`,
+                            backdropFilter: `blur(${generatedTheme.colors['--glass-blur']})`,
+                            opacity: 1
+                        }"
+                    >
                          <!-- Name Editor Overlay -->
                          <div class="absolute top-2 right-2 flex gap-1 z-10">
                             <input 
@@ -206,12 +305,32 @@
     <section class="space-y-6">
       <div class="flex justify-between items-end">
         <h2 class="text-2xl font-bold">Your Library</h2>
-        <div class="flex gap-2">
-             <input v-model="search" type="text" placeholder="Search themes..." class="bg-glass-bg border border-glass-border rounded-lg px-3 py-1 text-sm outline-none focus:border-accent-primary" />
-             <select v-model="filterCategory" class="bg-glass-bg border border-glass-border rounded-lg px-3 py-1 text-sm outline-none focus:border-accent-primary">
-                 <option value="">All Categories</option>
-                 <option v-for="cat in categories" :key="cat" :value="cat">{{ capitalize(cat) }}</option>
-             </select>
+        <div class="flex flex-col md:flex-row gap-4">
+             <div class="flex flex-wrap gap-2 items-center">
+                <button 
+                  v-for="color in filterColors" 
+                  :key="color.name"
+                  @click="selectedColorFilter = selectedColorFilter === color.value ? '' : color.value"
+                  :class="[
+                    'w-6 h-6 rounded-full border-2 transition-all hover:scale-110',
+                    selectedColorFilter === color.value ? 'ring-2 ring-accent-primary ring-offset-2' : 'border-transparent'
+                  ]"
+                  :style="{ backgroundColor: color.hex }"
+                  :title="color.name"
+                ></button>
+                <button 
+                  v-if="selectedColorFilter" 
+                  @click="selectedColorFilter = ''"
+                  class="text-xs text-text-tertiary hover:text-text-primary ml-2 underline"
+                >Clear</button>
+             </div>
+             <div class="flex gap-2">
+                  <input v-model="search" type="text" placeholder="Search themes..." class="bg-glass-bg border border-glass-border rounded-lg px-3 py-1 text-sm outline-none focus:border-accent-primary" />
+                  <select v-model="filterCategory" class="bg-glass-bg border border-glass-border rounded-lg px-3 py-1 text-sm outline-none focus:border-accent-primary">
+                      <option value="">All Categories</option>
+                      <option v-for="cat in categories" :key="cat" :value="cat">{{ capitalize(cat) }}</option>
+                  </select>
+             </div>
         </div>
       </div>
 
@@ -223,9 +342,39 @@
           @click="applyTheme(theme.id)"
         >
           <!-- Preview Swing -->
-          <div class="h-32 w-full relative" :style="getThemePreviewStyle(theme)">
-             <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50">
-                 <span class="text-white font-bold">Apply</span>
+          <div 
+            class="h-32 w-full relative group-hover:h-36 transition-all duration-300 overflow-hidden" 
+            :style="{ 
+                ...getThemePreviewStyle(theme), 
+                borderRadius: theme.colors['--border-radius'] || '0px' 
+            }"
+          >
+             <!-- Skeleton UI Preview -->
+             <div 
+                class="absolute inset-2 border transition-all duration-300 backdrop-blur-[2px]"
+                :style="{
+                    borderRadius: `calc(${theme.colors['--border-radius'] || '8px'} * 0.5)`,
+                    backgroundColor: theme.colors['--glass-bg'],
+                    borderColor: theme.colors['--glass-border'],
+                    boxShadow: theme.colors['--glass-shadow'],
+                    backdropFilter: `blur(${theme.colors['--glass-blur'] || '10px'})`
+                }"
+             >
+                 <div class="p-2 flex flex-col gap-1.5 overflow-hidden">
+                    <div class="h-1.5 w-1/3 rounded-full bg-[var(--text-primary)] opacity-20"></div>
+                    <div class="space-y-1">
+                        <div class="h-1 w-3/4 rounded-full bg-[var(--text-secondary)] opacity-15"></div>
+                        <div class="h-1 w-1/2 rounded-full bg-[var(--text-secondary)] opacity-15"></div>
+                    </div>
+                    <div class="mt-auto flex gap-1 pt-2">
+                        <div class="h-3 w-8 rounded bg-[var(--accent-primary)] opacity-80"></div>
+                        <div class="h-3 w-8 rounded bg-[var(--accent-secondary)] opacity-80"></div>
+                    </div>
+                 </div>
+             </div>
+             
+             <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
+                 <span class="text-white font-bold text-sm tracking-wider uppercase">Apply Theme</span>
              </div>
           </div>
           
@@ -267,6 +416,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
+import { colord } from 'colord'
 import { ThemeGenerator } from '@theme/utils'
 import type { IlytatTheme, ThemeCategory } from '@theme/types'
 import { useIlytatTheme } from '#imports'
@@ -289,6 +439,27 @@ const selectedCategory = ref<ThemeCategory | undefined>(undefined)
 const forceDark = ref<boolean | undefined>(undefined)
 const selectedTexture = ref<import('@theme/types').ThemeTexture | undefined>(undefined)
 const selectedDensity = ref<import('@theme/types').ThemeDensity | undefined>(undefined)
+const showAdvanced = ref(false)
+
+const advanced = ref({
+    baseHue: 180,
+    saturationScale: 1,
+    brightnessScale: 1,
+    borderRadius: 12,
+    glassBlur: 16,
+    glassOpacity: 0.7
+})
+
+function resetAdvanced() {
+    advanced.value = {
+        baseHue: 180,
+        saturationScale: 1,
+        brightnessScale: 1,
+        borderRadius: 12,
+        glassBlur: 16,
+        glassOpacity: 0.7
+    }
+}
 const generatedTheme = ref<IlytatTheme | null>(null)
 const history = useStorage<string[]>('theme-seed-history', [])
 
@@ -300,6 +471,20 @@ const nameInputRef = ref<HTMLInputElement | null>(null)
 // Library State
 const search = ref('')
 const filterCategory = ref('')
+const selectedColorFilter = ref('')
+
+const filterColors = [
+    { name: 'Red', hex: '#ef4444', value: 'red' },
+    { name: 'Orange', hex: '#f97316', value: 'orange' },
+    { name: 'Yellow', hex: '#eab308', value: 'yellow' },
+    { name: 'Green', hex: '#22c55e', value: 'green' },
+    { name: 'Teal', hex: '#14b8a6', value: 'teal' },
+    { name: 'Blue', hex: '#3b82f6', value: 'blue' },
+    { name: 'Indigo', hex: '#6366f1', value: 'indigo' },
+    { name: 'Purple', hex: '#a855f7', value: 'purple' },
+    { name: 'Pink', hex: '#ec4899', value: 'pink' },
+    { name: 'Neutral', hex: '#71717a', value: 'neutral' }
+]
 
 // Initialize
 onMounted(() => {
@@ -340,7 +525,8 @@ function generateFromSeed() {
         category: selectedCategory.value,
         forceDark: forceDark.value,
         texture: selectedTexture.value,
-        density: selectedDensity.value
+        density: selectedDensity.value,
+        ...advanced.value
     })
     
     generatedTheme.value = newTheme
@@ -400,9 +586,41 @@ const filteredThemes = computed(() => {
     return allThemes.value.filter(t => {
         const matchesSearch = t.name.toLowerCase().includes(search.value.toLowerCase())
         const matchesCat = filterCategory.value ? t.category === filterCategory.value : true
-        return matchesSearch && matchesCat
+        
+        let matchesColor = true
+        if (selectedColorFilter.value) {
+            matchesColor = doesThemeMatchColor(t, selectedColorFilter.value)
+        }
+        
+        return matchesSearch && matchesCat && matchesColor
     })
 })
+
+function getColorHue(hex: string): number {
+    const c = colord(hex).toHsl()
+    return c.h
+}
+
+function doesThemeMatchColor(theme: IlytatTheme, color: string): boolean {
+    const accent = colord(theme.colors['--accent-primary'])
+    const hsl = accent.toHsl()
+    const { h, s, l } = hsl
+
+    // Low saturation/extreme brightness -> Neutral
+    if (s < 15 || l < 15 || l > 90) return color === 'neutral'
+
+    if (h >= 345 || h < 10) return color === 'red'
+    if (h >= 10 && h < 45) return color === 'orange'
+    if (h >= 45 && h < 65) return color === 'yellow'
+    if (h >= 65 && h < 150) return color === 'green'
+    if (h >= 150 && h < 190) return color === 'teal'
+    if (h >= 190 && h < 250) return color === 'blue'
+    if (h >= 250 && h < 280) return color === 'indigo'
+    if (h >= 280 && h < 315) return color === 'purple'
+    if (h >= 315 && h < 345) return color === 'pink'
+
+    return false
+}
 
 const previewStyles = computed(() => {
     if (!generatedTheme.value) return {}
@@ -413,8 +631,15 @@ function getThemePreviewStyle(theme: IlytatTheme) {
     return {
         background: theme.colors['--app-bg'],
         '--text-primary': theme.colors['--text-primary'],
-        '--accent-primary': theme.colors['--accent-primary']
-        // Add more vars if needed for the preview swing logic
+        '--text-secondary': theme.colors['--text-secondary'],
+        '--accent-primary': theme.colors['--accent-primary'],
+        '--accent-secondary': theme.colors['--accent-secondary'],
+        '--glass-bg': theme.colors['--glass-bg'],
+        '--glass-border': theme.colors['--glass-border'],
+        '--glass-shadow': theme.colors['--glass-shadow'],
+        '--border-radius': theme.colors['--border-radius'],
+        '--glass-blur': theme.colors['--glass-blur'],
+        '--glass-opacity': theme.colors['--glass-opacity']
     }
 }
 </script>

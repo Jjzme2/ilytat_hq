@@ -4,10 +4,16 @@ import { ref } from 'vue'
 export type ToastType = 'success' | 'error' | 'info' | 'warning' | 'dev';
 export type ToastPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center' | 'bottom-center';
 
+export interface ToastAction {
+    label: string;
+    onClick: () => void;
+}
+
 export interface ToastOptions {
     duration?: number; // ms, default 3000
     position?: ToastPosition;
     dismissible?: boolean;
+    action?: ToastAction;
 }
 
 export interface Toast {
@@ -19,6 +25,7 @@ export interface Toast {
     duration: number;
     dismissible: boolean;
     createdAt: number;
+    action?: ToastAction;
 }
 
 const toasts = ref<Toast[]>([]);
@@ -46,7 +53,8 @@ export const useToast = () => {
             position,
             duration: options.duration || (type === 'dev' ? DEFAULT_DEV_DURATION : DEFAULT_DURATION),
             dismissible: options.dismissible ?? true,
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            action: options.action
         };
 
         toasts.value.push(toast);

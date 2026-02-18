@@ -103,11 +103,27 @@ export const useUserPreferences = () => {
         await updateDashboardLayout(currentLayout);
     };
 
+    /**
+     * Reorder widgets by providing an array of widget objects in the desired order.
+     * Reassigns `order` fields sequentially (0, 1, 2…) and persists to Firestore.
+     */
+    const reorderWidgets = async (orderedWidgets: DashboardWidget[]) => {
+        if (!preferences.value) return;
+
+        const reordered = orderedWidgets.map((w, index) => ({
+            ...w,
+            order: index
+        }));
+
+        await updateDashboardLayout(reordered);
+    };
+
     return {
         preferences,
         isLoading,
         loadPreferences,
         updateDashboardLayout,
-        toggleWidget
+        toggleWidget,
+        reorderWidgets
     };
 };

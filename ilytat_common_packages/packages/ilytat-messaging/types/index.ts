@@ -52,7 +52,7 @@ export interface MessageReaction {
 export interface Conversation {
     id: string
     type: ConversationType
-    name?: string              // For group/project conversations
+    name: string | null              // For group/project conversations
 
     // Participants
     participants: string[]     // UIDs
@@ -74,8 +74,8 @@ export interface Conversation {
     typingUsers: string[]      // UIDs currently typing
 
     // Project association
-    projectId?: string
-    tenantId?: string
+    projectId?: string | null
+    tenantId?: string | null
 
     // Timestamps
     createdAt: Date

@@ -43,6 +43,16 @@
                 />
             </div>
 
+            <!-- Pagination -->
+            <div v-if="conversations.length >= 20" class="px-3 pb-6">
+                <button 
+                    @click="$emit('load-more')"
+                    class="w-full py-2 rounded-lg text-xs text-slate-500 hover:text-white hover:bg-white/5 transition-colors border border-dashed border-white/10"
+                >
+                    Load More Conversations
+                </button>
+            </div>
+
             <!-- Empty state -->
             <div v-if="filtered.length === 0 && pinned.length === 0" class="flex flex-col items-center justify-center h-48 text-slate-500">
                 <span class="text-3xl mb-2">💬</span>
@@ -50,8 +60,35 @@
             </div>
         </div>
 
+        <!-- My Identity Section -->
+        <div v-if="username || globalId" class="p-4 bg-white/5 border-t border-white/10">
+            <h4 class="text-[10px] font-bold uppercase tracking-widest text-slate-500/60 mb-2">My Identity</h4>
+            <div class="space-y-2">
+                <div v-if="username" class="flex items-center justify-between group">
+                    <div class="min-w-0">
+                        <p class="text-[10px] text-zinc-500 uppercase">Username</p>
+                        <p class="text-xs text-white truncate font-mono">{{ username }}</p>
+                    </div>
+                    <button @click="copy(username, 'Username')" 
+                        class="p-1 px-2 rounded bg-white/5 hover:bg-amber-500/20 text-zinc-500 hover:text-amber-400 text-[10px] transition-colors">
+                        Copy
+                    </button>
+                </div>
+                <div v-if="globalId" class="flex items-center justify-between group">
+                    <div class="min-w-0">
+                        <p class="text-[10px] text-zinc-500 uppercase">Global ID</p>
+                        <p class="text-xs text-white truncate font-mono">{{ globalId }}</p>
+                    </div>
+                    <button @click="copy(globalId.toString(), 'Global ID')" 
+                        class="p-1 px-2 rounded bg-white/5 hover:bg-amber-500/20 text-zinc-500 hover:text-amber-400 text-[10px] transition-colors">
+                        Copy
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- New conversation button -->
-        <div class="p-3 border-t border-white/10">
+        <div class="p-3 border-t border-white/10 bg-zinc-900/40">
             <button 
                 @click="$emit('new-conversation')"
                 class="w-full py-2 rounded-lg bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors"
@@ -70,12 +107,15 @@ interface Props {
     conversations: Conversation[]
     activeId: string | null
     currentUserUid: string
+    username?: string | null
+    globalId?: number | null
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
     select: [id: string]
     'new-conversation': []
+    'load-more': []
 }>()
 
 const search = ref('')
@@ -95,4 +135,9 @@ const filtered = computed(() => {
     }
     return list
 })
+
+function copy(text: string, label: string) {
+    navigator.clipboard.writeText(text)
+    // Future: Use a toast or temporary "Copied!" text if available in common
+}
 </script>

@@ -8,6 +8,8 @@ export class User extends BaseModel {
     bio: string;
     photoURL: string;
     employeeId: number | null;
+    globalId: number | null;
+    username: string | null;
     uid: string;
 
     constructor(data: any = {}) {
@@ -18,7 +20,9 @@ export class User extends BaseModel {
         this.tenantId = data.tenantId || null;
         this.bio = data.bio || '';
         this.photoURL = data.photoURL || '';
-        this.employeeId = data.employeeId || null;
+        this.employeeId = data.employeeId || data.globalId || null;
+        this.globalId = this.employeeId;
+        this.username = data.username || null;
         this.uid = data.uid || '';
     }
 
@@ -32,6 +36,8 @@ export class User extends BaseModel {
             bio: this.bio,
             photoURL: this.photoURL,
             employeeId: this.employeeId,
+            globalId: this.globalId,
+            username: this.username,
             uid: this.uid
         };
     }

@@ -318,7 +318,7 @@ export const cybersecurityThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-neon-tokyo-cyberpunk',
-        name: 'Neon Tokyo',
+        name: 'Neo Tokyo',
         category: 'cyberpunk',
         isDark: true,
         colors: {
@@ -339,7 +339,7 @@ export const cybersecurityThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-circuit-cyberpunk',
-        name: 'Circuit',
+        name: 'Neural Circuit',
         category: 'cyberpunk',
         isDark: true,
         colors: {
@@ -381,7 +381,7 @@ export const cybersecurityThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-matrix-cyberpunk',
-        name: 'Matrix',
+        name: 'Data Stream',
         category: 'cyberpunk',
         isDark: true,
         colors: {
@@ -402,7 +402,7 @@ export const cybersecurityThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-blade-cyberpunk',
-        name: 'Blade',
+        name: 'Neon Blade',
         category: 'cyberpunk',
         isDark: true,
         colors: {
@@ -423,7 +423,7 @@ export const cybersecurityThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-synth-cyberpunk',
-        name: 'Synth',
+        name: 'Retro Synth',
         category: 'cyberpunk',
         isDark: true,
         colors: {
@@ -444,7 +444,7 @@ export const cybersecurityThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-net-cyberpunk',
-        name: 'Net',
+        name: 'Deep Net',
         category: 'cyberpunk',
         isDark: true,
         colors: {
@@ -465,7 +465,7 @@ export const cybersecurityThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-grid-cyberpunk',
-        name: 'Grid',
+        name: 'Tron Grid',
         category: 'cyberpunk',
         isDark: true,
         colors: {
@@ -486,7 +486,7 @@ export const cybersecurityThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-laser-cyberpunk',
-        name: 'Laser',
+        name: 'Plasma Pulse',
         category: 'cyberpunk',
         isDark: true,
         colors: {
@@ -507,7 +507,7 @@ export const cybersecurityThemes: IlytatTheme[] = [
     },
     {
         id: 'gen-plasma-cyberpunk',
-        name: 'Plasma',
+        name: 'Laser Edge',
         category: 'cyberpunk',
         isDark: true,
         colors: {

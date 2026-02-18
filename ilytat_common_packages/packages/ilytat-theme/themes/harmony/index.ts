@@ -3,7 +3,7 @@ import type { IlytatTheme } from '../../types'
 export const harmonyThemes: IlytatTheme[] = [
     {
         "id": "harmony-preset-1",
-        "name": "Harmony 1",
+        "name": "Ocean Whisper",
         "category": "harmony",
         "isDark": false,
         "texture": "noise",
@@ -26,7 +26,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-2",
-        "name": "Harmony 2",
+        "name": "Autumn Ember",
         "category": "harmony",
         "isDark": false,
         "texture": "noise",
@@ -49,7 +49,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-3",
-        "name": "Harmony 3",
+        "name": "Lavender Mist",
         "category": "harmony",
         "isDark": false,
         "texture": "noise",
@@ -72,7 +72,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-4",
-        "name": "Harmony 4",
+        "name": "Twilight Serenity",
         "category": "harmony",
         "isDark": false,
         "texture": "noise",
@@ -95,7 +95,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-5",
-        "name": "Harmony 5",
+        "name": "Emerald Night",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -118,7 +118,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-6",
-        "name": "Harmony 6",
+        "name": "Rosewood",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -141,7 +141,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-7",
-        "name": "Harmony 7",
+        "name": "Sunset Gold",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -164,7 +164,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-8",
-        "name": "Harmony 8",
+        "name": "Spring Meadow",
         "category": "harmony",
         "isDark": false,
         "texture": "noise",
@@ -187,7 +187,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-9",
-        "name": "Harmony 9",
+        "name": "Desert Sand",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -210,7 +210,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-10",
-        "name": "Harmony 10",
+        "name": "Deep Sapphire",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -233,7 +233,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-11",
-        "name": "Harmony 11",
+        "name": "Pink Peony",
         "category": "harmony",
         "isDark": false,
         "texture": "noise",
@@ -256,7 +256,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-12",
-        "name": "Harmony 12",
+        "name": "Midnight Ink",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -279,7 +279,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-13",
-        "name": "Harmony 13",
+        "name": "Crimson Void",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -302,7 +302,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-14",
-        "name": "Harmony 14",
+        "name": "Periwinkle Sky",
         "category": "harmony",
         "isDark": false,
         "texture": "noise",
@@ -325,7 +325,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-15",
-        "name": "Harmony 15",
+        "name": "Forest Moss",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -348,7 +348,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-16",
-        "name": "Harmony 16",
+        "name": "Ice Palace",
         "category": "harmony",
         "isDark": false,
         "texture": "noise",
@@ -371,7 +371,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-17",
-        "name": "Harmony 17",
+        "name": "Stormy Sea",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -394,7 +394,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-18",
-        "name": "Harmony 18",
+        "name": "Amethyst Dusk",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -417,7 +417,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-19",
-        "name": "Harmony 19",
+        "name": "Rust & Bone",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -440,7 +440,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-20",
-        "name": "Harmony 20",
+        "name": "Olive Grove",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -463,7 +463,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-21",
-        "name": "Harmony 21",
+        "name": "Amber Leaf",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -486,7 +486,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-22",
-        "name": "Harmony 22",
+        "name": "Royal Indigo",
         "category": "harmony",
         "isDark": false,
         "texture": "noise",
@@ -509,7 +509,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-23",
-        "name": "Harmony 23",
+        "name": "Azure Deep",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
@@ -532,7 +532,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-24",
-        "name": "Harmony 24",
+        "name": "Ivory Sand",
         "category": "harmony",
         "isDark": false,
         "texture": "noise",
@@ -555,7 +555,7 @@ export const harmonyThemes: IlytatTheme[] = [
     },
     {
         "id": "harmony-preset-25",
-        "name": "Harmony 25",
+        "name": "Red Velvet",
         "category": "harmony",
         "isDark": true,
         "texture": "noise",
