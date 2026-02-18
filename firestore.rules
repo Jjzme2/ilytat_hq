@@ -152,8 +152,9 @@ service cloud.firestore {
     }
 
     match /activity_logs/{logId} {
-       allow read: if isAuth();
-       allow write: if isAuth(); 
+       allow read: if isSuper() || (isAuth() && (resource.data.userId == request.auth.uid || resource.data.uid == request.auth.uid));
+       allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+       allow update, delete: if false;
     }
 
     match /_lifecycle_ping/{docId} {
