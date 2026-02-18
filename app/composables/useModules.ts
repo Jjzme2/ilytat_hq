@@ -9,31 +9,15 @@
  * All modules are enabled by default if no config exists.
  */
 import { ref, computed, watch } from 'vue'
-import { useCurrentUser, useFirestore } from 'vuefire'
+import { useCurrentUser } from 'vuefire'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { ALL_MODULES, type ModuleDefinition } from '../config/modules'
 
-export interface ModuleDefinition {
-    id: string
-    name: string
-    description: string
-    icon: string
-    route: string
-    /** Whether this module can be disabled (core modules cannot) */
-    canDisable: boolean
-}
-
-const ALL_MODULES: ModuleDefinition[] = [
-    { id: 'projects', name: 'Projects', description: 'Project management and collaboration', icon: '📁', route: '/projects', canDisable: false },
-    { id: 'inbox', name: 'Inbox', description: 'Messages and notifications', icon: '📥', route: '/inbox', canDisable: true },
-    { id: 'schedule', name: 'Schedule', description: 'Calendar and event management', icon: '📅', route: '/schedule', canDisable: true },
-    { id: 'documents', name: 'Documents', description: 'Document creation and templates', icon: '📄', route: '/documents', canDisable: true },
-    { id: 'finance', name: 'Finance', description: 'Financial tracking, budgets, and accounts', icon: '💰', route: '/finance', canDisable: true },
-    { id: 'themes', name: 'Themes', description: 'Theme gallery and customization', icon: '🎨', route: '/themes', canDisable: true },
-]
+export type { ModuleDefinition }
 
 export const useModules = () => {
     const user = useCurrentUser()
-    const db = useFirestore()
+    const { db } = useFirebase()
     const enabledModuleIds = ref<string[]>(ALL_MODULES.map(m => m.id))
     const isLoading = ref(true)
 
@@ -47,6 +31,13 @@ export const useModules = () => {
 
             if (!tenantId) {
                 // No tenant — all modules enabled
+                enabledModuleIds.value = ALL_MODULES.map(m => m.id)
+                isLoading.value = false
+                return
+            }
+
+            if (!db) {
+                console.warn('[useModules] Firestore not initialized')
                 enabledModuleIds.value = ALL_MODULES.map(m => m.id)
                 isLoading.value = false
                 return
@@ -72,7 +63,7 @@ export const useModules = () => {
 
     // Save module config (staff/super only)
     const saveModuleConfig = async (moduleIds: string[]) => {
-        if (!user.value) return
+        if (!user.value || !db) return
 
         const tokenResult = await user.value.getIdTokenResult()
         const tenantId = (tokenResult.claims.tenantId as string) || null

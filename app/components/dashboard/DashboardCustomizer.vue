@@ -18,7 +18,7 @@
         <p class="text-sm text-text-secondary mb-4">Select which widgets to display on your dashboard.</p>
         
         <div class="space-y-2">
-          <div v-for="widget in sortedWidgets" :key="widget.id" class="flex items-center justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
+          <div v-for="widget in availableWidgets" :key="widget.id" class="flex items-center justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
             <span class="font-medium text-text-primary capitalize">{{ getWidgetName(widget.id) }}</span>
             <button 
               @click="handleToggle(widget.id, !widget.enabled)"
@@ -49,6 +49,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { useUserPreferences } from '~/composables/useUserPreferences';
+import { ALL_MODULES } from '../../config/modules';
 
 defineEmits(['close']);
 
@@ -61,23 +62,31 @@ onMounted(() => {
     }
 });
 
-const sortedWidgets = computed(() => {
+const availableWidgets = computed(() => {
     if (!preferences.value) return [];
-    return [...preferences.value.dashboardLayout].sort((a, b) => a.order - b.order);
+    
+    // Create a map of existing widgets for O(1) lookup
+    const existingWidgetsMap = new Map(preferences.value.dashboardLayout.map(w => [w.id, w]));
+    
+    // Merge existing layout with any new modules from ALL_MODULES
+    const mergedWidgets = ALL_MODULES.map(module => {
+        const existing = existingWidgetsMap.get(module.id);
+        if (existing) return existing;
+        
+        // New module not in preferences yet
+        return {
+            id: module.id,
+            enabled: false,
+            order: 999 // Put at end
+        };
+    });
+
+    return mergedWidgets.sort((a, b) => a.order - b.order);
 });
 
 const getWidgetName = (id: string) => {
-    const widgetNames: Record<string, string> = {
-  pulse: 'Pulse',
-  inbox: 'Inbox',
-  projects: 'Active Projects',
-  tasks: 'My Tasks',
-  goals: 'Goals',
-  schedule: 'Schedule',
-  finance: 'Finance',
-  theme: 'Theme Selector'
-}
-    return widgetNames[id] || id;
+    const module = ALL_MODULES.find(m => m.id === id);
+    return module?.name || id;
 };
 
 const handleToggle = async (id: string, enabled: boolean) => {

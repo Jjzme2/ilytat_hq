@@ -5,14 +5,14 @@ import { useUser } from './useUser';
 
 export const useUserPreferences = () => {
     const { user } = useUser();
-    const db = useFirestore();
+    const { db } = useFirebase();
 
     // State
     const preferences = useState<UserPreference | null>('user-preferences', () => null);
     const isLoading = useState<boolean>('user-preferences-loading', () => false);
 
     const getPreferencesRef = () => {
-        if (!user.value?.uid) return null;
+        if (!user.value?.uid || !db) return null;
         return doc(db, `users/${user.value.uid}/settings/preferences`);
     };
 

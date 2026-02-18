@@ -8,7 +8,7 @@
 
       <!-- Modal -->
       <div
-        class="relative w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden transform transition-all bg-primary border border-border-color ring-1 ring-black/10"
+        class="relative w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden transform transition-all bg-primary border border-border-color ring-1 ring-black/10 flex flex-col max-h-[80vh]"
         @keydown.stop>
         <!-- Search Input -->
         <div class="relative border-b border-border-color">
@@ -25,7 +25,7 @@
         </div>
 
         <!-- Command List -->
-        <div v-if="filteredCommands.length > 0" class="max-h-[60vh] overflow-y-auto py-2 scroll-py-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/40">
+        <div v-if="filteredCommands.length > 0" class="flex-1 overflow-y-auto py-2 scroll-py-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/40 min-h-0">
           <div v-for="(groupCommands, groupName) in groupedCommands" :key="groupName">
             <div v-if="groupName !== 'general'"
               class="px-4 py-2 text-xs font-semibold text-text-tertiary uppercase tracking-wider">

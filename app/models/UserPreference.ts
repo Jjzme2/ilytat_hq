@@ -1,9 +1,11 @@
 import { BaseModel } from './BaseModel';
+import { ALL_MODULES } from '../config/modules';
 
 export interface DashboardWidget {
     id: string;
     enabled: boolean;
     order: number;
+    settings?: Record<string, any>;
 }
 
 export class UserPreference extends BaseModel {
@@ -16,16 +18,25 @@ export class UserPreference extends BaseModel {
         this.theme = data.theme || 'system';
         this.notifications = data.notifications !== undefined ? data.notifications : true;
         // Default layout
-        this.dashboardLayout = data.dashboardLayout || [
-            { id: 'pulse', enabled: true, order: 0 },
-            { id: 'schedule', enabled: true, order: 1 },
-            { id: 'inbox', enabled: true, order: 2 },
-            { id: 'tasks', enabled: true, order: 3 },
-            { id: 'projects', enabled: true, order: 4 },
-            { id: 'goals', enabled: false, order: 5 },
-            { id: 'finance', enabled: false, order: 6 },
-            { id: 'theme', enabled: true, order: 7 }
-        ];
+        // Default layout
+        if (data.dashboardLayout) {
+            this.dashboardLayout = data.dashboardLayout;
+        } else {
+            // Generate default layout from ALL_MODULES
+            // We can use a partial default list for specific ordering/enabling, or just map all
+            const defaultEnabled = ['pulse', 'schedule', 'inbox', 'tasks', 'projects', 'theme'];
+
+            // Import dynamically to avoid potential cyclic issues if any, or just import at top if safe.
+            // Since this is a model, importing config is safe.
+            // Note: recursive import of ALL_MODULES might be an issue if config imports something that imports this model.
+            // config/modules.ts -> (no imports). Safe.
+
+            this.dashboardLayout = ALL_MODULES.map((m, index) => ({
+                id: m.id,
+                enabled: defaultEnabled.includes(m.id),
+                order: index
+            }));
+        }
     }
 
     override toJSON() {

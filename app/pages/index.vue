@@ -41,14 +41,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useCommandPalette } from '#imports';
 import { useUserPreferences } from '~/composables/useUserPreferences';
-import PulseWidget from '~/components/dashboard/widgets/PulseWidget.vue';
-import InboxWidget from '~/components/dashboard/widgets/InboxWidget.vue';
-import ProjectsWidget from '~/components/dashboard/widgets/ProjectsWidget.vue';
-import TasksWidget from '~/components/dashboard/widgets/TasksWidget.vue';
-import GoalsWidget from '~/components/dashboard/widgets/GoalsWidget.vue';
-import ScheduleWidget from '~/components/dashboard/widgets/ScheduleWidget.vue';
-import FinanceWidget from '~/components/dashboard/widgets/FinanceWidget.vue';
-import ThemeWidget from '~/components/dashboard/widgets/ThemeWidget.vue';
+import { WIDGET_REGISTRY } from '~/components/dashboard/registry';
 import DashboardCustomizer from '~/components/dashboard/DashboardCustomizer.vue';
 
 definePageMeta({
@@ -67,12 +60,7 @@ const enabledWidgets = computed(() => {
 });
 
 const getWidgetComponent = (id: string) => {
-    switch (id) {
-        case 'pulse': return PulseWidget;
-        case 'inbox': return InboxWidget;
-        case 'projects': return ProjectsWidget;
-        default: return null;
-    }
+    return WIDGET_REGISTRY[id] || null;
 };
 
 onMounted(async () => {

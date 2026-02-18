@@ -12,10 +12,11 @@ import type { FirebaseApp } from 'firebase/app';
 import type { Firestore } from 'firebase/firestore';
 import type { Auth } from 'firebase/auth';
 
-export const useFirebase = (): { app: FirebaseApp; db: Firestore; auth: Auth } => {
-    const app = useFirebaseApp();
-    const db = useFirestore();
-    const auth = useFirebaseAuth()!;
 
-    return { app, db, auth };
+export const useFirebase = (): { app: FirebaseApp | undefined; db: Firestore | undefined; auth: Auth | undefined } => {
+    const app = useFirebaseApp();
+    const db = app.value ? useFirestore() : undefined;
+    const auth = useFirebaseAuth();
+
+    return { app: app.value, db: db?.value || db, auth: auth?.value || auth };
 };
