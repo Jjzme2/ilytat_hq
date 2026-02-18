@@ -22,8 +22,10 @@
                  <!-- Search -->
                  <div class="p-4 border-b border-white/5">
                      <div class="relative">
-                         <span class="absolute left-3 top-2.5 i-ph-magnifying-glass text-zinc-500"></span>
+                         <label for="inbox-search" class="sr-only">Search messages</label>
+                         <span class="absolute left-3 top-2.5 i-ph-magnifying-glass text-zinc-500" aria-hidden="true"></span>
                          <input 
+                            id="inbox-search"
                             type="text" 
                             placeholder="Search messages..." 
                             class="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors"
@@ -34,7 +36,7 @@
                  <!-- List -->
                  <div class="flex-1 overflow-y-auto scrollbar-thin">
                      <!-- Loading State -->
-                     <div v-if="loading" class="p-4 text-center text-zinc-500">
+                     <div v-if="loading" class="p-4 text-center text-zinc-500" role="status">
                          Loading messages...
                      </div>
                      <!-- Empty State -->
@@ -42,24 +44,32 @@
                          No messages found.
                      </div>
                      <!-- Message Items -->
-                     <div 
-                        v-else
-                        v-for="message in messages" 
-                        :key="message.id"
-                        @click="selectMessage(message)"
-                        class="p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group"
-                        :class="{'bg-blue-500/5 border-l-2 border-l-blue-500': selectedMessage?.id === message.id}"
-                     >
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="font-medium text-zinc-200 text-sm">{{ message.from || 'System' }}</span>
-                            <!-- Assuming date is available or using dummy -->
-                            <span class="text-xs text-zinc-500">Today</span>
-                        </div>
-                        <p class="text-sm text-zinc-400 font-medium truncate">{{ message.subject }}</p>
-                        <p class="text-xs text-zinc-500 line-clamp-2 mt-1">
-                            {{ message.body }}
-                        </p>
-                     </div>
+                     <ul v-else class="divide-y divide-white/5">
+                        <li v-for="message in messages" :key="message.id">
+                            <button
+                                type="button"
+                                @click="selectMessage(message)"
+                                class="w-full text-left p-4 hover:bg-white/5 transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 relative"
+                                :class="{'bg-blue-500/5': selectedMessage?.id === message.id}"
+                            >
+                                <div
+                                    v-if="selectedMessage?.id === message.id"
+                                    class="absolute left-0 top-0 bottom-0 w-0.5 bg-blue-500"
+                                    aria-hidden="true"
+                                ></div>
+                                <span v-if="selectedMessage?.id === message.id" class="sr-only">Selected: </span>
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="font-medium text-zinc-200 text-sm">{{ message.from || 'System' }}</span>
+                                    <!-- Assuming date is available or using dummy -->
+                                    <span class="text-xs text-zinc-500">Today</span>
+                                </div>
+                                <p class="text-sm text-zinc-400 font-medium truncate">{{ message.subject }}</p>
+                                <p class="text-xs text-zinc-500 line-clamp-2 mt-1">
+                                    {{ message.body }}
+                                </p>
+                            </button>
+                        </li>
+                     </ul>
                  </div>
             </div>
 
@@ -78,11 +88,11 @@
                                 </div>
                             </div>
                             <div class="flex gap-2 text-zinc-500">
-                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Archive">
-                                    <span class="i-ph-archive"></span>
+                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Archive" aria-label="Archive">
+                                    <span class="i-ph-archive" aria-hidden="true"></span>
                                 </button>
-                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Delete">
-                                    <span class="i-ph-trash"></span>
+                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Delete" aria-label="Delete">
+                                    <span class="i-ph-trash" aria-hidden="true"></span>
                                 </button>
                             </div>
                         </div>
@@ -99,7 +109,9 @@
                     <!-- Reply Area -->
                     <div class="p-6 border-t border-white/5 bg-zinc-900/30">
                         <div class="relative">
+                            <label for="reply-input" class="sr-only">Reply to message</label>
                             <textarea 
+                                id="reply-input"
                                 v-model="replyText"
                                 rows="3" 
                                 placeholder="Type your reply..."
