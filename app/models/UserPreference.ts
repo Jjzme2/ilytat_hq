@@ -19,12 +19,15 @@ export class UserPreference extends BaseModel {
         this.notifications = data.notifications !== undefined ? data.notifications : true;
         // Default layout
         // Default layout
-        if (data.dashboardLayout) {
-            this.dashboardLayout = data.dashboardLayout;
+        if (data.dashboardLayout && data.dashboardLayout.length > 0) {
+            this.dashboardLayout = data.dashboardLayout.map((widget: DashboardWidget) => {
+                if (widget.id === 'themes') return { ...widget, id: 'theme' };
+                return widget;
+            });
         } else {
             // Generate default layout from ALL_MODULES
             // We can use a partial default list for specific ordering/enabling, or just map all
-            const defaultEnabled = ['pulse', 'schedule', 'inbox', 'tasks', 'projects', 'theme'];
+            const defaultEnabled = ['pulse', 'schedule', 'inbox', 'tasks', 'projects', 'finance', 'ai', 'theme'];
 
             // Import dynamically to avoid potential cyclic issues if any, or just import at top if safe.
             // Since this is a model, importing config is safe.

@@ -109,6 +109,37 @@
                                         placeholder="Document content..."
                                         class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500 font-mono"
                                     ></textarea>
+                                    <!-- AI Actions -->
+                                    <div v-if="newDocContent.trim()" class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-[10px] text-zinc-500 uppercase tracking-wider">AI Tools</span>
+                                        <button 
+                                            type="button" 
+                                            @click="handleAIRefine" 
+                                            :disabled="isAIProcessing"
+                                            class="px-2.5 py-1 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 rounded-lg text-[11px] font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
+                                        >
+                                            <span :class="isAIProcessing && aiAction === 'refine' ? 'i-ph-spinner animate-spin' : 'i-ph-magic-wand-bold'"></span>
+                                            Refine
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            @click="handleAIFixGrammar" 
+                                            :disabled="isAIProcessing"
+                                            class="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 rounded-lg text-[11px] font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
+                                        >
+                                            <span :class="isAIProcessing && aiAction === 'fixGrammar' ? 'i-ph-spinner animate-spin' : 'i-ph-check-circle-bold'"></span>
+                                            Fix Grammar
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            @click="handleAIExpand" 
+                                            :disabled="isAIProcessing"
+                                            class="px-2.5 py-1 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 rounded-lg text-[11px] font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
+                                        >
+                                            <span :class="isAIProcessing && aiAction === 'expand' ? 'i-ph-spinner animate-spin' : 'i-ph-arrows-out-bold'"></span>
+                                            Expand
+                                        </button>
+                                    </div>
                                     <div class="flex justify-end gap-2">
                                         <button type="button" @click="showDocForm = false" class="px-3 py-1.5 text-zinc-400 hover:text-white text-xs font-medium">Cancel</button>
                                         <button type="submit" :disabled="isLoading" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium disabled:opacity-50">
@@ -374,6 +405,8 @@ import { Document } from '~/models/Document';
 import { DocumentType, DocumentStatus } from '../../../config/document';
 import { documentTemplates } from '../../../config/documentTemplates';
 import DocumentCreator from '~/components/documents/DocumentCreator.vue';
+import { useAI } from '@ai-tracking/composables/useAI';
+import { AI_PROMPTS } from '../../config/prompts';
 
 definePageMeta({
     layout: 'default',
@@ -616,6 +649,33 @@ const formatDate = (date: Date | string | null) => {
 };
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+// --- AI Document Tools ---
+const { generate: aiGenerate } = useAI();
+const isAIProcessing = ref(false);
+const aiAction = ref<'refine' | 'fixGrammar' | 'expand' | null>(null);
+
+const runAIDocAction = async (promptTemplate: string, feature: string, action: 'refine' | 'fixGrammar' | 'expand') => {
+    if (!newDocContent.value.trim()) return;
+    isAIProcessing.value = true;
+    aiAction.value = action;
+    try {
+        const prompt = promptTemplate.replace('{{context}}', newDocContent.value);
+        const response = await aiGenerate({ prompt, feature });
+        if (response?.content) {
+            newDocContent.value = response.content;
+        }
+    } catch (e) {
+        console.error(`AI ${action} failed`, e);
+    } finally {
+        isAIProcessing.value = false;
+        aiAction.value = null;
+    }
+};
+
+const handleAIRefine = () => runAIDocAction(AI_PROMPTS.documents.refine, 'document-refine', 'refine');
+const handleAIFixGrammar = () => runAIDocAction(AI_PROMPTS.documents.fixGrammar, 'document-fix-grammar', 'fixGrammar');
+const handleAIExpand = () => runAIDocAction(AI_PROMPTS.documents.expand, 'document-expand', 'expand');
 
 const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;

@@ -45,6 +45,12 @@ export interface Transaction {
     status: TransactionStatus
     merchant?: string
 
+    // Enterprise Fields
+    tags?: string[]        // Project IDs or custom tags
+    isRecurring?: boolean
+    vendor?: string
+    class?: 'Operating' | 'COGS' | 'Capital'
+
     // Denormalized for querying
     ownerId: string
     tenantId?: string

@@ -1,0 +1,12 @@
+{
+    "name": "@ilytat/ai-tracking",
+    "version": "1.0.0",
+    "type": "module",
+    "exports": {
+        ".": "./index.ts"
+    },
+    "dependencies": {
+        "vue": "^3.5.0",
+        "nuxt": "^3.0.0"
+    }
+}

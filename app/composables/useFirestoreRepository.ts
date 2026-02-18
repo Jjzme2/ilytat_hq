@@ -12,6 +12,7 @@ import {
     type QueryConstraint,
     type QueryCompositeFilterConstraint
 } from 'firebase/firestore';
+import { useFirestore } from 'vuefire';
 import { Logger } from '~/utils/Logger';
 import { AppError, NetworkError, NotFoundError, PermissionError } from '~/utils/AppError';
 
@@ -24,7 +25,7 @@ export const useFirestoreRepository = <T extends { id: string, toJSON: () => any
     collectionOrRef: string | Ref<string | null> | ComputedRef<string | null>,
     modelFactory: (data: any) => T
 ) => {
-    const { db } = useFirebase();
+    const db = useFirestore(); // Direct usage from vuefire
 
     const getCollectionName = () => {
         const path = toValue(collectionOrRef);

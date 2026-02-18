@@ -39,26 +39,28 @@
 </template>
 
 <script setup lang="ts">
-// import { useFinance } from '~/composables/useFinance'; // Auto-imported
 import { computed } from 'vue';
 
-const { totalBalance, monthlyComparison } = useFinance();
+const { totalCash, profitAndLoss, burnRate } = useFinance();
+
+const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
 const stats = computed(() => [
     { 
-        label: 'Total Balance', 
-        value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalBalance.value), 
-        trend: 0 // totalBalance doesn't have trend in current composable
+        label: 'Total Cash', 
+        value: formatCurrency(totalCash.value), 
+        trend: 0
     },
     { 
-        label: 'Expenses (MoM)', 
-        value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(monthlyComparison.value.thisMonthExpense), 
-        trend: parseFloat(monthlyComparison.value.expenseChange.toFixed(1))
+        label: 'Expenses', 
+        value: formatCurrency(profitAndLoss.value.opex + profitAndLoss.value.cogs), 
+        trend: 0
     },
     { 
         label: 'Net Income', 
-        value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(monthlyComparison.value.netThisMonth), 
-        trend: 0 // Net income trend not explicitly calculated in % yet, could add later
+        value: formatCurrency(profitAndLoss.value.netIncome), 
+        trend: profitAndLoss.value.netMargin ? parseFloat(profitAndLoss.value.netMargin.toFixed(1)) : 0
     },
 ]);
 </script>

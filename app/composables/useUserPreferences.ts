@@ -17,6 +17,11 @@ export const useUserPreferences = () => {
     };
 
     const loadPreferences = async () => {
+        // Ensure user is loaded first
+        if (process.client && !user.value) {
+            await useUser().ensureUserIsReady();
+        }
+
         if (!user.value?.uid) return;
 
         isLoading.value = true;
@@ -30,6 +35,20 @@ export const useUserPreferences = () => {
             } else {
                 // Initialize default preferences
                 const defaultPrefs = new UserPreference();
+                // Ensure default layout has items if empty
+                if (defaultPrefs.dashboardLayout.length === 0) {
+                    // Default widget set
+                    defaultPrefs.dashboardLayout = [
+                        { id: 'pulse', enabled: true, order: 0 },
+                        { id: 'inbox', enabled: true, order: 1 },
+                        { id: 'tasks', enabled: true, order: 2 },
+                        { id: 'projects', enabled: true, order: 3 },
+                        { id: 'finance', enabled: true, order: 4 },
+                        { id: 'schedule', enabled: true, order: 5 },
+                        { id: 'ai', enabled: true, order: 6 }
+                    ];
+                }
+
                 await setDoc(docRef, defaultPrefs.toJSON());
                 preferences.value = defaultPrefs;
             }

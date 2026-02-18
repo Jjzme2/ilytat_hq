@@ -70,6 +70,16 @@ service cloud.firestore {
     // ---------------------------------------------------------------
 
     // Tenants
+    match /ai_usage/{docId} {
+      allow read: if isAuth() && (
+          resource.data.userId == request.auth.uid ||
+          (resource.data.tenantId == request.auth.token.tenantId) ||
+          isAdmin() || 
+          isSuper()
+      );
+      allow write: if false; // Only server-side admin SDK can write
+    }
+
     match /tenants/{tenantId} {
       allow read: if isTenantMember(tenantId) || isSuper();
       allow write: if isTenantMember(tenantId) || isSuper();
@@ -209,13 +219,23 @@ service cloud.firestore {
       allow delete: if resource.data.ownerId == request.auth.uid || isSuper();
     }
 
-    // Transactions: scoped to account owner
+    // Transactions: scoped to account owner OR tenant if scoped
     match /transactions/{txId} {
       allow read: if isAuth() && (
-        resource.data.ownerId == request.auth.uid || isSuper()
+        resource.data.ownerId == request.auth.uid || 
+        (resource.data.scope == 'tenant' && isTenantMember(resource.data.tenantId)) ||
+        isSuper()
       );
-      allow create: if isAuth() && request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if resource.data.ownerId == request.auth.uid || isSuper();
+      allow create: if isAuth() && (
+        request.resource.data.ownerId == request.auth.uid ||
+        (request.resource.data.scope == 'tenant' && isTenantMember(request.resource.data.tenantId))
+      );
+      allow update: if isAuth() && (
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.scope == 'tenant' && isTenantMember(resource.data.tenantId) && isAdmin()) ||
+        isSuper()
+      );
+      allow delete: if resource.data.ownerId == request.auth.uid || isSuper();
     }
 
     // Budgets: scoped to budget owner
@@ -267,6 +287,19 @@ service cloud.firestore {
       allow create: if isAuth() && request.resource.data.participants.hasAny([request.auth.uid]);
       allow update: if isAuth() && resource.data.participants.hasAny([request.auth.uid]);
       allow delete: if isSuper();
+    }
+
+    // RBAC — Roles & Permissions
+    // Reason: Admin panel manages roles and permissions. All auth'd users
+    // need read access for client-side role checks. Only admins can write.
+    match /roles/{roleId} {
+      allow read: if isAuth();
+      allow create, update, delete: if isAdmin() || isSuper();
+    }
+
+    match /permissions/{permId} {
+      allow read: if isAuth();
+      allow create, update, delete: if isAdmin() || isSuper();
     }
 
     match /activity_logs/{logId} {

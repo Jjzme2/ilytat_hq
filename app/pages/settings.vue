@@ -79,6 +79,12 @@
                     </div>
                 </section>
 
+                <!-- AI Model Preferences -->
+                <section class="bg-zinc-900/40 border border-white/5 rounded-xl p-6">
+                    <h2 class="text-lg font-semibold text-white mb-4">AI Model Preference</h2>
+                    <ModelSelector />
+                </section>
+
                 <!-- Keyboard Shortcuts Section -->
                 <section class="bg-zinc-900/40 border border-white/5 rounded-xl p-6">
                     <h2 class="text-lg font-semibold text-white mb-1">Keyboard Shortcuts</h2>
@@ -96,6 +102,7 @@
 import { useIlytatTheme } from '@theme/composables/useIlytatTheme';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useFirestore } from 'vuefire';
+import ModelSelector from '~/components/ai/ModelSelector.vue';
 
 definePageMeta({
     layout: 'default',

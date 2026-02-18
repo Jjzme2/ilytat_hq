@@ -14,8 +14,9 @@ export const ALL_MODULES: ModuleDefinition[] = [
     { id: 'schedule', name: 'Schedule', description: 'Calendar and event management', icon: '📅', route: '/schedule', canDisable: true },
     { id: 'documents', name: 'Documents', description: 'Document creation and templates', icon: '📄', route: '/documents', canDisable: true },
     { id: 'finance', name: 'Finance', description: 'Financial tracking, budgets, and accounts', icon: '💰', route: '/finance', canDisable: true },
-    { id: 'themes', name: 'Themes', description: 'Theme gallery and customization', icon: '🎨', route: '/themes', canDisable: true },
+    { id: 'theme', name: 'Themes', description: 'Theme gallery and customization', icon: '🎨', route: '/themes', canDisable: true },
     { id: 'pulse', name: 'Pulse', description: 'Activity overview and quick stats', icon: 'activity', route: '/', canDisable: true },
     { id: 'goals', name: 'Goals', description: 'Goal tracking and milestones', icon: '🎯', route: '/goals', canDisable: true },
     { id: 'tasks', name: 'Tasks', description: 'Task management and to-dos', icon: '✅', route: '/tasks', canDisable: true },
+    { id: 'ai', name: 'AI', description: 'AI usage tracking and model preferences', icon: '🤖', route: '/settings', canDisable: true },
 ];

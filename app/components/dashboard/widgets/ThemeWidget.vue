@@ -45,13 +45,26 @@
             </button>
        </div>
        
-       <button 
-        @click="shuffleTheme"
-        class="mt-auto w-full py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-xs font-medium text-zinc-300 transition-colors flex items-center justify-center gap-2"
-       >
-        <span class="i-ph-shuffle"></span>
-        Shuffle Theme
-       </button>
+       <div class="mt-auto flex gap-2">
+        <button 
+         @click="shuffleTheme"
+         class="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-xs font-medium text-zinc-300 transition-colors flex items-center justify-center gap-2"
+        >
+         <span class="i-ph-shuffle"></span>
+         Shuffle
+        </button>
+        <button
+         @click="setFavorite(currentTheme.id)"
+         class="py-2 px-3 border border-white/5 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1"
+         :class="favoriteThemeId === currentTheme.id 
+            ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' 
+            : 'bg-white/5 hover:bg-white/10 text-zinc-300'"
+         :title="favoriteThemeId === currentTheme.id ? 'Current Favorite' : 'Set as Favorite'"
+        >
+         <span v-if="favoriteThemeId === currentTheme.id">❤︎</span>
+         <span v-else>♡</span>
+        </button>
+       </div>
     </div>
   </div>
 </template>
@@ -60,7 +73,7 @@
 import { computed } from 'vue';
 import { useIlytatTheme } from '@theme/composables/useIlytatTheme';
 
-const { currentTheme, allThemes, applyTheme } = useIlytatTheme();
+const { currentTheme, allThemes, applyTheme, setFavorite, favoriteThemeId } = useIlytatTheme();
 
 const quickThemes = computed(() => {
     // Pick 4 diverse themes

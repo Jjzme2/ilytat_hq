@@ -4,13 +4,15 @@ import { fileURLToPath } from 'node:url'
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   srcDir: 'app',
+  serverDir: 'app/server',
   extends: [
     './ilytat_common_packages/packages/ilytat-command-palette',
     './ilytat_common_packages/packages/ilytat-notifications',
     './ilytat_common_packages/packages/ilytat-admin-panel',
     './ilytat_common_packages/packages/ilytat-finance',
     './ilytat_common_packages/packages/ilytat-logger',
-    './ilytat_common_packages/packages/ilytat-theme'
+    './ilytat_common_packages/packages/ilytat-theme',
+    './ilytat_common_packages/packages/ilytat-ai-tracking'
   ],
   future: {
     compatibilityVersion: 4,
@@ -63,7 +65,8 @@ export default defineNuxtConfig({
     '@admin': fileURLToPath(new URL('./ilytat_common_packages/packages/ilytat-admin-panel', import.meta.url)),
     '@ilytat/notifications': fileURLToPath(new URL('./ilytat_common_packages/packages/ilytat-notifications/index.ts', import.meta.url)),
     '@theme': fileURLToPath(new URL('./ilytat_common_packages/packages/ilytat-theme', import.meta.url)),
-    '@messaging': fileURLToPath(new URL('./ilytat_common_packages/packages/ilytat-messaging', import.meta.url))
+    '@messaging': fileURLToPath(new URL('./ilytat_common_packages/packages/ilytat-messaging', import.meta.url)),
+    '@ai-tracking': fileURLToPath(new URL('./ilytat_common_packages/packages/ilytat-ai-tracking', import.meta.url))
   },
   css: [
     '~/assets/css/main.css'
@@ -87,6 +90,7 @@ export default defineNuxtConfig({
     plaidClientId: process.env.NUXT_PLAID_CLIENT_ID,
     plaidSecret: process.env.NUXT_PLAID_SECRET,
     plaidEnv: process.env.NUXT_PLAID_ENV || 'sandbox',
+    geminiApiKey: process.env.GEMINI_API_KEY,
     public: {
       firebaseApiKey: process.env.FIREBASE_API_KEY,
       firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN,

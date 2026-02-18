@@ -7,6 +7,7 @@ import GoalsWidget from './widgets/GoalsWidget.vue';
 import ScheduleWidget from './widgets/ScheduleWidget.vue';
 import FinanceWidget from './widgets/FinanceWidget.vue';
 import ThemeWidget from './widgets/ThemeWidget.vue';
+import AIUsageWidget from '~/components/ai/AIUsageWidget.vue';
 
 export const WIDGET_REGISTRY: Record<string, Component> = {
     pulse: PulseWidget,
@@ -16,5 +17,6 @@ export const WIDGET_REGISTRY: Record<string, Component> = {
     goals: GoalsWidget,
     schedule: ScheduleWidget,
     finance: FinanceWidget,
-    theme: ThemeWidget
+    theme: ThemeWidget,
+    ai: AIUsageWidget
 };

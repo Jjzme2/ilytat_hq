@@ -236,13 +236,23 @@
                     <div v-else-if="activeTab === 'tasks'">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Tasks</h2>
-                            <button 
-                                @click="showTaskForm = !showTaskForm"
-                                class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
-                            >
-                                <span class="i-ph-plus-bold"></span>
-                                {{ showTaskForm ? 'Cancel' : 'New Task' }}
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <button 
+                                    @click="handleSuggestTasks"
+                                    :disabled="isSuggestingTasks"
+                                    class="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
+                                >
+                                    <span :class="isSuggestingTasks ? 'i-ph-spinner animate-spin' : 'i-ph-magic-wand-bold'"></span>
+                                    {{ isSuggestingTasks ? 'Thinking...' : 'Suggest Tasks' }}
+                                </button>
+                                <button 
+                                    @click="showTaskForm = !showTaskForm"
+                                    class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
+                                >
+                                    <span class="i-ph-plus-bold"></span>
+                                    {{ showTaskForm ? 'Cancel' : 'New Task' }}
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Inline Add Task Form -->
@@ -639,6 +649,8 @@ import { Task } from '~/models/Task';
 import { Note } from '~/models/Note';
 import { ProjectStatus, TaskStatus, GoalStatus } from '../../../config/status';
 import { Priority } from '../../../config/priority';
+import { useAI } from '@ai-tracking/composables/useAI';
+import { AI_PROMPTS } from '../../config/prompts';
 
 definePageMeta({
     layout: 'default',
@@ -748,7 +760,61 @@ watch(currentProject, () => {
     }
 });
 
+// --- AI Suggestions ---
+const { generate: aiGenerate, isLoading: aiLoading } = useAI();
+const isSuggestingTasks = ref(false);
+
+const priorityMap: Record<string, Priority> = {
+    'Low': Priority.LOW,
+    'Medium': Priority.MEDIUM,
+    'High': Priority.HIGH,
+};
+
+const handleSuggestTasks = async () => {
+    if (!currentProject.value) return;
+    isSuggestingTasks.value = true;
+
+    try {
+        const goalTitles = goals.value.map(g => g.title).join(', ');
+        
+        const prompt = AI_PROMPTS.projects.suggestTasks
+            .replace('{{projectName}}', currentProject.value.name)
+            .replace('{{description}}', currentProject.value.description || 'No description')
+            .replace('{{goals}}', goalTitles || 'No specific goals');
+
+        const response = await aiGenerate({ prompt, feature: 'project-suggest-tasks' });
+        
+        if (!response?.content) throw new Error('No response from AI');
+
+        // Clean up markdown code blocks if present
+        const jsonStr = response.content.replace(/```json\n?|\n?```/g, '').trim();
+        const suggestedTasks = JSON.parse(jsonStr);
+
+        if (Array.isArray(suggestedTasks)) {
+            let addedCount = 0;
+            for (const task of suggestedTasks) {
+                if (task.title) {
+                    await createTask(currentProject.value!.id, {
+                        title: task.title,
+                        status: TaskStatus.TODO,
+                        priority: priorityMap[task.priority] || Priority.MEDIUM,
+                        order: 0
+                    });
+                    addedCount++;
+                }
+            }
+            toastSuccess(`Added ${addedCount} suggested tasks`);
+        }
+    } catch (e) {
+        console.error('AI Suggestion Failed', e);
+        toastError('Failed to suggest tasks');
+    } finally {
+        isSuggestingTasks.value = false;
+    }
+};
+
 // --- Project Actions ---
+
 const initEditForm = () => {
     if (!currentProject.value) return;
     editForm.value = {

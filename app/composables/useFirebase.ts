@@ -7,16 +7,18 @@
  * This composable simply re-exports the instances vuefire manages,
  * so every consumer gets the same, guaranteed-initialized references.
  */
+import { isRef } from 'vue';
 import { useFirebaseApp, useFirestore, useFirebaseAuth } from 'vuefire';
-import type { FirebaseApp } from 'firebase/app';
-import type { Firestore } from 'firebase/firestore';
-import type { Auth } from 'firebase/auth';
 
-
-export const useFirebase = (): { app: FirebaseApp | undefined; db: Firestore | undefined; auth: Auth | undefined } => {
+export const useFirebase = () => {
     const app = useFirebaseApp();
-    const db = app.value ? useFirestore() : undefined;
+    const db = useFirestore();
     const auth = useFirebaseAuth();
 
-    return { app: app.value, db: db?.value || db, auth: auth?.value || auth };
+    // VueFire composables might return Refs or instances depending on version/context.
+    // Safe unwrap: check if it has .value (isRef)
+    const _db = isRef(db) ? db.value : db;
+    const _auth = isRef(auth) ? auth.value : auth;
+
+    return { app, db: _db, auth: _auth };
 };

@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3';
-import { runMigration } from '../../../AI/Migrations/20260210_InitialSeed';
+import { runMigration } from '../../../../AI/Migrations/20260210_InitialSeed';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { ensureAdminInitialized } from '../../utils/adminAuth';
