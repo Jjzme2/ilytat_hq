@@ -9,8 +9,9 @@
 
             <!-- Template Selection -->
             <div class="space-y-2">
-                <label class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Template</label>
+                <label :for="templateSelectId" class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Template</label>
                 <select 
+                    :id="templateSelectId"
                     v-model="selectedTemplateId" 
                     @change="handleTemplateChange"
                     class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
@@ -24,9 +25,10 @@
             <!-- Dynamic Fields -->
             <div v-if="variables.length > 0" class="space-y-4">
                 <div v-for="variable in variables" :key="variable" class="space-y-1">
-                    <label class="text-xs font-medium text-zinc-400 capitalize">{{ formatLabel(variable) }}</label>
+                    <label :for="getFieldId(variable)" class="text-xs font-medium text-zinc-400 capitalize">{{ formatLabel(variable) }}</label>
                     <template v-if="isLongText(variable)">
                         <textarea 
+                            :id="getFieldId(variable)"
                             v-model="formData[variable]"
                             rows="3"
                             class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
@@ -35,6 +37,7 @@
                     </template>
                     <template v-else>
                          <input 
+                            :id="getFieldId(variable)"
                             v-model="formData[variable]"
                             type="text"
                             class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
@@ -82,6 +85,7 @@
                         @click="handlePrint"
                         class="p-1.5 rounded hover:bg-zinc-200 text-zinc-600 transition-colors"
                         title="Print"
+                        aria-label="Print document"
                     >
                         <span class="i-ph-printer w-4 h-4"></span>
                     </button>
@@ -99,8 +103,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, useId } from 'vue';
 import { documentTemplates, DocumentTemplateModel } from '../../../config/documentTemplates';
+import { DocumentFactory } from '../../utils/DocumentFactory';
 
 
 const props = defineProps<{
@@ -110,10 +115,15 @@ const props = defineProps<{
 const emit = defineEmits(['save', 'cancel']);
 
 // State
+const templateSelectId = useId();
 const templates = documentTemplates;
 const selectedTemplateId = ref(props.initialTemplateId || templates[0]?.name);
 const formData = ref<Record<string, string>>({});
 const variables = ref<string[]>([]);
+
+const getFieldId = (variable: string) => {
+    return `${templateSelectId}-${variable.replace(/\s+/g, '-')}`;
+};
 
 // Computed
 const selectedTemplate = computed(() => 
