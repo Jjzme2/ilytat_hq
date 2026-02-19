@@ -136,6 +136,34 @@
                                 </div>
                             </div>
 
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-400 mb-1">Purpose <span
+                                        class="text-red-500">*</span></label>
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    <button type="button" v-for="p in purposeOptions" :key="p"
+                                        @click="newProjectForm.purpose = p; isCustomPurpose = false" :class="[
+                                            'px-3 py-2 text-xs font-medium rounded-lg border transition-colors text-left',
+                                            newProjectForm.purpose === p && !isCustomPurpose
+                                                ? 'bg-blue-600 border-blue-500 text-white'
+                                                : 'bg-black/20 border-white/10 text-zinc-400 hover:bg-white/5'
+                                        ]">
+                                        {{ p }}
+                                    </button>
+                                    <button type="button" @click="isCustomPurpose = true; newProjectForm.purpose = ''"
+                                        :class="[
+                                            'px-3 py-2 text-xs font-medium rounded-lg border transition-colors text-left',
+                                            isCustomPurpose
+                                                ? 'bg-blue-600 border-blue-500 text-white'
+                                                : 'bg-black/20 border-white/10 text-zinc-400 hover:bg-white/5'
+                                        ]">
+                                        Custom...
+                                    </button>
+                                </div>
+                                <input v-if="isCustomPurpose" v-model="newProjectForm.purpose" type="text"
+                                    class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                                    placeholder="Enter custom purpose..." required />
+                            </div>
+
                             <div class="flex justify-end gap-3 mt-6">
                                 <button type="button" @click="isCreateModalOpen = false"
                                     class="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">
@@ -178,8 +206,11 @@ const newProjectForm = ref({
     name: '',
     description: '',
     priority: Priority.MEDIUM,
-    deadline: ''
+    deadline: '',
+    purpose: ''
 });
+const isCustomPurpose = ref(false);
+const purposeOptions = ['Financial', 'Educational', 'Personal', 'Business', 'Health'];
 
 // Init
 onMounted(() => {
@@ -192,8 +223,10 @@ const openCreateModal = () => {
         name: '',
         description: '',
         priority: Priority.MEDIUM,
-        deadline: ''
+        deadline: '',
+        purpose: ''
     };
+    isCustomPurpose.value = false;
     isCreateModalOpen.value = true;
 };
 
@@ -205,8 +238,10 @@ const handleCreate = async () => {
             description: newProjectForm.value.description,
             priority: newProjectForm.value.priority,
             deadline: newProjectForm.value.deadline ? new Date(newProjectForm.value.deadline) : null,
+            deadline: newProjectForm.value.deadline ? new Date(newProjectForm.value.deadline) : null,
             status: ProjectStatus.ACTIVE,
             progress: 0,
+            purpose: newProjectForm.value.purpose,
             tenantId: null
         });
 

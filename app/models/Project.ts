@@ -24,6 +24,7 @@ export class Project extends BaseModel<ProjectData> {
     deadline: Date | null;
     tags: string[];
     progress: number; // 0-100
+    purpose: string;
     quickLaunch: Record<string, string>;
     members: string[];
 
@@ -44,6 +45,7 @@ export class Project extends BaseModel<ProjectData> {
         this.deadline = parsed.deadline;
         this.tags = parsed.tags;
         this.progress = parsed.progress;
+        this.purpose = parsed.purpose;
         this.quickLaunch = parsed.quickLaunch as Record<string, string>;
         this.members = parsed.members;
     }
@@ -67,6 +69,7 @@ export class Project extends BaseModel<ProjectData> {
             deadline: this.deadline,
             tags: this.tags,
             progress: this.progress,
+            purpose: this.purpose,
             quickLaunch: this.quickLaunch as Record<string, string>,
             members: this.members
         };

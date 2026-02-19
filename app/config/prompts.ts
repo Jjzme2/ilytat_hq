@@ -50,8 +50,11 @@ export const AI_PROMPTS = {
         Organize them by phase if possible.
         
         Project Name: {{projectName}}
+        Purpose: {{purpose}}
         Description: {{description}}
         Goals: {{goals}}
+        
+        Ensure all suggested tasks align with the project purpose.
         
         Format as a JSON array of objects with 'title' and 'priority' (Low, Medium, High) keys.`
     }

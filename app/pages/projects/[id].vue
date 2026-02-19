@@ -62,6 +62,10 @@
                         </span>
                     </div>
                     <div class="flex items-center gap-2">
+                        <span class="i-ph-target text-zinc-500"></span>
+                        <span class="text-sm text-zinc-300">{{ currentProject.purpose }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
                         <span class="i-ph-flag text-zinc-500"></span>
                         <span :class="currentProject.priorityColor">{{ capitalize(currentProject.priority) }}
                             Priority</span>
@@ -408,7 +412,7 @@
                                 <p class="text-sm text-zinc-400 mt-2 whitespace-pre-wrap leading-relaxed">{{
                                     note.content || 'No content.' }}</p>
                                 <span class="text-[10px] text-zinc-600 mt-3 block">{{ formatDate(note.createdAt)
-                                }}</span>
+                                    }}</span>
                             </div>
                         </div>
 
@@ -505,6 +509,11 @@
                                     class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500" />
                             </div>
                             <div>
+                                <label class="block text-xs font-medium text-zinc-400 mb-1">Purpose</label>
+                                <input v-model="editForm.purpose" type="text" required
+                                    class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500" />
+                            </div>
+                            <div>
                                 <label class="block text-xs font-medium text-zinc-400 mb-1">Description</label>
                                 <textarea v-model="editForm.description" rows="3"
                                     class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"></textarea>
@@ -547,7 +556,7 @@
                             <div>
                                 <label class="block text-xs font-medium text-zinc-400 mb-1">Progress ({{
                                     editForm.progress
-                                }}%)</label>
+                                    }}%)</label>
                                 <input v-model.number="editForm.progress" type="range" min="0" max="100"
                                     class="w-full accent-blue-500" />
                             </div>
@@ -651,6 +660,7 @@ const editForm = ref({
     description: '',
     status: ProjectStatus.ACTIVE,
     priority: Priority.MEDIUM,
+    purpose: '',
     startDate: '',
     deadline: '',
     progress: 0
@@ -717,6 +727,7 @@ const handleSuggestTasks = async () => {
 
         const prompt = AI_PROMPTS.projects.suggestTasks
             .replace('{{projectName}}', currentProject.value.name)
+            .replace('{{purpose}}', currentProject.value.purpose || 'General')
             .replace('{{description}}', currentProject.value.description || 'No description')
             .replace('{{goals}}', goalTitles || 'No specific goals');
 
@@ -759,6 +770,7 @@ const initEditForm = () => {
         description: currentProject.value.description,
         status: currentProject.value.status,
         priority: currentProject.value.priority,
+        purpose: currentProject.value.purpose,
         startDate: currentProject.value.startDate ? (new Date(currentProject.value.startDate).toISOString().split('T')[0] as string) : '',
         deadline: currentProject.value.deadline ? (new Date(currentProject.value.deadline).toISOString().split('T')[0] as string) : '',
         progress: currentProject.value.progress
@@ -779,6 +791,7 @@ const handleUpdate = async () => {
             description: editForm.value.description,
             status: editForm.value.status as any,
             priority: editForm.value.priority as any,
+            purpose: editForm.value.purpose,
             startDate: editForm.value.startDate ? new Date(editForm.value.startDate) : null,
             deadline: editForm.value.deadline ? new Date(editForm.value.deadline) : null,
             progress: editForm.value.progress
@@ -816,7 +829,6 @@ const handleCreateGoal = async () => {
             title: newGoalTitle.value,
             description: newGoalDesc.value,
             projectId: projectId.value,
-            priority: Priority.MEDIUM,
             status: GoalStatus.NOT_STARTED,
             tenantId: tenantId.value
         }); toastSuccess('Goal created');

@@ -4,6 +4,7 @@
       <CommandPalette />
       <ToastContainer />
       <QuickLaunchManager />
+      <AIConfig />
       <ContextMenu />
     </ClientOnly>
 

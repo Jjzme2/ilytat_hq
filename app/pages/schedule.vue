@@ -36,37 +36,114 @@
             </div>
         </header>
 
-        <!-- Calendar Grid -->
-        <div class="flex-1 overflow-auto bg-zinc-950 p-3 md:p-6">
+        <!-- Main Content -->
+        <div class="flex-1 overflow-hidden flex flex-col md:flex-row h-full">
+            <!-- Left: Calendar (Flexible) -->
+            <div class="flex-1 p-3 md:p-6 overflow-auto border-r border-white/5 bg-zinc-950">
+                <div
+                    class="grid grid-cols-7 gap-px bg-zinc-800/50 border border-zinc-800 rounded-lg overflow-hidden min-h-[500px]">
+                    <!-- Day Headers -->
+                    <div v-for="(day, i) in weekDays" :key="day"
+                        class="bg-zinc-900/80 p-1.5 md:p-3 text-center text-[10px] md:text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <span class="hidden md:inline">{{ day }}</span>
+                        <span class="md:hidden">{{ weekDaysShort[i] }}</span>
+                    </div>
+
+                    <!-- Days -->
+                    <div v-for="(date, index) in calendarDays" :key="index" :class="[
+                        'bg-zinc-900/30 p-1 md:p-2 min-h-[80px] flex flex-col gap-1 transition-colors hover:bg-zinc-900/50 relative group cursor-pointer border-t border-l border-white/5',
+                        !isSameMonth(date, currentDate) ? 'bg-zinc-950/30 text-zinc-600' : 'text-zinc-300',
+                        isToday(date) ? 'bg-blue-500/5' : '',
+                        isSameDay(date, selectedDate) ? 'ring-2 ring-inset ring-blue-500/50 bg-blue-500/10' : ''
+                    ]" @click="handleDayClick(date)">
+                        <span :class="[
+                            'text-[10px] md:text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full',
+                            isToday(date) ? 'bg-blue-500 text-white' : 'text-zinc-500'
+                        ]">
+                            {{ date.getDate() }}
+                        </span>
+
+                        <!-- Event Dots/Previews -->
+                        <div class="flex flex-col gap-0.5 mt-1">
+                            <div v-for="item in getItemsForDate(date).slice(0, 3)" :key="(item as any).id" :class="[
+                                'px-1 py-0.5 text-[9px] rounded truncate',
+                                getItemColor(item)
+                            ]">
+                                {{ (item as any).title }}
+                            </div>
+                            <div v-if="getItemsForDate(date).length > 3" class="text-[9px] text-zinc-600 pl-1">
+                                +{{ getItemsForDate(date).length - 3 }} more
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Daily Agenda (Fixed Width) -->
             <div
-                class="grid grid-cols-7 gap-px bg-zinc-800/50 border border-zinc-800 rounded-lg overflow-hidden h-full min-h-[400px] md:min-h-[600px]">
-                <!-- Day Headers -->
-                <div v-for="(day, i) in weekDays" :key="day"
-                    class="bg-zinc-900/80 p-1.5 md:p-3 text-center text-[10px] md:text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                    <span class="hidden md:inline">{{ day }}</span>
-                    <span class="md:hidden">{{ weekDaysShort[i] }}</span>
+                class="w-full md:w-96 bg-zinc-900/30 backdrop-blur-sm border-l border-white/5 flex flex-col h-[50vh] md:h-full">
+                <!-- Agenda Header -->
+                <div class="p-4 border-b border-white/5 flex flex-col gap-4 bg-zinc-900/50">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-white font-semibold">{{ format(selectedDate, 'EEEE, MMM d') }}</h2>
+                            <p class="text-xs text-zinc-500 mt-0.5">{{ getItemsForDate(selectedDate).length }} items</p>
+                        </div>
+                        <button @click="openEventModalForDate(selectedDate)"
+                            class="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors shadow-lg shadow-blue-500/10">
+                            <span class="i-ph-plus-bold"></span>
+                        </button>
+                    </div>
+
+                    <!-- Smart Input -->
+                    <div class="relative group">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-lg transition-opacity opacity-0 group-hover:opacity-100">
+                        </div>
+                        <div
+                            class="relative flex items-center bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all">
+                            <span class="i-ph-sparkle text-blue-400 mr-2 animate-pulse"></span>
+                            <input v-model="smartInput" @keydown.enter="handleSmartAdd" :disabled="isParsing"
+                                type="text" placeholder="&quot;Lunch with Bob tomorrow at 1pm&quot;"
+                                class="w-full bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none" />
+                            <button v-if="smartInput" @click="handleSmartAdd" :disabled="isParsing"
+                                class="p-1 hover:bg-white/10 rounded-lg transition-colors text-blue-400">
+                                <span v-if="isParsing" class="i-ph-spinner animate-spin"></span>
+                                <span v-else class="i-ph-arrow-right"></span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Days -->
-                <div v-for="(date, index) in calendarDays" :key="index" :class="[
-                    'bg-zinc-900/30 p-1 md:p-2 min-h-[60px] md:min-h-[100px] flex flex-col gap-0.5 md:gap-1 transition-colors hover:bg-zinc-900/50 relative group',
-                    !isSameMonth(date, currentDate) ? 'bg-zinc-950/30 text-zinc-600' : 'text-zinc-300',
-                    isToday(date) ? 'bg-blue-500/5' : ''
-                ]" @click="handleDayClick(date)">
-                    <span :class="[
-                        'text-[10px] md:text-xs font-medium w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full mb-0.5 md:mb-1',
-                        isToday(date) ? 'bg-blue-500 text-white' : 'text-zinc-500'
-                    ]">
-                        {{ date.getDate() }}
-                    </span>
+                <!-- Agenda List -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
+                    <div v-if="getItemsForDate(selectedDate).length === 0" class="text-center py-10 text-zinc-500">
+                        <span class="i-ph-calendar-blank text-4xl mb-2 block opacity-30"></span>
+                        <p class="text-sm">No events planned</p>
+                        <button @click="openEventModalForDate(selectedDate)"
+                            class="text-xs text-blue-400 hover:text-blue-300 mt-2">
+                            Add an event
+                        </button>
+                    </div>
 
-                    <!-- Events -->
-                    <div v-for="item in getItemsForDate(date)" :key="(item as any).id" :class="[
-                        'px-1 md:px-2 py-0.5 md:py-1 text-[10px] md:text-xs rounded truncate cursor-pointer transition-transform hover:scale-[1.02]',
-                        getItemColor(item)
-                    ]" @click.stop="handleItemClick(item)">
-                        <span :class="getItemIcon(item)" class="mr-1 opacity-70"></span>
-                        {{ (item as any).title }}
+                    <div v-for="item in getItemsForDate(selectedDate)" :key="(item as any).id"
+                        @click="handleItemClick(item)"
+                        class="group p-3 bg-zinc-800/40 hover:bg-zinc-800/60 border border-white/5 rounded-xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-lg">
+                        <div class="flex items-start gap-3">
+                            <div :class="getItemIconClass(item)" class="mt-0.5 p-1.5 rounded-lg shrink-0">
+                                <span :class="getItemIcon(item)"></span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-medium text-zinc-200 truncate">{{ (item as any).title }}</h3>
+                                <p class="text-xs text-zinc-500 mt-0.5" v-if="(item as any).start">
+                                    {{ getEventTimeRange(item) }}
+                                </p>
+                                <p class="text-xs text-zinc-500 mt-0.5"
+                                    v-else-if="(item as any).deadline || (item as any).targetDate">
+                                    {{ getEventDeadline(item) }}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -144,11 +221,15 @@ definePageMeta({
 
 const { fetchSchedule, items, createEvent, updateEvent, deleteEvent, isLoading } = useSchedule();
 const { success, error: showError } = useToast();
+const { fire: fireConfetti } = useConfetti();
 
 // State
 const currentDate = ref(new Date());
+const selectedDate = ref(new Date()); // Selection state for Agenda
 const showEventModal = ref(false);
 const editingEvent = ref<any>(null);
+const smartInput = ref('');
+const isParsing = ref(false);
 
 const eventForm = ref({
     title: '',
@@ -188,10 +269,15 @@ const changeMonth = (delta: number) => {
 
 const today = () => {
     currentDate.value = new Date();
+    selectedDate.value = new Date(); // Select today as well
 };
 
 const formatMonth = (date: Date) => format(date, 'MMMM yyyy');
 const isToday = (date: Date) => _isToday(date);
+const isSameSelection = (date: Date, date2: Date) => isSameMonth(date, date2);
+// Wait, `isSameMonth` is imported from `date-fns`. Let's use that.
+// But I need to check if the import in script setup is aliased or not. It is `isSameMonth`.
+// So I can use it directly.
 
 const getItemsForDate = (date: Date) => {
     // Filter items where date part matches
@@ -205,6 +291,13 @@ const getItemColor = (item: any) => {
     return 'bg-zinc-700 text-zinc-300';
 };
 
+const getItemIconClass = (item: any) => {
+    if (item._type === 'event') return 'bg-purple-500/10 text-purple-400';
+    if (item._type === 'task') return 'bg-blue-500/10 text-blue-400';
+    if (item._type === 'goal') return 'bg-emerald-500/10 text-emerald-400';
+    return 'bg-zinc-800 text-zinc-400';
+};
+
 const getItemIcon = (item: any) => {
     if (item._type === 'event') return 'i-ph-calendar-blank';
     if (item._type === 'task') return 'i-ph-check-square';
@@ -212,16 +305,30 @@ const getItemIcon = (item: any) => {
     return 'i-ph-circle';
 };
 
+const getEventTimeRange = (item: any) => {
+    if (!item.start || !item.end) return '';
+    return `${format(new Date(item.start), 'h:mm a')} - ${format(new Date(item.end), 'h:mm a')}`;
+};
+
+const getEventDeadline = (item: any) => {
+    const dateStr = item.deadline || item.targetDate;
+    if (!dateStr) return '';
+    return `Due: ${format(new Date(dateStr), 'h:mm a')}`;
+};
+
 // Modal handlers
 const handleDayClick = (date: Date) => {
+    selectedDate.value = date;
+    // Don't open modal on click anymore, just select for Agenda
+};
+
+const openEventModalForDate = (date: Date) => {
     // Pre-fill date
     const start = new Date(date);
     start.setHours(9, 0, 0, 0); // Default 9 AM
     const end = new Date(date);
     end.setHours(10, 0, 0, 0); // Default 1 hour duration
 
-    // Adjust logic for timezone offset for input[type="datetime-local"]
-    // Simple rough ISO string with local offset
     const toLocalISO = (d: Date) => {
         const offset = d.getTimezoneOffset() * 60000;
         return new Date(d.getTime() - offset).toISOString().slice(0, 16);
@@ -259,6 +366,53 @@ const handleItemClick = (item: any) => {
         end: toLocalISO(item.end)
     };
     showEventModal.value = true;
+};
+
+// Smart Add
+const handleSmartAdd = async () => {
+    if (!smartInput.value.trim()) return;
+    isParsing.value = true;
+
+    try {
+        const timezoneOffset = new Date().getTimezoneOffset();
+        const parsed = await $fetch<any>('/api/ai/parse-date', {
+            method: 'POST',
+            body: {
+                input: smartInput.value,
+                timezoneOffset
+            }
+        });
+
+        if (parsed) {
+            // Create event directly
+            await createEvent({
+                title: parsed.title,
+                description: parsed.description || '',
+                start: new Date(parsed.start),
+                end: new Date(parsed.end),
+                isAllDay: false
+            });
+
+            fireConfetti({
+                origin: { x: 0.8, y: 0.2 }, // Top right-ish
+                spread: 70
+            });
+
+            smartInput.value = '';
+            success('Event created!');
+
+            // If the date is different, jump to it
+            if (!isSameDay(new Date(parsed.start), selectedDate.value)) {
+                selectedDate.value = new Date(parsed.start);
+                currentDate.value = new Date(parsed.start); // Also move calendar view
+            }
+        }
+    } catch (e) {
+        console.error(e);
+        showError('Failed to parse event. Try again.');
+    } finally {
+        isParsing.value = false;
+    }
 };
 
 const closeModal = () => {

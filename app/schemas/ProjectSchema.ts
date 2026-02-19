@@ -19,6 +19,7 @@ export const ProjectSchema = BaseSchema.extend({
 
     tags: z.array(z.string()).default([]),
     progress: z.number().min(0).max(100).default(0),
+    purpose: z.string().default('General'),
     quickLaunch: z.record(z.string(), z.string()).default({}),
     members: z.array(z.string()).default([])
 });
