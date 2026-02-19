@@ -22,7 +22,16 @@
         <!-- Main Content -->
         <div class="flex-1 overflow-hidden flex flex-col md:flex-row h-full">
             <!-- Left: Calendar (Flexible) -->
-            <div class="flex-1 p-3 md:p-6 overflow-auto border-r border-white/5 bg-zinc-950">
+            <div class="relative flex-1 p-3 md:p-6 overflow-auto border-r border-white/5 bg-zinc-950">
+                <!-- Loading Overlay -->
+                <div v-if="isLoading"
+                    class="absolute inset-0 bg-zinc-950/50 z-10 flex items-center justify-center backdrop-blur-sm transition-opacity duration-300">
+                    <div class="flex flex-col items-center gap-2">
+                        <span class="i-ph-spinner animate-spin text-3xl text-blue-500"></span>
+                        <span class="text-xs text-zinc-500 font-medium">Loading schedule...</span>
+                    </div>
+                </div>
+
                 <div
                     class="grid grid-cols-7 gap-px bg-zinc-800/50 border border-zinc-800 rounded-lg overflow-hidden min-h-[500px]">
                     <!-- Day Headers -->
@@ -213,7 +222,7 @@
                                         {{ format(new Date(event.end), 'h:mm a') }}
                                     </p>
                                     <p v-if="event.description" class="text-xs text-zinc-500 mt-1">{{ event.description
-                                    }}</p>
+                                        }}</p>
                                 </div>
                             </div>
                         </div>
@@ -223,9 +232,11 @@
                                 class="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">
                                 Cancel
                             </button>
-                            <button @click="confirmCreateEvents"
-                                class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-medium transition-colors">
-                                Create {{ pendingEvents.length }} Event{{ pendingEvents.length !== 1 ? 's' : '' }}
+                            <button @click="confirmCreateEvents" :disabled="isCreating"
+                                class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                <span v-if="isCreating" class="i-ph-spinner animate-spin"></span>
+                                <span v-else>Create {{ pendingEvents.length }} Event{{ pendingEvents.length !== 1 ? 's'
+                                    : '' }}</span>
                             </button>
                         </div>
                     </DialogPanel>
@@ -387,6 +398,7 @@ const handleItemClick = (item: any) => {
 
 const showPreviewModal = ref(false);
 const pendingEvents = ref<any[]>([]);
+const isCreating = ref(false);
 
 // Smart Add
 const handleSmartAdd = async () => {
@@ -420,12 +432,12 @@ const handleSmartAdd = async () => {
 };
 
 const confirmCreateEvents = async () => {
-    showPreviewModal.value = false;
+    isCreating.value = true;
 
     // Create all events
     let createdCount = 0;
-    for (const event of pendingEvents.value) {
-        try {
+    try {
+        for (const event of pendingEvents.value) {
             await createEvent({
                 title: event.title,
                 description: event.description || '',
@@ -435,25 +447,29 @@ const confirmCreateEvents = async () => {
                 // TODO: Handle 'type' if createEvent supports it (e.g. task vs event)
             });
             createdCount++;
-        } catch (e) {
-            console.error('Failed to create event', event, e);
         }
-    }
 
-    if (createdCount > 0) {
-        fireConfetti({
-            origin: { x: 0.5, y: 0.5 },
-            spread: 100
-        });
-        success(`Created ${createdCount} events`);
-        loadSchedule();
+        if (createdCount > 0) {
+            fireConfetti({
+                origin: { x: 0.5, y: 0.5 },
+                spread: 100
+            });
+            success(`Created ${createdCount} events`);
+            showPreviewModal.value = false; // Close modal only on success
+            loadSchedule();
 
-        // Jump to first event date
-        const firstEvent = pendingEvents.value[0];
-        if (firstEvent && !isSameDay(new Date(firstEvent.start), selectedDate.value)) {
-            selectedDate.value = new Date(firstEvent.start);
-            currentDate.value = new Date(firstEvent.start);
+            // Jump to first event date
+            const firstEvent = pendingEvents.value[0];
+            if (firstEvent && !isSameDay(new Date(firstEvent.start), selectedDate.value)) {
+                selectedDate.value = new Date(firstEvent.start);
+                currentDate.value = new Date(firstEvent.start);
+            }
         }
+    } catch (e: any) {
+        console.error('Failed to create events', e);
+        showError('Failed to create some events');
+    } finally {
+        isCreating.value = false;
     }
 };
 
