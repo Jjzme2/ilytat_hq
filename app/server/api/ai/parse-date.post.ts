@@ -23,14 +23,14 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const now = new Date();
         const prompt = `
         Current Date/Time: ${now.toISOString()}
         User Timezone Offset (minutes): ${timezoneOffset}
         
-        Extract the following from the user input:
+        Extract multiple events/tasks from the user input.
         1. Title: Create a concise title.
         2. Start: ISO 8601 date string. If time is not specified, default to next logical time or all-day.
         3. End: ISO 8601 date string. Default duration: 1 hour for events.
@@ -39,13 +39,17 @@ export default defineEventHandler(async (event) => {
 
         User Input: "${input}"
 
-        Return ONLY raw JSON:
+        Return ONLY raw JSON with an "events" array:
         {
-            "title": "string",
-            "start": "ISO string",
-            "end": "ISO string",
-            "type": "event" | "task",
-            "description": "string"
+            "events": [
+                {
+                    "title": "string",
+                    "start": "ISO string",
+                    "end": "ISO string",
+                    "type": "event" | "task",
+                    "description": "string"
+                }
+            ]
         }
         `;
 

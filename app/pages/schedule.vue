@@ -11,24 +11,7 @@
                 <p class="text-zinc-500 text-xs md:text-sm mt-1">Manage your time, tasks, and goals.</p>
             </div>
             <div class="flex items-center gap-2 md:gap-3 flex-wrap">
-                <div class="flex items-center bg-zinc-800 rounded-lg p-1 border border-white/5">
-                    <button @click="changeMonth(-1)"
-                        class="p-1 hover:bg-zinc-700 rounded transition-colors text-zinc-400 hover:text-white">
-                        <span class="i-ph-caret-left"></span>
-                    </button>
-                    <span
-                        class="px-2 md:px-3 text-sm font-medium text-white min-w-[100px] md:min-w-[120px] text-center">
-                        {{ formatMonth(currentDate) }}
-                    </span>
-                    <button @click="changeMonth(1)"
-                        class="p-1 hover:bg-zinc-700 rounded transition-colors text-zinc-400 hover:text-white">
-                        <span class="i-ph-caret-right"></span>
-                    </button>
-                </div>
-                <button @click="today"
-                    class="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg text-sm font-medium transition-colors border border-white/5">
-                    Today
-                </button>
+                <MonthNavigator v-model="currentDate" />
                 <button @click="showEventModal = true"
                     class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors shadow-lg shadow-blue-500/10">
                     New Event
@@ -206,6 +189,49 @@
                 </div>
             </Dialog>
         </ClientOnly>
+        <!-- Preview Modal -->
+        <ClientOnly>
+            <Dialog :open="showPreviewModal" @close="showPreviewModal = false" class="relative z-[60]">
+                <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" aria-hidden="true" />
+                <div class="fixed inset-0 flex items-center justify-center p-4">
+                    <DialogPanel class="w-full max-w-lg rounded-2xl bg-zinc-900 border border-white/10 p-6 shadow-xl">
+                        <DialogTitle class="text-xl font-bold text-white mb-4">
+                            Review Detected Events
+                        </DialogTitle>
+
+                        <div class="space-y-3 max-h-[60vh] overflow-y-auto mb-6 pr-2">
+                            <div v-for="(event, idx) in pendingEvents" :key="idx"
+                                class="p-3 bg-zinc-800/50 border border-white/5 rounded-lg flex gap-3">
+                                <div class="mt-1">
+                                    <span v-if="event.type === 'task'" class="i-ph-check-square text-blue-400"></span>
+                                    <span v-else class="i-ph-calendar-blank text-purple-400"></span>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-white">{{ event.title }}</h4>
+                                    <p class="text-xs text-zinc-400">
+                                        {{ format(new Date(event.start), 'MMM d, h:mm a') }} -
+                                        {{ format(new Date(event.end), 'h:mm a') }}
+                                    </p>
+                                    <p v-if="event.description" class="text-xs text-zinc-500 mt-1">{{ event.description
+                                    }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-3">
+                            <button @click="showPreviewModal = false"
+                                class="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">
+                                Cancel
+                            </button>
+                            <button @click="confirmCreateEvents"
+                                class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-medium transition-colors">
+                                Create {{ pendingEvents.length }} Event{{ pendingEvents.length !== 1 ? 's' : '' }}
+                            </button>
+                        </div>
+                    </DialogPanel>
+                </div>
+            </Dialog>
+        </ClientOnly>
     </div>
 </template>
 
@@ -213,6 +239,7 @@
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, isToday as _isToday } from 'date-fns';
 import Breadcrumbs from '~/components/ui/Breadcrumbs.vue';
+import MonthNavigator from '~/components/ui/MonthNavigator.vue';
 
 definePageMeta({
     layout: 'default',
@@ -263,16 +290,6 @@ watch(currentDate, () => {
     loadSchedule();
 });
 
-const changeMonth = (delta: number) => {
-    currentDate.value = addMonths(currentDate.value, delta);
-};
-
-const today = () => {
-    currentDate.value = new Date();
-    selectedDate.value = new Date(); // Select today as well
-};
-
-const formatMonth = (date: Date) => format(date, 'MMMM yyyy');
 const isToday = (date: Date) => _isToday(date);
 const isSameSelection = (date: Date, date2: Date) => isSameMonth(date, date2);
 // Wait, `isSameMonth` is imported from `date-fns`. Let's use that.
@@ -368,6 +385,9 @@ const handleItemClick = (item: any) => {
     showEventModal.value = true;
 };
 
+const showPreviewModal = ref(false);
+const pendingEvents = ref<any[]>([]);
+
 // Smart Add
 const handleSmartAdd = async () => {
     if (!smartInput.value.trim()) return;
@@ -375,7 +395,7 @@ const handleSmartAdd = async () => {
 
     try {
         const timezoneOffset = new Date().getTimezoneOffset();
-        const parsed = await $fetch<any>('/api/ai/parse-date', {
+        const response = await $fetch<any>('/api/ai/parse-date', {
             method: 'POST',
             body: {
                 input: smartInput.value,
@@ -383,35 +403,57 @@ const handleSmartAdd = async () => {
             }
         });
 
-        if (parsed) {
-            // Create event directly
-            await createEvent({
-                title: parsed.title,
-                description: parsed.description || '',
-                start: new Date(parsed.start),
-                end: new Date(parsed.end),
-                isAllDay: false
-            });
-
-            fireConfetti({
-                origin: { x: 0.8, y: 0.2 }, // Top right-ish
-                spread: 70
-            });
-
-            smartInput.value = '';
-            success('Event created!');
-
-            // If the date is different, jump to it
-            if (!isSameDay(new Date(parsed.start), selectedDate.value)) {
-                selectedDate.value = new Date(parsed.start);
-                currentDate.value = new Date(parsed.start); // Also move calendar view
-            }
+        if (response && response.events && response.events.length > 0) {
+            pendingEvents.value = response.events;
+            showPreviewModal.value = true;
+            smartInput.value = ''; // Clear input but keep parsing state until confirmed/cancelled? 
+            // Actually better to clear input now.
+        } else {
+            showError('No events detected.');
         }
     } catch (e) {
         console.error(e);
         showError('Failed to parse event. Try again.');
     } finally {
         isParsing.value = false;
+    }
+};
+
+const confirmCreateEvents = async () => {
+    showPreviewModal.value = false;
+
+    // Create all events
+    let createdCount = 0;
+    for (const event of pendingEvents.value) {
+        try {
+            await createEvent({
+                title: event.title,
+                description: event.description || '',
+                start: new Date(event.start),
+                end: new Date(event.end),
+                isAllDay: false
+                // TODO: Handle 'type' if createEvent supports it (e.g. task vs event)
+            });
+            createdCount++;
+        } catch (e) {
+            console.error('Failed to create event', event, e);
+        }
+    }
+
+    if (createdCount > 0) {
+        fireConfetti({
+            origin: { x: 0.5, y: 0.5 },
+            spread: 100
+        });
+        success(`Created ${createdCount} events`);
+        loadSchedule();
+
+        // Jump to first event date
+        const firstEvent = pendingEvents.value[0];
+        if (firstEvent && !isSameDay(new Date(firstEvent.start), selectedDate.value)) {
+            selectedDate.value = new Date(firstEvent.start);
+            currentDate.value = new Date(firstEvent.start);
+        }
     }
 };
 
