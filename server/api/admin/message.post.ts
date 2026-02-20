@@ -3,11 +3,8 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { verifyAdminAccess, ensureAdminInitialized } from '../../utils/adminAuth'
 
 export default defineEventHandler(async (event) => {
-    try {
-        await verifyAdminAccess(event)
-    } catch {
-        // Local dev fallback
-    }
+    // SECURITY: Strictly enforce admin access.
+    const adminUser = await verifyAdminAccess(event)
 
     ensureAdminInitialized()
     const db = getFirestore()
@@ -24,7 +21,7 @@ export default defineEventHandler(async (event) => {
         // We'll store this in a global 'messages' collection
         const messageData = {
             recipientUid: uid,
-            senderUid: (event.context as any).user?.uid || 'system',
+            senderUid: adminUser.uid,
             content: message,
             type: type,
             status: 'unread',
@@ -37,7 +34,7 @@ export default defineEventHandler(async (event) => {
         // Log as activity
         await db.collection('activity_logs').add({
             type: 'admin_message',
-            uid: (event.context as any).user?.uid || 'system',
+            uid: adminUser.uid,
             targetUid: uid,
             content: `Sent admin message: ${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`,
             timestamp: FieldValue.serverTimestamp()

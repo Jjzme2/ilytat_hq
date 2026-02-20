@@ -14,11 +14,8 @@ import { getFirestore } from 'firebase-admin/firestore'
 import { verifyAdminAccess, ensureAdminInitialized } from '../../utils/adminAuth'
 
 export default defineEventHandler(async (event) => {
-    try {
-        await verifyAdminAccess(event)
-    } catch {
-        // Local dev fallback
-    }
+    // SECURITY: Strictly enforce admin access.
+    await verifyAdminAccess(event)
 
     ensureAdminInitialized()
     const auth = getAuth()
