@@ -2,84 +2,92 @@
     <div class="h-full flex flex-col">
         <!-- Header -->
         <header
-            class="flex-none px-4 md:px-6 py-3 md:py-4 border-b border-white/10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-zinc-900/50 backdrop-blur-sm sticky top-0 z-10">
+            class="flex-none px-4 md:px-8 py-6 md:py-10 border-b border-white/5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-10 transition-all">
 
             <div>
-                <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-                    Command Center
+                <h1 class="text-3xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/40 tracking-tighter">
+                    Operations
                 </h1>
-                <p class="text-sm text-zinc-400 mt-1">Manage all ongoing operations and initiatives</p>
+                <p class="text-sm md:text-base text-zinc-500 mt-2 font-medium">Coordinate and execute mission-critical initiatives</p>
             </div>
             <button @click="openCreateModal"
-                class="w-full sm:w-auto px-4 py-2.5 sm:py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
-                <span class="i-ph-plus-bold text-lg"></span>
-                New Project
+                class="w-full sm:w-auto px-6 py-3.5 sm:py-3 bg-accent-primary hover:bg-accent-secondary text-white rounded-2xl text-sm font-black transition-all shadow-2xl shadow-accent-primary/20 flex items-center justify-center gap-2 group active:scale-95">
+                <span class="i-ph-plus-bold text-xl group-hover:rotate-90 transition-transform duration-300"></span>
+                Inaugurate Project
             </button>
         </header>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto p-3 md:p-6 scrollbar-thin">
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin">
             <!-- Loading State -->
-            <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div v-for="i in 6" :key="i"
-                    class="bg-zinc-900/40 border border-white/5 rounded-xl p-5 h-48 flex flex-col justify-between">
+                    class="bg-zinc-900/40 border border-white/5 rounded-3xl p-6 h-56 flex flex-col justify-between backdrop-blur-sm">
                     <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <SkeletonLoader width="60%" height="24px" />
-                            <SkeletonLoader width="20%" height="20px" :rounded="true" />
+                        <div class="flex justify-between items-start mb-6">
+                            <SkeletonLoader width="60%" height="28px" class="rounded-full" />
+                            <SkeletonLoader width="24%" height="24px" :rounded="true" />
                         </div>
-                        <SkeletonLoader width="100%" height="16px" class="mb-2" />
-                        <SkeletonLoader width="80%" height="16px" />
+                        <SkeletonLoader width="100%" height="16px" class="mb-3 rounded-full" />
+                        <SkeletonLoader width="80%" height="16px" class="rounded-full" />
                     </div>
-                    <div class="flex items-end justify-between mt-4">
-                        <SkeletonLoader width="30%" height="12px" />
-                        <SkeletonLoader width="24%" height="6px" :rounded="true" />
+                    <div class="flex items-end justify-between mt-auto">
+                        <SkeletonLoader width="30%" height="12px" class="rounded-full" />
+                        <SkeletonLoader width="24%" height="8px" :rounded="true" />
                     </div>
                 </div>
             </div>
 
             <!-- Error State -->
-            <div v-else-if="error" class="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
-                {{ error?.message || 'An error occurred' }}
+            <div v-else-if="error" class="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 font-medium">
+                {{ error?.message || 'A catastrophic error occurred during retrieval' }}
             </div>
 
             <!-- Projects Grid -->
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div v-for="project in projects" @click="router.push(`/projects/${project.id}`)"
-                    class="group relative bg-zinc-900/40 border border-white/5 hover:border-blue-500/30 rounded-xl p-5 cursor-pointer transition-all hover:bg-zinc-900/60 overflow-hidden"
+                    class="group relative bg-zinc-900/20 border border-white/5 hover:border-accent-primary/50 rounded-3xl p-6 cursor-pointer transition-all duration-500 hover:bg-zinc-900/40 hover:shadow-2xl hover:shadow-accent-primary/5 overflow-hidden active:scale-[0.98]"
                     v-spotlight>
-                    <div class="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition duration-300"
-                        style="background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(59, 130, 246, 0.1), transparent 40%);">
+                    <div class="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition duration-500"
+                        style="background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(var(--accent-rgb), 0.1), transparent 40%);">
                     </div>
-                    <!-- Status Badge -->
-                    <div class="absolute top-5 right-5">
-                        <span :class="[
-                            'text-xs px-2 py-1 rounded-full border',
-                            project.statusColor
-                        ]">
-                            {{ project.formattedStatus }}
-                        </span>
+                    
+                    <!-- Top Section -->
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex flex-col gap-1 min-w-0 pr-12">
+                            <h3 class="text-xl font-bold text-white truncate tracking-tight group-hover:text-accent-primary transition-colors">{{ project.name }}</h3>
+                            <div class="flex items-center gap-2">
+                                <span :class="[
+                                    'text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded-md border',
+                                    project.statusColor
+                                ]">
+                                    {{ project.formattedStatus }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
-                    <h3 class="text-lg font-semibold text-zinc-100 pr-20 truncate">{{ project.name }}</h3>
-                    <p class="text-sm text-zinc-500 mt-2 line-clamp-2 h-10">{{ project.description || 'No description provided.' }}</p>
+                    <p class="text-sm text-zinc-500 line-clamp-2 h-10 leading-relaxed">{{ project.description || 'System data indicates no detailed objective specified.' }}</p>
 
-                    <!-- Meta Info -->
-                    <div class="mt-6 flex items-center justify-between text-xs text-zinc-500">
-                        <div class="flex items-center gap-3">
-                            <span v-if="project.deadline" class="flex items-center gap-1">
-                                <span class="i-ph-calendar opacity-70"></span>
-                                {{ formatDate(project.deadline) }}
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <span class="i-ph-flag opacity-70"></span>
-                                <span :class="project.priorityColor">{{ capitalize(project.priority) }}</span>
-                            </span>
+                    <!-- Meta Info & Progress -->
+                    <div class="mt-8">
+                        <div class="flex items-center justify-between mb-2">
+                             <div class="flex items-center gap-3 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+                                <span v-if="project.deadline" class="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-lg">
+                                    <span class="i-ph-calendar-bold opacity-70 text-accent-primary"></span>
+                                    {{ formatDate(project.deadline) }}
+                                </span>
+                                <span class="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-lg">
+                                    <span class="i-ph-lightning-bold opacity-70" :class="project.priorityColor"></span>
+                                    <span :class="project.priorityColor">{{ project.priority }}</span>
+                                </span>
+                            </div>
+                            <span class="text-xs font-black text-white/80">{{ project.progress }}%</span>
                         </div>
 
                         <!-- Progress Bar -->
-                        <div class="w-24 bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                            <div class="h-full bg-blue-500 rounded-full" :style="{ width: `${project.progress}%` }">
+                        <div class="w-full bg-white/5 rounded-full h-2 overflow-hidden border border-white/5">
+                            <div class="h-full bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(var(--accent-rgb),0.3)]" :style="{ width: `${project.progress}%` }">
                             </div>
                         </div>
                     </div>
@@ -87,98 +95,98 @@
 
                 <!-- Empty State -->
                 <div v-if="projects.length === 0"
-                    class="col-span-full flex flex-col items-center justify-center h-64 border-2 border-dashed border-zinc-800 rounded-xl text-zinc-500">
-                    <span class="i-ph-projector-screen text-4xl mb-4 opacity-50"></span>
-                    <p>No active projects found</p>
-                    <button @click="openCreateModal" class="mt-4 text-blue-400 hover:text-blue-300 text-sm">
-                        Create your first project
+                    class="col-span-full flex flex-col items-center justify-center h-80 border-2 border-dashed border-white/5 rounded-3xl text-zinc-600 bg-zinc-900/10">
+                    <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">
+                        <span class="i-ph-folder-open-bold text-4xl opacity-50"></span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">No active operations</h3>
+                    <p class="text-sm">Initiate a new project to start tracking progress.</p>
+                    <button @click="openCreateModal" class="mt-6 text-accent-primary hover:text-white font-black text-sm uppercase tracking-widest transition-colors">
+                        Launch Initial Phase
                     </button>
                 </div>
             </div>
         </main>
 
-        <!-- Create Modal (Simple for now) -->
-        <ClientOnly>
-            <Dialog :open="isCreateModalOpen" @close="isCreateModalOpen = false" class="relative z-50">
-                <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" aria-hidden="true" />
-                <div class="fixed inset-0 flex items-center justify-center p-4">
-                    <DialogPanel class="w-full max-w-md rounded-2xl bg-zinc-900 border border-white/10 p-6 shadow-xl">
-                        <DialogTitle class="text-xl font-bold text-white mb-4">New Project</DialogTitle>
+        <!-- New Project Bottom Sheet -->
+        <BottomSheet :is-open="isCreateModalOpen" title="New Operation" @close="isCreateModalOpen = false">
+            <template #description>Define the parameters for this new initiative.</template>
+            
+            <form @submit.prevent="handleCreate" class="space-y-6 pb-2">
+                <div class="space-y-4">
+                    <div class="group">
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2 px-1">Identity</label>
+                        <input v-model="newProjectForm.name" type="text" required
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-accent-primary transition-all shadow-inner"
+                            placeholder="e.g. Project Orion" />
+                    </div>
+                    
+                    <div class="group">
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2 px-1">Objective</label>
+                        <textarea v-model="newProjectForm.description" rows="3"
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-accent-primary transition-all shadow-inner"
+                            placeholder="Mission details..."></textarea>
+                    </div>
 
-                        <form @submit.prevent="handleCreate" class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-medium text-zinc-400 mb-1">Project Name</label>
-                                <input v-model="newProjectForm.name" type="text" required
-                                    class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                                    placeholder="e.g. Q4 Marketing Campaign" />
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-zinc-400 mb-1">Description</label>
-                                <textarea v-model="newProjectForm.description" rows="3"
-                                    class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                                    placeholder="Brief overview of the project..."></textarea>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-medium text-zinc-400 mb-1">Priority</label>
-                                    <select v-model="newProjectForm.priority"
-                                        class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
-                                        <option :value="Priority.LOW">Low</option>
-                                        <option :value="Priority.MEDIUM">Medium</option>
-                                        <option :value="Priority.HIGH">High</option>
-                                        <option :value="Priority.CRITICAL">Critical</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-zinc-400 mb-1">Deadline</label>
-                                    <input v-model="newProjectForm.deadline" type="date"
-                                        class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500" />
-                                </div>
-                            </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="group">
+                            <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2 px-1">Priority</label>
+                            <select v-model="newProjectForm.priority"
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-accent-primary transition-all appearance-none cursor-pointer">
+                                <option :value="Priority.LOW">Low Priority</option>
+                                <option :value="Priority.MEDIUM">Standard Priority</option>
+                                <option :value="Priority.HIGH">High Priority</option>
+                                <option :value="Priority.CRITICAL">Critical Mission</option>
+                            </select>
+                        </div>
+                        <div class="group">
+                            <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2 px-1">Target Date</label>
+                            <input v-model="newProjectForm.deadline" type="date"
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-accent-primary transition-all" />
+                        </div>
+                    </div>
 
-                            <div>
-                                <label class="block text-xs font-medium text-zinc-400 mb-1">Purpose <span
-                                        class="text-red-500">*</span></label>
-                                <div class="grid grid-cols-2 gap-2 mb-2">
-                                    <button type="button" v-for="p in purposeOptions" :key="p"
-                                        @click="newProjectForm.purpose = p; isCustomPurpose = false" :class="[
-                                            'px-3 py-2 text-xs font-medium rounded-lg border transition-colors text-left',
-                                            newProjectForm.purpose === p && !isCustomPurpose
-                                                ? 'bg-blue-600 border-blue-500 text-white'
-                                                : 'bg-black/20 border-white/10 text-zinc-400 hover:bg-white/5'
-                                        ]">
-                                        {{ p }}
-                                    </button>
-                                    <button type="button" @click="isCustomPurpose = true; newProjectForm.purpose = ''"
-                                        :class="[
-                                            'px-3 py-2 text-xs font-medium rounded-lg border transition-colors text-left',
-                                            isCustomPurpose
-                                                ? 'bg-blue-600 border-blue-500 text-white'
-                                                : 'bg-black/20 border-white/10 text-zinc-400 hover:bg-white/5'
-                                        ]">
-                                        Custom...
-                                    </button>
-                                </div>
-                                <input v-if="isCustomPurpose" v-model="newProjectForm.purpose" type="text"
-                                    class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                                    placeholder="Enter custom purpose..." required />
-                            </div>
-
-                            <div class="flex justify-end gap-3 mt-6">
-                                <button type="button" @click="isCreateModalOpen = false"
-                                    class="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">
-                                    Cancel
-                                </button>
-                                <button type="submit" :disabled="isCreating"
-                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
-                                    {{ isCreating ? 'Creating...' : 'Create Project' }}
-                                </button>
-                            </div>
-                        </form>
-                    </DialogPanel>
+                    <div>
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-3 px-1">Classification <span
+                                class="text-accent-primary">*</span></label>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+                            <button type="button" v-for="p in purposeOptions" :key="p"
+                                @click="newProjectForm.purpose = p; isCustomPurpose = false" :class="[
+                                    'px-4 py-3 text-xs font-bold rounded-xl border transition-all text-center uppercase tracking-tighter',
+                                    newProjectForm.purpose === p && !isCustomPurpose
+                                        ? 'bg-accent-primary border-accent-primary text-white shadow-lg shadow-accent-primary/20'
+                                        : 'bg-white/5 border-white/10 text-zinc-500 hover:bg-white/10 hover:text-white'
+                                ]">
+                                {{ p }}
+                            </button>
+                            <button type="button" @click="isCustomPurpose = true; newProjectForm.purpose = ''"
+                                :class="[
+                                    'px-4 py-3 text-xs font-bold rounded-xl border transition-all text-center uppercase tracking-tighter',
+                                    isCustomPurpose
+                                        ? 'bg-accent-primary border-accent-primary text-white shadow-lg shadow-accent-primary/20'
+                                        : 'bg-white/5 border-white/10 text-zinc-500 hover:bg-white/10 hover:text-white'
+                                ]">
+                                Custom
+                            </button>
+                        </div>
+                        <input v-if="isCustomPurpose" v-model="newProjectForm.purpose" type="text"
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-accent-primary transition-all animate-slide-up"
+                            placeholder="Specify custom classification..." required />
+                    </div>
                 </div>
-            </Dialog>
-        </ClientOnly>
+
+                <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 font-bold">
+                    <button type="button" @click="isCreateModalOpen = false"
+                        class="px-6 py-3 text-sm text-zinc-500 hover:text-white transition-colors order-2 sm:order-1 capitalize">
+                        Cancel
+                    </button>
+                    <button type="submit" :disabled="isCreating"
+                        class="px-8 py-3 bg-accent-primary hover:bg-accent-secondary text-white rounded-2xl text-sm transition-all disabled:opacity-50 shadow-xl shadow-accent-primary/20 order-1 sm:order-2 uppercase tracking-widest">
+                        {{ isCreating ? 'Initializing...' : 'Confirm Launch' }}
+                    </button>
+                </div>
+            </form>
+        </BottomSheet>
     </div>
 </template>
 
@@ -188,6 +196,7 @@ import { Project } from '~/models/Project';
 import { ProjectStatus } from '../../../config/status';
 import { Priority } from '../../../config/priority';
 import SkeletonLoader from '~/components/ui/SkeletonLoader.vue';
+import BottomSheet from '~/components/ui/BottomSheet.vue';
 
 definePageMeta({
     layout: 'default',
@@ -237,7 +246,6 @@ const handleCreate = async () => {
             name: newProjectForm.value.name,
             description: newProjectForm.value.description,
             priority: newProjectForm.value.priority,
-            deadline: newProjectForm.value.deadline ? new Date(newProjectForm.value.deadline) : null,
             deadline: newProjectForm.value.deadline ? new Date(newProjectForm.value.deadline) : null,
             status: ProjectStatus.ACTIVE,
             progress: 0,

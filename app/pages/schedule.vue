@@ -2,7 +2,7 @@
     <div class="h-full flex flex-col">
         <!-- Header -->
         <header
-            class="flex-none px-4 md:px-6 py-4 md:py-6 border-b border-white/10 bg-zinc-900/50 backdrop-blur-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            class="flex-none px-4 md:px-6 py-4 md:py-6 border-b border-white/10 bg-zinc-900/50 backdrop-blur-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 relative z-30">
             <div>
                 <Breadcrumbs
                     :items="[{ label: 'Home', to: '/', icon: 'i-heroicons-home' }, { label: 'Schedule', icon: 'i-heroicons-calendar' }]"
@@ -12,8 +12,32 @@
             </div>
             <div class="flex items-center gap-2 md:gap-3 flex-wrap">
                 <MonthNavigator v-model="currentDate" />
+                
+                <!-- Voice Input Toggle (Premium) -->
+                <button @click="toggleSpeech" :disabled="!isSupported" :class="[
+                    'relative group/mic p-2.5 rounded-xl border transition-all duration-500 flex items-center justify-center overflow-hidden',
+                    isListening 
+                        ? 'bg-red-500/20 border-red-500/50 text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.25)] scale-105' 
+                        : 'bg-zinc-800/80 border-white/20 text-zinc-100 hover:text-white hover:border-blue-500/50 hover:bg-zinc-700/80 shadow-lg shadow-black/40',
+                    !isSupported ? 'opacity-50 grayscale cursor-not-allowed border-zinc-700 bg-zinc-900/50' : ''
+                ]" :title="!isSupported ? 'Speech recognition not supported in this browser' : 'Voice Input'">
+                    <!-- Waveform background animation -->
+                    <div v-if="isListening" class="absolute inset-0 flex items-center justify-center gap-0.5 opacity-40 pointer-events-none">
+                        <div v-for="i in 4" :key="i" 
+                            class="w-0.5 bg-white rounded-full" 
+                            :class="['animate-pulse']"
+                            :style="{ height: `${[8, 14, 10, 16][i-1]}px`, animationDelay: `${i * 0.15}s` }">
+                        </div>
+                    </div>
+                    
+                    <span :class="[
+                        'text-xl relative z-10 transition-all duration-300', 
+                        !isSupported ? 'i-ph-microphone-slash' : (isListening ? 'i-ph-waveform-fill' : 'i-ph-microphone-fill group-hover/mic:scale-110')
+                    ]"></span>
+                </button>
+
                 <button @click="showEventModal = true"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors shadow-lg shadow-blue-500/10">
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors shadow-lg shadow-blue-500/10 border border-white/10">
                     New Event
                 </button>
             </div>
@@ -87,23 +111,47 @@
                         </button>
                     </div>
 
-                    <!-- Smart Input -->
-                    <div class="relative group">
-                        <div
-                            class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-lg transition-opacity opacity-0 group-hover:opacity-100">
+                    <!-- Smart Input & Dictation -->
+                    <div class="relative group flex gap-2">
+                        <div class="relative flex-1">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-lg transition-opacity opacity-0 group-hover:opacity-100">
+                            </div>
+                            <div
+                                class="relative flex items-center bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all h-full">
+                                <span class="i-ph-sparkle text-blue-400 mr-2 animate-pulse"></span>
+                                <input v-model="smartInput" @keydown.enter="handleSmartAdd" :disabled="isParsing"
+                                    type="text" placeholder="&quot;Lunch with Bob tomorrow at 1pm&quot;"
+                                    class="w-full bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none" />
+                                <button v-if="smartInput" @click="handleSmartAdd" :disabled="isParsing"
+                                    class="p-1 hover:bg-white/10 rounded-lg transition-colors text-blue-400 ml-1">
+                                    <span v-if="isParsing" class="i-ph-spinner animate-spin"></span>
+                                    <span v-else class="i-ph-arrow-right"></span>
+                                </button>
+                            </div>
                         </div>
-                        <div
-                            class="relative flex items-center bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all">
-                            <span class="i-ph-sparkle text-blue-400 mr-2 animate-pulse"></span>
-                            <input v-model="smartInput" @keydown.enter="handleSmartAdd" :disabled="isParsing"
-                                type="text" placeholder="&quot;Lunch with Bob tomorrow at 1pm&quot;"
-                                class="w-full bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none" />
-                            <button v-if="smartInput" @click="handleSmartAdd" :disabled="isParsing"
-                                class="p-1 hover:bg-white/10 rounded-lg transition-colors text-blue-400">
-                                <span v-if="isParsing" class="i-ph-spinner animate-spin"></span>
-                                <span v-else class="i-ph-arrow-right"></span>
-                            </button>
-                        </div>
+
+                        <!-- Mic Button (Integrated Sidebar) -->
+                        <button @click="toggleSpeech" :disabled="!isSupported" :class="[
+                            'relative group/side-mic p-3 rounded-xl border transition-all duration-500 flex items-center justify-center shadow-sm shrink-0 overflow-hidden',
+                            isListening 
+                                ? 'bg-red-500/20 border-red-500/50 text-red-100 shadow-[0_0_15px_rgba(239,68,68,0.2)] scale-105' 
+                                : 'bg-zinc-800/80 border-white/20 text-zinc-100 hover:text-white hover:border-blue-500/50 hover:bg-zinc-700/80',
+                            !isSupported ? 'opacity-50 grayscale cursor-not-allowed border-zinc-700 bg-zinc-900/50' : ''
+                        ]" :title="!isSupported ? 'Speech recognition not supported' : (isListening ? 'Stop listening' : 'Start dictation')">
+                            <!-- Subtle Waveform for Sidebar -->
+                            <div v-if="isListening" class="absolute inset-0 flex items-center justify-center gap-0.5 opacity-40 pointer-events-none">
+                                <div v-for="i in 3" :key="i" 
+                                    class="w-0.5 bg-white rounded-full animate-bounce" 
+                                    :style="{ height: `${[6, 12, 8][i-1]}px`, animationDelay: `${i * 0.2}s` }">
+                                </div>
+                            </div>
+                            
+                            <span :class="[
+                                'text-lg relative z-10 transition-all duration-300', 
+                                !isSupported ? 'i-ph-microphone-slash' : (isListening ? 'i-ph-waveform-fill' : 'i-ph-microphone-fill group-hover/side-mic:scale-110')
+                            ]"></span>
+                        </button>
                     </div>
                 </div>
 
@@ -249,6 +297,7 @@
 <script setup lang="ts">
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, isToday as _isToday } from 'date-fns';
+import { useSpeechRecognition } from '@vueuse/core';
 import Breadcrumbs from '~/components/ui/Breadcrumbs.vue';
 import MonthNavigator from '~/components/ui/MonthNavigator.vue';
 
@@ -400,8 +449,30 @@ const showPreviewModal = ref(false);
 const pendingEvents = ref<any[]>([]);
 const isCreating = ref(false);
 
+// Voice Dictation
+const { isSupported, isListening, result: speechResult, start: startSpeech, stop: stopSpeech } = useSpeechRecognition({
+    lang: 'en-US',
+    continuous: true,
+    interimResults: true,
+});
+
+watch(speechResult, (newVal) => {
+    if (newVal) {
+        smartInput.value = newVal;
+    }
+});
+
+const toggleSpeech = () => {
+    if (isListening.value) {
+        stopSpeech();
+    } else {
+        startSpeech();
+    }
+};
+
 // Smart Add
 const handleSmartAdd = async () => {
+    if (isListening.value) stopSpeech();
     if (!smartInput.value.trim()) return;
     isParsing.value = true;
 

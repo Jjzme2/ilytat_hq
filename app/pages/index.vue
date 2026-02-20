@@ -1,22 +1,36 @@
 <template>
   <div class="space-y-4 md:space-y-6">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
       <div>
-        <h1 class="text-2xl md:text-3xl font-bold text-text-primary">Digital Office</h1>
-        <p class="text-text-secondary mt-1">Welcome back, Operator.</p>
+        <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight mb-2">
+          Control Center
+        </h1>
+        <div class="flex items-center gap-2 text-zinc-400">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <p class="text-sm font-medium">System Online. Welcome back, Operator.</p>
+        </div>
       </div>
-      <div class="flex gap-3 w-full md:w-auto">
+      <div class="flex flex-wrap gap-3 w-full md:w-auto">
+        <!-- Reorder Toggle for Mobile -->
+        <button v-if="isMobile" @click="isReorderMode = !isReorderMode"
+          :class="[
+            'flex-1 md:flex-none px-5 py-3 rounded-2xl border transition-all duration-300 text-sm font-bold flex items-center justify-center gap-2 shadow-xl',
+            isReorderMode 
+              ? 'bg-accent-primary border-accent-primary text-white shadow-accent-primary/30 scale-105' 
+              : 'bg-white/5 border-white/10 text-zinc-400'
+          ]">
+          <span :class="isReorderMode ? 'i-ph-check-bold' : 'i-ph-arrows-out-card-bold'" class="text-lg"></span>
+          {{ isReorderMode ? 'Done Reordering' : 'Reorder Layout' }}
+        </button>
+
         <button @click="showCustomizer = true"
-          class="w-full md:w-auto px-4 py-2.5 md:py-2 bg-secondary text-text-primary border border-border rounded-lg hover:bg-secondary/80 transition-colors shadow-sm text-sm font-medium flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-          </svg>
+          class="flex-1 md:flex-none px-5 py-3 bg-zinc-900/50 text-white border border-white/10 rounded-2xl hover:bg-zinc-800 transition-all shadow-xl text-sm font-bold flex items-center justify-center gap-2 backdrop-blur-md">
+          <span class="i-ph-sliders-horizontal-bold text-lg"></span>
           Customize
         </button>
         <button @click="openCommandPalette"
-          class="w-full md:w-auto px-4 py-2.5 md:py-2 bg-accent-primary text-white rounded-lg hover:bg-accent-secondary transition-colors shadow-lg shadow-accent-primary/20 text-sm font-medium">
+          class="flex-1 md:flex-none px-5 py-3 bg-gradient-to-tr from-accent-primary to-accent-secondary text-white rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-accent-primary/20 text-sm font-bold">
           Quick Action
         </button>
       </div>
@@ -24,10 +38,10 @@
 
     <!-- Responsive Draggable Grid -->
     <template v-if="isLoading">
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-        <div v-for="i in 3" :key="i" class="bg-zinc-900/40 border border-white/5 rounded-xl p-6 h-64">
-          <SkeletonLoader width="150px" height="24px" class="mb-4" />
-          <SkeletonLoader width="100%" height="100%" />
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div v-for="i in 3" :key="i" class="bg-zinc-900/40 border border-white/5 rounded-3xl p-8 h-64 backdrop-blur-sm">
+          <SkeletonLoader width="150px" height="24px" class="mb-6 rounded-full" />
+          <SkeletonLoader width="100%" height="100%" class="rounded-2xl" />
         </div>
       </div>
     </template>
@@ -36,35 +50,46 @@
       v-else-if="localWidgets.length > 0"
       v-model="localWidgets"
       item-key="id"
-      handle=".drag-handle"
-      ghost-class="opacity-30"
-      :animation="200"
-      class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"
+      :handle="isMobile ? (isReorderMode ? '.drag-handle' : '.non-existent') : '.drag-handle'"
+      ghost-class="opacity-20 scale-95"
+      :animation="300"
+      class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
       @end="onDragEnd"
     >
       <template #item="{ element }">
-        <div class="relative group">
+        <div class="relative group" :class="isReorderMode && isMobile ? 'ring-2 ring-accent-primary/50 ring-offset-4 ring-offset-zinc-950 rounded-3xl animate-pulse' : ''">
           <!-- Drag Handle -->
           <button
-            class="drag-handle absolute top-3 right-3 z-10 p-1.5 rounded-md
-                   bg-white/5 text-text-tertiary opacity-0 group-hover:opacity-100
-                   hover:bg-white/10 hover:text-text-primary cursor-grab active:cursor-grabbing
-                   transition-all duration-200"
+            class="drag-handle absolute top-4 right-4 z-20 p-2 rounded-xl
+                   bg-white/10 text-white backdrop-blur-md shadow-lg
+                   md:opacity-0 md:group-hover:opacity-100
+                   hover:bg-accent-primary hover:text-white cursor-grab active:cursor-grabbing
+                   transition-all duration-300"
+            :class="isReorderMode && isMobile ? 'scale-110 !opacity-100 bg-accent-primary' : ''"
             title="Drag to reorder"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
               <circle cx="9" cy="5" r="1.5" /><circle cx="15" cy="5" r="1.5" />
               <circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" />
               <circle cx="9" cy="19" r="1.5" /><circle cx="15" cy="19" r="1.5" />
             </svg>
           </button>
-          <component :is="getWidgetComponent(element.id)" v-if="getWidgetComponent(element.id)" />
+          
+          <div class="h-full rounded-3xl border border-white/5 bg-zinc-900/40 backdrop-blur-xl overflow-hidden hover:border-white/10 transition-all duration-500 shadow-2xl">
+            <component :is="getWidgetComponent(element.id)" v-if="getWidgetComponent(element.id)" />
+          </div>
         </div>
       </template>
     </draggable>
 
-    <div v-else class="col-span-full py-12 text-center text-zinc-500">
-      <p>No widgets enabled. Click "Customize" to add some.</p>
+    <div v-else class="py-24 text-center">
+      <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/5">
+        <span class="i-ph-layout-bold text-3xl text-zinc-600"></span>
+      </div>
+      <p class="text-zinc-500 font-medium">No widgets active in your system.</p>
+      <button @click="showCustomizer = true" class="mt-4 text-accent-primary hover:underline font-bold">
+        Initialize Dashboard Modules
+      </button>
     </div>
 
     <!-- Customizer Modal -->
@@ -73,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
 import draggable from 'vuedraggable';
 import { useCommandPalette } from '#imports';
 import { useUserPreferences } from '~/composables/useUserPreferences';
@@ -90,6 +115,12 @@ const { open: openCommandPalette } = useCommandPalette();
 const { preferences, loadPreferences, reorderWidgets } = useUserPreferences();
 const showCustomizer = ref(false);
 const isLoading = ref(true);
+const isReorderMode = ref(false);
+
+// Mobile detection
+const isMobile = ref(false);
+let mediaQuery: MediaQueryList | null = null;
+const updateMobile = () => { isMobile.value = mediaQuery?.matches ?? false };
 
 /**
  * Local copy of enabled widgets for v-model binding with draggable.
@@ -126,10 +157,18 @@ const onDragEnd = async () => {
 };
 
 onMounted(async () => {
+  mediaQuery = window.matchMedia('(max-width: 767px)');
+  updateMobile();
+  mediaQuery.addEventListener('change', updateMobile);
+
   try {
     await loadPreferences();
   } finally {
     isLoading.value = false;
   }
+});
+
+onUnmounted(() => {
+  mediaQuery?.removeEventListener('change', updateMobile);
 });
 </script>

@@ -1,10 +1,13 @@
 <template>
     <div class="h-full flex flex-col md:flex-row overflow-hidden">
         <!-- Conversation List Panel -->
-        <div class="border-r border-white/5 flex flex-col bg-zinc-900/20 transition-all duration-200" :class="[
+        <div class="border-r border-white/5 flex flex-col bg-zinc-950/20 transition-all duration-500" :class="[
             activeConversationId && isMobile ? 'hidden' : 'flex',
-            isMobile ? 'w-full h-full' : 'w-80 shrink-0'
+            isMobile ? 'w-full h-[calc(100vh-14rem)]' : 'w-96 shrink-0'
         ]">
+            <div class="p-6 border-b border-white/5">
+                <h1 class="text-2xl font-black text-white tracking-tight">Messages</h1>
+            </div>
             <ConversationList :conversations="conversationList" :active-id="activeConversationId"
                 :current-user-uid="user?.uid || ''" :username="user?.username" :global-id="user?.globalId"
                 @select="selectConversation" @new-conversation="showNewConvoModal = true"
@@ -12,67 +15,74 @@
         </div>
 
         <!-- Message Thread Panel -->
-        <div class="flex-1 flex flex-col transition-all duration-200" :class="[
+        <div class="flex-1 flex flex-col transition-all duration-500 bg-secondary" :class="[
             !activeConversationId && isMobile ? 'hidden' : 'flex',
-            isMobile ? 'w-full animate-slide-in-right' : ''
+            isMobile ? 'w-full fixed inset-0 z-[60] bg-zinc-950 px-safe' : ''
         ]">
             <template v-if="activeConversationId && activeConversation">
                 <!-- Thread header -->
                 <header
-                    class="flex-none px-4 py-3 border-b border-white/10 flex items-center gap-3 bg-zinc-900/50 backdrop-blur-sm">
+                    class="flex-none px-4 py-4 border-b border-white/5 flex items-center gap-4 bg-zinc-950/80 backdrop-blur-2xl sticky top-0 z-10">
                     <!-- Mobile back button -->
                     <button v-if="isMobile" @click="activeConversationId = null"
-                        class="p-1.5 rounded-lg text-blue-400 hover:bg-white/5 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        class="p-2.5 rounded-2xl bg-white/5 text-accent-primary active:scale-95 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
 
                     <!-- Conversation name -->
                     <div class="flex-1 min-w-0">
-                        <h2 class="text-sm font-bold text-white truncate">{{ activeConversation.name ||
+                        <h2 class="text-base font-black text-white truncate tracking-tight">{{ activeConversation.name ||
                             conversationDisplayName }}</h2>
-                        <p v-if="typingText" class="text-xs text-amber-400 italic">{{ typingText }}</p>
-                        <p v-else class="text-xs text-zinc-500">{{ activeConversation.participants.length }}
-                            participants</p>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            <div v-if="typingText" class="w-1.5 h-1.5 rounded-full bg-accent-primary animate-pulse"></div>
+                            <p v-if="typingText" class="text-[10px] text-accent-primary font-bold uppercase tracking-widest italic animate-pulse">{{ typingText }}</p>
+                            <p v-else class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{{ activeConversation.participants.length }}
+                                operatives active</p>
+                        </div>
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex gap-1">
+                    <div class="flex gap-2">
                         <button @click="togglePin"
-                            class="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 transition-colors"
+                            class="p-2 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 active:scale-95 transition-all"
                             :title="isPinned ? 'Unpin' : 'Pin'">
-                            {{ isPinned ? '📌' : '📍' }}
+                            <span :class="isPinned ? 'i-ph-push-pin-fill text-accent-primary' : 'i-ph-push-pin'" class="text-xl"></span>
                         </button>
                         <button @click="toggleMute"
-                            class="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 transition-colors"
+                            class="p-2 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 active:scale-95 transition-all"
                             :title="isMuted ? 'Unmute' : 'Mute'">
-                            {{ isMuted ? '🔔' : '🔕' }}
+                            <span :class="isMuted ? 'i-ph-bell-slash-fill text-red-400' : 'i-ph-bell'" class="text-xl"></span>
                         </button>
                     </div>
                 </header>
 
                 <!-- Messages -->
-                <MessageThread :messages="activeMessages" :typing-users="activeConversation.typingUsers || []"
-                    :participant-names="activeConversation.participantNames || {}" @reply="handleReply"
-                    @react="handleReact" @toggle-reaction="handleToggleReaction" />
+                <div class="flex-1 overflow-hidden relative">
+                    <MessageThread :messages="activeMessages" :typing-users="activeConversation.typingUsers || []"
+                        :participant-names="activeConversation.participantNames || {}" @reply="handleReply"
+                        @react="handleReact" @toggle-reaction="handleToggleReaction" />
+                </div>
 
                 <!-- Composer -->
-                <MessageComposer :replying-to="replyingTo" @send="handleSend" @typing="handleTyping"
-                    @cancel-reply="replyingTo = null" />
+                <div class="p-4 md:p-6 bg-zinc-950/50 backdrop-blur-xl border-t border-white/5">
+                    <MessageComposer :replying-to="replyingTo" @send="handleSend" @typing="handleTyping"
+                        @cancel-reply="replyingTo = null" />
+                </div>
             </template>
 
             <!-- Empty state -->
-            <div v-else class="flex-1 flex flex-col items-center justify-center text-zinc-500 p-8">
-                <span class="text-5xl mb-4">💬</span>
-                <h3 class="text-lg font-bold text-white mb-1">Your Messages</h3>
-                <p class="text-sm text-zinc-400 text-center max-w-xs">Select a conversation or start a new one to begin
-                    messaging.
-                </p>
+            <div v-else class="flex-1 flex flex-col items-center justify-center text-zinc-500 p-12">
+                <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-8 border border-white/5 shadow-2xl">
+                    <span class="i-ph-chat-circle-dots-bold text-5xl opacity-40"></span>
+                </div>
+                <h3 class="text-xl font-black text-white mb-2 tracking-tight">Intelligence Feed</h3>
+                <p class="text-sm text-zinc-500 text-center max-w-sm font-medium leading-relaxed">Select a secure channel to begin transmission or initiate a new secure line.</p>
                 <button @click="showNewConvoModal = true"
-                    class="mt-4 px-4 py-2 rounded-lg bg-amber-500/10 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors">
-                    Start New Conversation
+                    class="mt-8 px-8 py-3.5 rounded-2xl bg-accent-primary text-white text-sm font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-accent-primary/20">
+                    Initiate Transmission
                 </button>
             </div>
         </div>
