@@ -12,21 +12,15 @@ import { defineEventHandler } from 'h3'
 import { verifyAdminAccess } from '../../utils/adminAuth'
 
 export default defineEventHandler(async (event) => {
-    try {
-        const decoded = await verifyAdminAccess(event)
-        return {
-            access: true,
-            verifiedAt: new Date().toISOString(),
-            role: 'admin',
-            uid: decoded.uid
-        }
-    } catch {
-        // Fallback: grant access if Firebase Admin isn't configured
-        // (local dev without service account credentials)
-        return {
-            access: true,
-            verifiedAt: new Date().toISOString(),
-            role: 'admin'
-        }
+    // SECURITY: Strictly verify admin access.
+    // If verification fails, it throws a 401/403 error, which the client should handle.
+    // Do NOT swallow errors or provide fallbacks here.
+    const decoded = await verifyAdminAccess(event)
+
+    return {
+        access: true,
+        verifiedAt: new Date().toISOString(),
+        role: 'admin',
+        uid: decoded.uid
     }
 })
