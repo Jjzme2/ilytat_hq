@@ -38,7 +38,7 @@
                                 </button>
                             </div>
                         </div>
-                        <button class="ml-auto px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm transition-colors border border-white/5">
+                        <button type="button" class="ml-auto px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm transition-colors border border-white/5">
                             Edit Profile
                         </button>
                     </div>
@@ -49,9 +49,10 @@
                     <h2 class="text-lg font-semibold text-white mb-4">Organization</h2>
                     <div class="space-y-4">
                          <div>
-                            <label class="block text-sm font-medium text-zinc-400 mb-1">Company Logo URL</label>
+                            <label :for="logoInputId" class="block text-sm font-medium text-zinc-400 mb-1">Company Logo URL</label>
                             <div class="flex gap-2">
                                 <input 
+                                    :id="logoInputId"
                                     v-model="logoInput" 
                                     type="text" 
                                     placeholder="https://example.com/logo.png"
@@ -88,6 +89,9 @@
                             </div>
                             <button 
                                 @click="themeStore.toggleTheme"
+                                role="switch"
+                                :aria-checked="themeStore.isDark"
+                                aria-label="Toggle dark mode"
                                 class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-zinc-900"
                                 :class="themeStore.isDark ? 'bg-accent-primary' : 'bg-zinc-700'"
                             >
@@ -102,8 +106,14 @@
                                 <h3 class="text-sm font-medium text-white">Notifications</h3>
                                 <p class="text-xs text-zinc-400">Receive system alerts</p>
                             </div>
-                            <button class="relative inline-flex h-6 w-11 items-center rounded-full bg-accent-primary transition-colors">
-                                <span class="inline-block h-4 w-4 transform translate-x-6 rounded-full bg-white transition-transform" />
+                            <button
+                                role="switch"
+                                aria-checked="false"
+                                aria-label="Notifications (coming soon)"
+                                disabled
+                                class="relative inline-flex h-6 w-11 items-center rounded-full bg-zinc-700 transition-colors opacity-50 cursor-not-allowed"
+                            >
+                                <span class="inline-block h-4 w-4 transform translate-x-1 rounded-full bg-white transition-transform" />
                             </button>
                         </div>
                     </div>
@@ -131,6 +141,7 @@ const { success, error: toastError } = useToast();
 
 const logoInput = ref('');
 const isSaving = ref(false);
+const logoInputId = useId();
 
 // Initialize input with current logo
 watch(() => tenant.value?.logo, (newLogo) => {
