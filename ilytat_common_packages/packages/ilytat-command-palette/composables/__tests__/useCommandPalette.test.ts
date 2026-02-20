@@ -44,6 +44,31 @@ describe('useCommandPalette', () => {
         expect(commands.value).toHaveLength(1)
     })
 
+    it('registerCommands adds multiple commands', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        const cmds = [
+            { id: '1', label: 'One', action: () => { } },
+            { id: '2', label: 'Two', action: () => { } }
+        ]
+        registerCommands(cmds)
+        expect(commands.value).toHaveLength(2)
+        expect(commands.value[0].id).toBe('1')
+        expect(commands.value[1].id).toBe('2')
+    })
+
+    it('registerCommands prevents duplicate IDs', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        const cmds = [
+            { id: '1', label: 'One', action: () => { } },
+            { id: '1', label: 'Duplicate One', action: () => { } },
+            { id: '2', label: 'Two', action: () => { } }
+        ]
+        registerCommands(cmds)
+        expect(commands.value).toHaveLength(2)
+        expect(commands.value[0].id).toBe('1')
+        expect(commands.value[1].id).toBe('2')
+    })
+
     it('filteredCommands filters by label', () => {
         const { registerCommand, filteredCommands, searchQuery } = useCommandPalette()
         registerCommand({ id: 'a', label: 'Dashboard', action: () => { } })
