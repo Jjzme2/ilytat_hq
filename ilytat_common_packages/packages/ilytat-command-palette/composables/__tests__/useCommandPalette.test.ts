@@ -44,6 +44,23 @@ describe('useCommandPalette', () => {
         expect(commands.value).toHaveLength(1)
     })
 
+    it('registerCommands adds multiple commands and handles duplicates', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        const cmds = [
+            { id: '1', label: 'One', action: () => { } },
+            { id: '2', label: 'Two', action: () => { } },
+            { id: '1', label: 'Duplicate One', action: () => { } } // Duplicate ID
+        ]
+
+        registerCommands(cmds)
+
+        expect(commands.value).toHaveLength(2)
+        expect(commands.value[0].id).toBe('1')
+        expect(commands.value[1].id).toBe('2')
+        // Ensure the first one was kept (or whatever logic, currently logic keeps first)
+        expect(commands.value[0].label).toBe('One')
+    })
+
     it('filteredCommands filters by label', () => {
         const { registerCommand, filteredCommands, searchQuery } = useCommandPalette()
         registerCommand({ id: 'a', label: 'Dashboard', action: () => { } })
