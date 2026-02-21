@@ -9,8 +9,9 @@
 
             <!-- Template Selection -->
             <div class="space-y-2">
-                <label class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Template</label>
+                <label :for="`${componentId}-template`" class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Template</label>
                 <select 
+                    :id="`${componentId}-template`"
                     v-model="selectedTemplateId" 
                     @change="handleTemplateChange"
                     class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
@@ -24,9 +25,10 @@
             <!-- Dynamic Fields -->
             <div v-if="variables.length > 0" class="space-y-4">
                 <div v-for="variable in variables" :key="variable" class="space-y-1">
-                    <label class="text-xs font-medium text-zinc-400 capitalize">{{ formatLabel(variable) }}</label>
+                    <label :for="`${componentId}-${variable}`" class="text-xs font-medium text-zinc-400 capitalize">{{ formatLabel(variable) }}</label>
                     <template v-if="isLongText(variable)">
                         <textarea 
+                            :id="`${componentId}-${variable}`"
                             v-model="formData[variable]"
                             rows="3"
                             class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
@@ -35,6 +37,7 @@
                     </template>
                     <template v-else>
                          <input 
+                            :id="`${componentId}-${variable}`"
                             v-model="formData[variable]"
                             type="text"
                             class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
@@ -50,12 +53,14 @@
 
             <div class="mt-auto flex gap-3 pt-6 border-t border-white/5">
                 <button 
+                    type="button"
                     @click="$emit('cancel')"
                     class="flex-1 px-4 py-2 rounded-lg border border-white/10 text-zinc-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium"
                 >
                     Cancel
                 </button>
                 <button 
+                    type="button"
                     @click="handleSave"
                     class="flex-1 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors text-sm font-medium"
                 >
@@ -71,6 +76,7 @@
                  <span class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Preview</span>
                  <div class="flex gap-2">
                     <button 
+                        type="button"
                         @click="handlePrint"
                         class="px-3 py-1.5 rounded-lg bg-white/50 hover:bg-white border border-zinc-200 text-zinc-700 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
                         title="Export to PDF"
@@ -79,9 +85,11 @@
                         Export PDF
                     </button>
                     <button 
+                        type="button"
                         @click="handlePrint"
                         class="p-1.5 rounded hover:bg-zinc-200 text-zinc-600 transition-colors"
                         title="Print"
+                        aria-label="Print document"
                     >
                         <span class="i-ph-printer w-4 h-4"></span>
                     </button>
@@ -99,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, useId } from 'vue';
 import { documentTemplates, DocumentTemplateModel } from '../../../config/documentTemplates';
 
 
@@ -114,6 +122,7 @@ const templates = documentTemplates;
 const selectedTemplateId = ref(props.initialTemplateId || templates[0]?.name);
 const formData = ref<Record<string, string>>({});
 const variables = ref<string[]>([]);
+const componentId = useId();
 
 // Computed
 const selectedTemplate = computed(() => 
