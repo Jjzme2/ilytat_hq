@@ -96,9 +96,6 @@ export const verifyAdminAccess = async (event: H3Event) => {
     const isIlytatHq = decoded.tenantId === 'ilytat-hq'
 
     const isAdmin = (hasAdminRole && isIlytatHq)
-        || decoded.email === 'zettler.jj@ilytat.com'
-        || decoded.email === 'admin@ilytat.com'
-        || decoded.uid === 'BoHGcwh2ApNQiJJIgjZWBC9hY8I3'
 
     if (!isAdmin) {
         throw createError({ statusCode: 403, statusMessage: 'Admin access required' })

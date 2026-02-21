@@ -41,8 +41,7 @@ service cloud.firestore {
     // Checks if the user is a super admin
     function isSuper() {
       return isAuth() && (
-        (request.auth.token.roles.toSet().hasAny(['super']) && request.auth.token.tenantId == 'ilytat-hq') || 
-        request.auth.token.email == 'admin@ilytat.com'
+        (request.auth.token.roles.toSet().hasAny(['super']) && request.auth.token.tenantId == 'ilytat-hq')
       );
     }
 
