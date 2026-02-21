@@ -57,6 +57,21 @@ export const useCommandPalette = () => {
         }
     };
 
+    const registerCommands = (newCommands: Command[]) => {
+        // Batch registration for performance
+        const validCommands = newCommands.filter(cmd => {
+            if (!commandIds.has(cmd.id)) {
+                commandIds.add(cmd.id);
+                return true;
+            }
+            return false;
+        });
+
+        if (validCommands.length > 0) {
+            commands.value.push(...validCommands);
+        }
+    };
+
     const registerGroup = (group: CommandGroup) => {
         // Prevent duplicates with O(1) lookup
         if (!groupIds.has(group.id)) {
@@ -122,6 +137,7 @@ export const useCommandPalette = () => {
         close,
         toggle,
         registerCommand,
+        registerCommands,
         registerGroup,
         clearCommandsByGroup,
         setActiveIndex,

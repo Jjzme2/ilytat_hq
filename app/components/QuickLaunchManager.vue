@@ -7,22 +7,22 @@ const route = useRoute();
 const projectId = computed(() => route.params.id as string | undefined);
 
 const { links } = useQuickLaunch(projectId);
-const { registerCommand, clearCommandsByGroup } = useCommandPalette();
+const { registerCommands, clearCommandsByGroup } = useCommandPalette();
 
 const updateQuickLaunchCommands = () => {
     // Clear existing group to avoid duplicates and handle removals
     clearCommandsByGroup('Quick Launch');
 
     // Register current links
-    Object.entries(links.value).forEach(([label, url]) => {
-        registerCommand({
-            id: `quicklaunch-${label.replace(/\s+/g, '-').toLowerCase()}`,
-            label,
-            icon: 'i-heroicons-arrow-top-right-on-square',
-            group: 'Quick Launch',
-            action: () => window.open(url as string, '_blank', 'noopener')
-        });
-    });
+    const commands = Object.entries(links.value).map(([label, url]) => ({
+        id: `quicklaunch-${label.replace(/\s+/g, '-').toLowerCase()}`,
+        label,
+        icon: 'i-heroicons-arrow-top-right-on-square',
+        group: 'Quick Launch',
+        action: () => window.open(url as string, '_blank', 'noopener')
+    }));
+
+    registerCommands(commands);
 };
 
 // Update when links change
