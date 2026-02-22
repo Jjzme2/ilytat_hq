@@ -76,6 +76,7 @@
                                 <DocumentCreator 
                                     v-if="!isEditMode"
                                     :initialTemplateId="selectedTemplateId"
+                                    :loading="isLoading"
                                     @save="handleFactorySave" 
                                     @cancel="showDocForm = false" 
                                 />

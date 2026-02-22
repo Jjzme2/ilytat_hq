@@ -9,8 +9,9 @@
 
             <!-- Template Selection -->
             <div class="space-y-2">
-                <label class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Template</label>
+                <label :for="`${baseId}-template`" class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Template</label>
                 <select 
+                    :id="`${baseId}-template`"
                     v-model="selectedTemplateId" 
                     @change="handleTemplateChange"
                     class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
@@ -24,9 +25,10 @@
             <!-- Dynamic Fields -->
             <div v-if="variables.length > 0" class="space-y-4">
                 <div v-for="variable in variables" :key="variable" class="space-y-1">
-                    <label class="text-xs font-medium text-zinc-400 capitalize">{{ formatLabel(variable) }}</label>
+                    <label :for="`${baseId}-${variable}`" class="text-xs font-medium text-zinc-400 capitalize">{{ formatLabel(variable) }}</label>
                     <template v-if="isLongText(variable)">
                         <textarea 
+                            :id="`${baseId}-${variable}`"
                             v-model="formData[variable]"
                             rows="3"
                             class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
@@ -35,6 +37,7 @@
                     </template>
                     <template v-else>
                          <input 
+                            :id="`${baseId}-${variable}`"
                             v-model="formData[variable]"
                             type="text"
                             class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
@@ -57,9 +60,11 @@
                 </button>
                 <button 
                     @click="handleSave"
-                    class="flex-1 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors text-sm font-medium"
+                    :disabled="loading"
+                    class="flex-1 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                    Save Document
+                    <div v-if="loading" class="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                    <span>{{ loading ? 'Saving...' : 'Save Document' }}</span>
                 </button>
             </div>
         </div>
@@ -74,6 +79,7 @@
                         @click="handlePrint"
                         class="px-3 py-1.5 rounded-lg bg-white/50 hover:bg-white border border-zinc-200 text-zinc-700 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
                         title="Export to PDF"
+                        aria-label="Export to PDF"
                     >
                         <span class="i-ph-export-bold text-indigo-500"></span>
                         Export PDF
@@ -82,6 +88,7 @@
                         @click="handlePrint"
                         class="p-1.5 rounded hover:bg-zinc-200 text-zinc-600 transition-colors"
                         title="Print"
+                        aria-label="Print"
                     >
                         <span class="i-ph-printer w-4 h-4"></span>
                     </button>
@@ -99,17 +106,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, useId } from 'vue';
 import { documentTemplates, DocumentTemplateModel } from '../../../config/documentTemplates';
 
 
 const props = defineProps<{
     initialTemplateId?: string;
+    loading?: boolean;
 }>();
 
 const emit = defineEmits(['save', 'cancel']);
 
 // State
+const baseId = useId();
 const templates = documentTemplates;
 const selectedTemplateId = ref(props.initialTemplateId || templates[0]?.name);
 const formData = ref<Record<string, string>>({});
