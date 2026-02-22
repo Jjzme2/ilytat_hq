@@ -6,3 +6,11 @@
 **Vulnerability:** The `server/api/docs.get.ts` endpoint proxied requests to Cloudflare R2 without any authentication or authorization checks.
 **Learning:** Server-side API routes that act as proxies to external storage must always validate authentication before forwarding requests. Relying on obfuscated URLs is not security.
 **Prevention:** Always add `verifyAdminToken` or equivalent middleware at the start of any server-side API handler that accesses sensitive data.
+## 2026-02-13 - [Critical] "Fail Open" Authentication in Admin APIs
+**Vulnerability:** Admin API routes (e.g., `users.get.ts`) wrapped `verifyAdminAccess` in a `try-catch` block that suppressed errors, allowing unauthorized requests to proceed.
+**Learning:** Never catch authentication errors unless you explicitly re-throw or handle them securely. Silent failure leads to unauthorized access.
+**Prevention:** Ensure `verifyAdminAccess` calls are awaited directly, allowing errors to propagate and halt execution.
+## 2026-02-13 - [Critical] Hardcoded Admin Backdoor
+**Vulnerability:** The `verifyAdminAccess` function contained hardcoded email addresses and a specific UID that bypassed role-based checks.
+**Learning:** Hardcoded credentials or user identifiers create persistent backdoors that are difficult to manage and revoke.
+**Prevention:** Strictly use role-based access control (RBAC) via custom claims and avoid hardcoding user identifiers in authorization logic.
