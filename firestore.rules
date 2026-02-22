@@ -174,6 +174,13 @@ service cloud.firestore {
       allow create: if isAuth();
     }
 
+    // User Insights
+    match /user_insights/{insightId} {
+      allow read: if isOwner(resource.data.userId) || isSuper();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isOwner(resource.data.userId) || isSuper();
+    }
+
     // ---------------------------------------------------------------
     // 2. Users & Personal
     // ---------------------------------------------------------------

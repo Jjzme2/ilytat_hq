@@ -3,7 +3,7 @@ import type { IlytatTheme } from '../types'
 // We will import all themes here
 import { glassThemes } from './glass'
 import { minimalThemes } from './minimal'
-import { cybersecurityThemes } from './cyberpunk' // renaming cyberpunk file for clarity if needed, but keeping standard
+import { cyberpunkThemes } from './cyberpunk'
 import { natureThemes } from './nature'
 import { abstractThemes } from './abstract'
 import { solidThemes } from './solid'
@@ -16,7 +16,7 @@ import { getPresetThemes } from '../utils/theme-presets'
 export const themes: IlytatTheme[] = [
     ...glassThemes,
     ...minimalThemes,
-    ...cybersecurityThemes,
+    ...cyberpunkThemes,
     ...natureThemes,
     ...abstractThemes,
     ...solidThemes,

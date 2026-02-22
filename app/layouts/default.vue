@@ -1,11 +1,12 @@
 <template>
-  <div class="flex flex-col h-screen overflow-hidden bg-secondary">
+  <div class="flex flex-col h-screen overflow-hidden">
     <ClientOnly>
       <CommandPalette />
       <ToastContainer />
       <QuickLaunchManager />
       <AIConfig />
       <ContextMenu />
+      <ChatAssistantBar v-if="preferences?.assistantEnabled" />
     </ClientOnly>
 
     <!-- Top Bar: Logo, Search, Profile -->
@@ -72,17 +73,26 @@
           </svg>
         </button>
 
-        <NuxtLink to="/settings" class="flex items-center group ml-1">
-          <div
-            class="w-9 h-9 rounded-xl bg-gradient-to-tr from-accent-primary to-accent-secondary flex items-center justify-center text-white text-xs font-black shadow-lg shadow-accent-primary/20 group-hover:scale-105 group-active:scale-95 transition-all border border-white/10">
-            {{ userInitials }}
-          </div>
-        </NuxtLink>
+        <div class="flex items-center gap-1.5 ml-1">
+          <NuxtLink to="/settings" class="flex items-center group">
+            <div
+              class="w-9 h-9 rounded-xl bg-gradient-to-tr from-accent-primary to-accent-secondary flex items-center justify-center text-white text-xs font-black shadow-lg shadow-accent-primary/20 group-hover:scale-105 group-active:scale-95 transition-all border border-white/10">
+              {{ userInitials }}
+            </div>
+          </NuxtLink>
+          
+          <button @click="handleLogout" 
+            class="w-9 h-9 rounded-xl bg-white/5 hover:bg-red-500/10 text-text-tertiary hover:text-red-400 flex items-center justify-center transition-all group"
+            title="Log Out"
+          >
+            <span class="i-ph-sign-out-bold text-lg group-active:scale-90 transition-transform"></span>
+          </button>
+        </div>
       </div>
     </header>
 
     <!-- Main Content — extra bottom padding on mobile for tab bar -->
-    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-secondary p-4 md:p-8 pb-32 md:pb-8 relative touch-pan-y scroll-smooth">
+    <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8 pb-32 md:pb-8 relative touch-pan-y scroll-smooth">
       <PullToAction>
         <div class="max-w-7xl mx-auto">
           <slot />
@@ -120,19 +130,26 @@
 
 <script setup lang="ts">
 import { useIlytatTheme } from '@theme/composables/useIlytatTheme';
-import { h, computed } from 'vue';
+import ChatAssistantBar from '~/components/ai/ChatAssistantBar.vue';
+import { h, computed, ref, watch } from 'vue';
+import { useScroll } from '@vueuse/core';
 
 const { isDark, applyTheme, applyFavorite } = useIlytatTheme();
 const userStore = useUser();
 const { tenant } = useTenant();
 const { open: openCommandPalette } = useCommandPalette();
 const { isModuleEnabled } = useModules();
+const { preferences, loadPreferences } = useUserPreferences();
 const route = useRoute();
 
 // Scroll-Driven Nav Logic
 const mainContent = ref<HTMLElement | null>(null);
 const { directions, y } = useScroll(mainContent);
 const showNav = ref(true);
+
+onMounted(async () => {
+  await loadPreferences();
+});
 
 watch(directions, (newDirecton) => {
   if (newDirecton.bottom) {

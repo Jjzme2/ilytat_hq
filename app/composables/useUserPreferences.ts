@@ -118,12 +118,31 @@ export const useUserPreferences = () => {
         await updateDashboardLayout(reordered);
     };
 
+    const toggleAssistant = async (enabled: boolean) => {
+        if (!preferences.value || !user.value?.uid) return;
+
+        try {
+            const docRef = getPreferencesRef();
+            if (!docRef) return;
+
+            await updateDoc(docRef, { assistantEnabled: enabled });
+            preferences.value = new UserPreference({
+                ...preferences.value,
+                assistantEnabled: enabled
+            });
+        } catch (e) {
+            console.error('Failed to toggle assistant', e);
+            throw e;
+        }
+    };
+
     return {
         preferences,
         isLoading,
         loadPreferences,
         updateDashboardLayout,
         toggleWidget,
-        reorderWidgets
+        reorderWidgets,
+        toggleAssistant
     };
 };

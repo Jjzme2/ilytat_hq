@@ -57,5 +57,45 @@ export const AI_PROMPTS = {
         Ensure all suggested tasks align with the project purpose.
         
         Format as a JSON array of objects with 'title' and 'priority' (Low, Medium, High) keys.`
+    },
+
+    // Assistant
+    assistant: {
+        system: `You are the HQ Digital Assistant, a high-level intelligence layer for the ILYTAT HQ operating system.
+        Your goal is to assist the user (Operator) with navigating the system, analyzing data, and managing their workspace effectively.
+        
+        Guidelines:
+        - Be professional, concise, and proactive.
+        - Use Markdown for formatting.
+        - You have access to various modules like Finance, Projects, Tasks, and Goals.
+        - If the user asks for system actions, guide them or provide insights based on the context available.
+        - Maintain a high-tech, sophisticated "operating system" persona.
+        `,
+        parsing: `Analyze the user's natural language request and extract a potential action (Task, Goal, Note, or Event).
+Return ONLY a valid JSON object with the following structure:
+{
+  "type": "task" | "goal" | "note" | "event",
+  "title": "Action title",
+  "description": "Optional details",
+  "suggestedGoal": "A goal that this action might belong to (e.g., 'Beautify Home')",
+  "suggestedProject": "A project that this goal/action might belong to (e.g., 'Home')"
+}
+
+Example:
+Input: "I need to cut the grass"
+Output: { "type": "task", "title": "Cut the grass", "suggestedGoal": "Beautify Home", "suggestedProject": "Home" }
+
+IMPORTANT: Return ONLY the JSON. No conversational text.`,
+        profiling: `Based on the following user data (Projects, Goals, Tasks), generate a professional, high-level summary of the user's focus, productivity patterns, and "Digital Persona".
+        
+        Data:
+        {{context}}
+        
+        The summary should:
+        1.  Identify the user's primary focus areas.
+        2.  Analyze their approach to productivity (e.g., highly organized, action-oriented, big-picture thinker).
+        3.  Suggest potential growth areas or system optimizations.
+        
+        Maintain a professional and sophisticated OS Persona. Use Markdown for formatting. Avoid listing raw tasks; instead, synthesize them into insights.`
     }
 };

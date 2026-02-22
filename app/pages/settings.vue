@@ -137,6 +137,25 @@
                                     class="inline-block h-4 w-4 transform translate-x-6 rounded-full bg-white transition-transform" />
                             </button>
                         </div>
+
+                        <!-- AI Assistant Toggle -->
+                        <div class="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-accent-primary/10 flex items-center justify-center text-accent-primary">
+                                    <span class="i-ph-sparkle-bold text-lg"></span>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-medium text-white">AI Assistant Bar</h3>
+                                    <p class="text-xs text-zinc-400">Enable the global intelligence layer</p>
+                                </div>
+                            </div>
+                            <button @click="toggleAssistant(!preferences?.assistantEnabled)"
+                                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-zinc-900"
+                                :class="preferences?.assistantEnabled ? 'bg-accent-primary' : 'bg-zinc-700'">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                                    :class="preferences?.assistantEnabled ? 'translate-x-6' : 'translate-x-1'" />
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -176,6 +195,11 @@ const userStore = useUser();
 const db = useFirestore();
 const { tenant, tenantId } = useTenant();
 const { success, error: toastError } = useToast();
+const { preferences, loadPreferences, toggleAssistant } = useUserPreferences();
+
+onMounted(async () => {
+    await loadPreferences();
+});
 
 // Logic moved to components/admin/tabs/OrganizationSettings.vue
 

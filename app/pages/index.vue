@@ -60,15 +60,15 @@
         <div class="relative group" :class="isReorderMode && isMobile ? 'ring-2 ring-accent-primary/50 ring-offset-4 ring-offset-zinc-950 rounded-3xl animate-pulse' : ''">
           <!-- Drag Handle -->
           <button
-            class="drag-handle absolute top-4 right-4 z-20 p-2 rounded-xl
-                   bg-white/10 text-white backdrop-blur-md shadow-lg
+            class="drag-handle absolute top-1 left-1/2 -translate-x-1/2 z-20 p-1.5 rounded-full
+                   bg-zinc-800/80 text-white/50 backdrop-blur-md border border-white/10
                    md:opacity-0 md:group-hover:opacity-100
                    hover:bg-accent-primary hover:text-white cursor-grab active:cursor-grabbing
                    transition-all duration-300"
             :class="isReorderMode && isMobile ? 'scale-110 !opacity-100 bg-accent-primary' : ''"
             title="Drag to reorder"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
               <circle cx="9" cy="5" r="1.5" /><circle cx="15" cy="5" r="1.5" />
               <circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" />
               <circle cx="9" cy="19" r="1.5" /><circle cx="15" cy="19" r="1.5" />
@@ -94,6 +94,7 @@
 
     <!-- Customizer Modal -->
     <DashboardCustomizer v-if="showCustomizer" @close="showCustomizer = false" />
+
   </div>
 </template>
 

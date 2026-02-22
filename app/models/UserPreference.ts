@@ -11,12 +11,14 @@ export interface DashboardWidget {
 export class UserPreference extends BaseModel {
     theme: string;
     notifications: boolean;
+    assistantEnabled: boolean;
     dashboardLayout: DashboardWidget[];
 
     constructor(data: any = {}) {
         super(data);
         this.theme = data.theme || 'system';
         this.notifications = data.notifications !== undefined ? data.notifications : true;
+        this.assistantEnabled = data.assistantEnabled !== undefined ? data.assistantEnabled : true;
         // Default layout
         // Default layout
         if (data.dashboardLayout && data.dashboardLayout.length > 0) {
@@ -47,6 +49,7 @@ export class UserPreference extends BaseModel {
             ...super.toJSON(),
             theme: this.theme,
             notifications: this.notifications,
+            assistantEnabled: this.assistantEnabled,
             dashboardLayout: this.dashboardLayout
         };
     }

@@ -13,49 +13,82 @@ const favoriteThemeId = useStorage('ilytat-theme-fav', 'luxury-rose-gold')
 const customThemes = useStorage<IlytatTheme[]>('ilytat-custom-themes', [])
 const isInitialized = ref(false)
 
-// We need a way to access the user and db globally or initialize it once "lazily"
-// But standard composable pattern suggests we might need to trigger the init logic 
-// from within a component context (to get nuxt/vuefire context).
-// However, the state itself should be shared.
+// Moved from composable to module level to avoid initialization order issues
+// and ensure these "singletons" are truly shared across all instances
+const allThemes = computed(() => {
+    return [...presetThemes, ...customThemes.value]
+})
+
+const currentTheme = computed(() => {
+    const theme = allThemes.value.find(t => t.id === currentThemeId.value)
+    if (theme) return theme
+
+    // If not found, fallback to first preset or a safe minimal object
+    return presetThemes[0] || ({
+        id: 'fallback',
+        name: 'Fallback',
+        category: 'minimal' as const,
+        isDark: false,
+        colors: {} as any
+    } as IlytatTheme)
+})
+
+// Computed helper for dark mode status
+const isDark = computed(() => currentTheme.value.isDark)
+
+/**
+ * Applies theme CSS variables to the document root
+ */
+function applyRootStyles(theme: IlytatTheme) {
+    if (typeof document !== 'undefined') {
+        const root = document.documentElement
+
+        // Handle dark class for Tailwind
+        if (theme.isDark) {
+            root.classList.add('dark')
+        } else {
+            root.classList.remove('dark')
+        }
+
+        // Set all CSS variables
+        const colors = theme.colors || {}
+
+        // Default values for common system variables to prevent stale/missing styles
+        const defaults: Record<string, string> = {
+            '--border-radius': '8px',
+            '--glass-blur': '12px',
+            '--glass-opacity': '0.7'
+        }
+
+        // Combine defaults with theme colors
+        const finalColors = { ...defaults, ...colors }
+
+        Object.entries(finalColors).forEach(([key, value]) => {
+            if (value !== undefined) {
+                root.style.setProperty(key, String(value))
+            }
+        })
+    }
+}
 
 let unsubscribeSnapshot: (() => void) | null = null
 let unsubscribeUserTheme: (() => void) | null = null
 
 export const useIlytatTheme = () => {
-    // Firestore Integration
-    // We instantiate these hooks inside the composable because they rely on injection context
+    // Firestore Integration - These must stay in the composable context
     const { user } = useUser()
     const db = useFirestore()
 
-    // Initialize the singleton listener only once
-    // We watch the user from ANY instance, but we only want one listener.
-    // The issue is `user` is reactive passed from `useUser`. 
-    // If we have multiple `useIlytatTheme` calls, we have multiple watchers.
-
-    // Better pattern: dedicated init function or check if listener is active.
-
-    // Let's use a module-level watcher setup flag?
+    // Initialize module-level listeners and watchers only once
     if (!isInitialized.value && typeof window !== 'undefined') {
         isInitialized.value = true
 
-        // We need to set up the watcher that persists across component mounts?
-        // Actually, `useUser` returns a Ref. We can watch that Ref. 
-        // But `useUser` might return different refs if called multiple times? 
-        // `useUser` uses `useState`, so the underlying state is shared.
-
+        // 1. Sync from Firestore when user UID changes
         watch(() => user.value?.uid, (uid) => {
-            // Cleanup previous listeners if any
-            if (unsubscribeSnapshot) {
-                unsubscribeSnapshot()
-                unsubscribeSnapshot = null
-            }
-            if (unsubscribeUserTheme) {
-                unsubscribeUserTheme()
-                unsubscribeUserTheme = null
-            }
+            if (unsubscribeSnapshot) unsubscribeSnapshot()
+            if (unsubscribeUserTheme) unsubscribeUserTheme()
 
             if (uid) {
-                // 1. Sync Custom Themes
                 console.log('UseIlytatTheme: Subscribing to themes for user:', uid)
                 const themesRef = collection(db, `users/${uid}/themes`)
                 unsubscribeSnapshot = onSnapshot(themesRef, (snapshot) => {
@@ -63,107 +96,46 @@ export const useIlytatTheme = () => {
                     snapshot.forEach((doc) => {
                         fsThemes.push(doc.data() as IlytatTheme)
                     })
-
-                    if (fsThemes.length > 0) {
-                        customThemes.value = fsThemes
-                    } else {
-                        // Explicitly clear if the collection is empty
-                        customThemes.value = []
-                    }
-                }, (error) => {
-                    // Handle permission denied gracefully
-                    console.error("Theme sync error:", error.message)
+                    customThemes.value = fsThemes
                 })
 
-                // 2. Sync Active Theme Preference
                 const userRef = doc(db, `users/${uid}`)
                 unsubscribeUserTheme = onSnapshot(userRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const data = docSnap.data()
                         if (data.theme && data.theme !== currentThemeId.value) {
-                            console.log('UseIlytatTheme: Synced theme from Firestore:', data.theme)
-                            // Update local state without triggering another write if possible
-                            // But applyTheme does side effects (CSS vars), so we should call it.
-                            // We just need to make sure applyTheme doesn't create an infinite loop.
-                            // The check `data.theme !== currentThemeId.value` helps.
-
-                            // However, we want to apply it visually:
-                            const theme = allThemes.value.find(t => t.id === data.theme)
-                            if (theme) {
-                                currentThemeId.value = theme.id
-                                applyRootStyles(theme)
-                            }
+                            currentThemeId.value = data.theme
                         }
-
-                        // Sync Favorite Theme
                         if (data.favoriteTheme && data.favoriteTheme !== favoriteThemeId.value) {
                             favoriteThemeId.value = data.favoriteTheme
                         }
                     }
-                }, (error) => {
-                    console.error("User theme sync error:", error.message)
                 })
             } else {
-                // No user logged in: Clear custom themes from local storage to prevent privacy leak
-                console.log('UseIlytatTheme: No user session, clearing custom themes')
                 customThemes.value = []
             }
         }, { immediate: true })
-    }
 
-
-    // Combine all themes
-    const allThemes = computed(() => {
-        return [...presetThemes, ...customThemes.value]
-    })
-
-    const currentTheme = computed(() => {
-        return allThemes.value.find(t => t.id === currentThemeId.value) ?? presetThemes[0] ?? {
-            id: 'fallback',
-            name: 'Fallback',
-            category: 'minimal',
-            isDark: false,
-            colors: {} as any
-        }
-    })
-
-    // Computed helper for dark mode status based on the selected theme's property
-    const isDark = computed(() => currentTheme.value.isDark)
-
-    function applyRootStyles(theme: IlytatTheme) {
-        if (typeof document !== 'undefined') {
-            const root = document.documentElement
-
-            // Handle dark class for Tailwind
-            if (theme.isDark) {
-                root.classList.add('dark')
-            } else {
-                root.classList.remove('dark')
+        // 2. Global application of styles when currentTheme computed changes
+        watch(() => currentTheme.value, (theme) => {
+            if (theme && theme.id !== 'fallback') {
+                applyRootStyles(theme)
             }
-
-            // Set all CSS variables
-            Object.entries(theme.colors).forEach(([key, value]) => {
-                root.style.setProperty(key, value)
-            })
-        }
+        }, { immediate: true, deep: true })
     }
 
     function applyTheme(themeId: string) {
         const theme = allThemes.value.find(t => t.id === themeId)
         if (!theme) {
             console.warn(`Theme ${themeId} not found`)
+            currentThemeId.value = themeId
             return
         }
 
         currentThemeId.value = theme.id
-        applyRootStyles(theme)
 
-        // Sync to Firestore if logged in
         if (user.value?.uid) {
             const userRef = doc(db, `users/${user.value.uid}`)
-            // We use setDoc with merge to avoid overwriting other user fields if we only want to update theme
-            // Or updateDoc if we know the doc exists. `useUser` usually ensures profile exists?
-            // Safest is setDoc with merge: true
             setDoc(userRef, { theme: theme.id }, { merge: true }).catch(err => {
                 console.error('Failed to save theme preference', err)
             })
@@ -172,7 +144,6 @@ export const useIlytatTheme = () => {
 
     function setFavorite(themeId: string) {
         favoriteThemeId.value = themeId
-
         if (user.value?.uid) {
             const userRef = doc(db, `users/${user.value.uid}`)
             setDoc(userRef, { favoriteTheme: themeId }, { merge: true }).catch(err => {
@@ -194,7 +165,6 @@ export const useIlytatTheme = () => {
     }
 
     async function saveTheme(theme: IlytatTheme) {
-        // Optimistically update local
         const index = customThemes.value.findIndex(t => t.id === theme.id)
         if (index >= 0) {
             customThemes.value[index] = theme
@@ -202,7 +172,6 @@ export const useIlytatTheme = () => {
             customThemes.value.push(theme)
         }
 
-        // Sync to Firestore if logged in
         if (user.value?.uid) {
             try {
                 const themeDoc = doc(db, `users/${user.value.uid}/themes`, theme.id)
@@ -214,15 +183,11 @@ export const useIlytatTheme = () => {
     }
 
     async function deleteTheme(themeId: string) {
-        // Optimistically delete local
         customThemes.value = customThemes.value.filter(t => t.id !== themeId)
-
-        // If deleted current, revert to default
         if (currentThemeId.value === themeId) {
             applyTheme('minimal-light')
         }
 
-        // Sync delete to Firestore if logged in
         if (user.value?.uid) {
             try {
                 const themeDoc = doc(db, `users/${user.value.uid}/themes`, themeId)
@@ -233,9 +198,10 @@ export const useIlytatTheme = () => {
         }
     }
 
-    // Initialize (call this in app.vue or a plugin)
     function initTheme() {
-        applyTheme(currentThemeId.value)
+        if (currentTheme.value && currentTheme.value.id !== 'fallback') {
+            applyRootStyles(currentTheme.value)
+        }
     }
 
     return {

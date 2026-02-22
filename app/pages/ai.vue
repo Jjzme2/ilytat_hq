@@ -53,6 +53,12 @@
                             class="i-heroicons-briefcase text-2xl text-zinc-400 group-hover:text-blue-400 mb-2 transition-colors"></span>
                         <span class="text-xs text-zinc-300 font-medium">Summarize Projects</span>
                     </button>
+                    <button @click="navigateTo('/user-insight')"
+                        class="col-span-2 sm:col-span-1 bg-zinc-800 hover:bg-zinc-700 p-4 rounded-xl border border-white/5 flex flex-col items-center justify-center transition-colors group">
+                        <span
+                            class="i-ph-fingerprint-bold text-2xl text-zinc-400 group-hover:text-amber-400 mb-2 transition-colors"></span>
+                        <span class="text-xs text-zinc-300 font-medium">View Identity</span>
+                    </button>
                 </div>
             </div>
         </div>

@@ -344,6 +344,17 @@ const loadSchedule = async () => {
 
 onMounted(() => {
     loadSchedule();
+    const route = useRoute();
+    if (route.query.action === 'voice') {
+        toggleSpeech();
+    }
+});
+
+const route = useRoute();
+watch(() => route.query.action, (newAction) => {
+    if (newAction === 'voice') {
+        toggleSpeech();
+    }
 });
 
 watch(currentDate, () => {

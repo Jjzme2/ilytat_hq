@@ -1,13 +1,14 @@
 
+
 import { useCommandPalette } from '#imports'
 import { quicklaunch } from '../../config/quicklaunch'
 
 export default defineNuxtPlugin((nuxtApp) => {
-    const { registerCommand, registerGroup, open, toggle, loadShortcutOverrides } = useCommandPalette();
+    const { registerCommand, open, toggle, loadShortcutOverrides } = useCommandPalette();
     const router = useRouter();
 
     // -----------------------------------------------------------------------
-    // Navigation Commands (with default shortcuts)
+    // Navigation — Core destinations
     // -----------------------------------------------------------------------
     registerCommand({
         id: 'nav-dashboard',
@@ -64,10 +65,27 @@ export default defineNuxtPlugin((nuxtApp) => {
     });
 
     registerCommand({
+        id: 'nav-foundry',
+        label: 'AI Foundry',
+        icon: 'i-heroicons-sparkles',
+        shortcut: ['Ctrl', '7'],
+        group: 'Intelligence',
+        action: () => router.push('/foundry')
+    });
+
+    registerCommand({
+        id: 'nav-user-insights',
+        label: 'Digital Identity Insights',
+        icon: 'i-heroicons-user-circle',
+        group: 'Intelligence',
+        action: () => router.push('/user-insight')
+    });
+
+    registerCommand({
         id: 'nav-admin',
         label: 'Admin Panel',
-        icon: 'i-heroicons-cog',
-        group: 'Navigation',
+        icon: 'i-heroicons-shield-check',
+        group: 'System',
         action: () => router.push('/admin')
     });
 
@@ -76,7 +94,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         label: 'Settings',
         icon: 'i-heroicons-adjustments-horizontal',
         shortcut: ['Ctrl', ','],
-        group: 'Navigation',
+        group: 'System',
         action: () => router.push('/settings')
     });
 
@@ -84,36 +102,12 @@ export default defineNuxtPlugin((nuxtApp) => {
         id: 'nav-themes',
         label: 'Theme Gallery',
         icon: 'i-heroicons-swatch',
-        group: 'Navigation',
+        group: 'System',
         action: () => router.push('/themes')
     });
 
-    registerCommand({
-        id: 'nav-tasks',
-        label: 'Tasks',
-        icon: 'i-heroicons-check-circle',
-        group: 'Navigation',
-        action: () => router.push('/tasks')
-    });
-
-    registerCommand({
-        id: 'nav-goals',
-        label: 'Goals',
-        icon: 'i-heroicons-flag',
-        group: 'Navigation',
-        action: () => router.push('/goals')
-    });
-
-    registerCommand({
-        id: 'nav-foundry',
-        label: 'AI Foundry',
-        icon: 'i-heroicons-sparkles',
-        group: 'Navigation',
-        action: () => router.push('/foundry')
-    });
-
     // -----------------------------------------------------------------------
-    // Quick Capture — creation shortcuts
+    // Creation — Fast-entry workflows
     // -----------------------------------------------------------------------
     registerCommand({
         id: 'create-project',
@@ -167,8 +161,53 @@ export default defineNuxtPlugin((nuxtApp) => {
         action: () => router.push('/inbox?compose=true')
     });
 
+    registerCommand({
+        id: 'voice-dictate',
+        label: 'Start Voice Dictation',
+        icon: 'i-heroicons-microphone',
+        shortcut: ['Ctrl', 'Shift', 'V'],
+        group: 'Quick Capture',
+        action: () => router.push('/schedule?action=voice')
+    });
+
     // -----------------------------------------------------------------------
-    // Finance Commands
+    // Intelligence — AI & Insights
+    // -----------------------------------------------------------------------
+    registerCommand({
+        id: 'assistant-toggle',
+        label: 'Toggle AI Assistant',
+        icon: 'i-heroicons-chat-bubble-left-right',
+        shortcut: ['Ctrl', 'Alt', 'A'],
+        group: 'Intelligence',
+        action: () => {
+            // This assumes a global state or event bus for the assistant
+            // For now we use window event as a bridge to ChatAssistantBar.vue
+            window.dispatchEvent(new CustomEvent('ilytat:assistant:toggle'));
+        }
+    });
+
+    registerCommand({
+        id: 'assistant-minimize',
+        label: 'Minimize Assistant',
+        icon: 'i-heroicons-chevron-down',
+        group: 'Intelligence',
+        action: () => {
+            window.dispatchEvent(new CustomEvent('ilytat:assistant:minimize'));
+        }
+    });
+
+    registerCommand({
+        id: 'assistant-clear',
+        label: 'Clear Chat History',
+        icon: 'i-heroicons-trash',
+        group: 'Intelligence',
+        action: () => {
+            window.dispatchEvent(new CustomEvent('ilytat:assistant:clear'));
+        }
+    });
+
+    // -----------------------------------------------------------------------
+    // Finance — Operations
     // -----------------------------------------------------------------------
     registerCommand({
         id: 'finance-add-transaction',
@@ -187,27 +226,11 @@ export default defineNuxtPlugin((nuxtApp) => {
     });
 
     registerCommand({
-        id: 'finance-add-budget',
-        label: 'New Budget',
-        icon: 'i-heroicons-chart-pie',
-        group: 'Finance',
-        action: () => router.push('/finance?action=add-budget')
-    });
-
-    registerCommand({
         id: 'finance-overview',
         label: 'Financial Overview',
         icon: 'i-heroicons-presentation-chart-bar',
         group: 'Finance',
         action: () => router.push('/finance')
-    });
-
-    registerCommand({
-        id: 'finance-budgets',
-        label: 'Budget Progress',
-        icon: 'i-heroicons-chart-bar',
-        group: 'Finance',
-        action: () => router.push('/finance#budgets')
     });
 
     // -----------------------------------------------------------------------
@@ -224,13 +247,13 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
 
     // -----------------------------------------------------------------------
-    // Actions — system-wide operations
+    // System — Platform controls
     // -----------------------------------------------------------------------
     registerCommand({
         id: 'action-theme-toggle',
         label: 'Toggle Theme',
         icon: 'i-heroicons-sun',
-        group: 'Actions',
+        group: 'System',
         action: () => {
             const { toggleTheme } = useIlytatTheme();
             toggleTheme();
@@ -238,32 +261,11 @@ export default defineNuxtPlugin((nuxtApp) => {
     });
 
     registerCommand({
-        id: 'action-theme-light',
-        label: 'Switch to Light Theme',
-        icon: 'i-heroicons-sun',
-        group: 'Actions',
-        action: () => {
-            const { applyTheme } = useIlytatTheme();
-            applyTheme('luxury-platinum');
-        }
-    });
-
-    registerCommand({
-        id: 'action-theme-dark',
-        label: 'Switch to Dark Theme',
-        icon: 'i-heroicons-moon',
-        group: 'Actions',
-        action: () => {
-            const { applyTheme } = useIlytatTheme();
-            applyTheme('luxury-midnight-silk');
-        }
-    });
-
-    registerCommand({
         id: 'action-theme-favorite',
         label: 'Apply Favorite Theme',
         icon: 'i-heroicons-heart',
-        group: 'Actions',
+        shortcut: ['Ctrl', 'Alt', 'F'],
+        group: 'System',
         action: () => {
             const { applyFavorite } = useIlytatTheme();
             applyFavorite();
@@ -274,7 +276,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         id: 'action-logout',
         label: 'Sign Out',
         icon: 'i-heroicons-arrow-left-on-rectangle',
-        group: 'Actions',
+        group: 'System',
         action: () => {
             const { signOut } = useUser();
             signOut();
@@ -285,7 +287,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         id: 'action-shortcuts',
         label: 'Manage Shortcuts',
         icon: 'i-heroicons-command-line',
-        group: 'Actions',
+        group: 'System',
         action: () => router.push('/settings#shortcuts')
     });
 
@@ -294,7 +296,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         label: 'Refresh Page',
         icon: 'i-heroicons-arrow-path',
         shortcut: ['Ctrl', 'Shift', 'R'],
-        group: 'Actions',
+        group: 'System',
         action: () => window.location.reload()
     });
 
@@ -303,7 +305,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         label: 'Toggle Fullscreen',
         icon: 'i-heroicons-arrows-pointing-out',
         shortcut: ['F11'],
-        group: 'Actions',
+        group: 'System',
         action: () => {
             if (document.fullscreenElement) {
                 document.exitFullscreen();
@@ -311,59 +313,6 @@ export default defineNuxtPlugin((nuxtApp) => {
                 document.documentElement.requestFullscreen();
             }
         }
-    });
-
-    registerCommand({
-        id: 'action-copy-url',
-        label: 'Copy Page URL',
-        icon: 'i-heroicons-link',
-        group: 'Actions',
-        action: () => {
-            navigator.clipboard.writeText(window.location.href);
-        }
-    });
-
-    // -----------------------------------------------------------------------
-    // View Commands — UI controls
-    // -----------------------------------------------------------------------
-    registerCommand({
-        id: 'view-scroll-top',
-        label: 'Scroll to Top',
-        icon: 'i-heroicons-arrow-up',
-        group: 'View',
-        action: () => window.scrollTo({ top: 0, behavior: 'smooth' })
-    });
-
-    registerCommand({
-        id: 'view-scroll-bottom',
-        label: 'Scroll to Bottom',
-        icon: 'i-heroicons-arrow-down',
-        group: 'View',
-        action: () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
-    });
-
-    registerCommand({
-        id: 'view-go-back',
-        label: 'Go Back',
-        icon: 'i-heroicons-arrow-left',
-        group: 'View',
-        action: () => router.back()
-    });
-
-    registerCommand({
-        id: 'view-go-forward',
-        label: 'Go Forward',
-        icon: 'i-heroicons-arrow-right',
-        group: 'View',
-        action: () => router.forward()
-    });
-
-    registerCommand({
-        id: 'view-clear-console',
-        label: 'Clear Console',
-        icon: 'i-heroicons-x-circle',
-        group: 'View',
-        action: () => console.clear()
     });
 
     // -----------------------------------------------------------------------
@@ -380,44 +329,10 @@ export default defineNuxtPlugin((nuxtApp) => {
                 dev('Test Dev Toast', { foo: 'bar', timestamp: Date.now() });
             }
         });
-
-        registerCommand({
-            id: 'dev-test-success',
-            label: 'Test Success Toast',
-            icon: 'i-heroicons-check-circle',
-            group: 'Development',
-            action: () => {
-                const { success } = useToast();
-                success('Operation successful!');
-            }
-        });
-
-        registerCommand({
-            id: 'dev-test-error',
-            label: 'Test Error Toast',
-            icon: 'i-heroicons-exclamation-triangle',
-            group: 'Development',
-            action: () => {
-                const { error } = useToast();
-                error('Something went wrong!');
-            }
-        });
-
-        registerCommand({
-            id: 'dev-test-warning',
-            label: 'Test Warning Toast',
-            icon: 'i-heroicons-exclamation-circle',
-            group: 'Development',
-            action: () => {
-                const { warning } = useToast();
-                warning('This is a warning!');
-            }
-        });
     }
 
     // -----------------------------------------------------------------------
     // Load user-specific shortcut overrides from Firestore (async, non-blocking)
-    // Deferred until app:mounted so Firebase / VueFire are guaranteed ready.
     // -----------------------------------------------------------------------
     nuxtApp.hook('app:mounted', async () => {
         try {
