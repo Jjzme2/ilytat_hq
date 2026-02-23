@@ -145,4 +145,27 @@ describe('useCommandPalette', () => {
         registerGroup({ id: 'custom', label: 'Custom' })
         expect(groups.value).toHaveLength(initialLength + 1)
     })
+
+    it('registerCommands adds multiple commands', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        const cmds = [
+            { id: '1', label: 'One', action: () => { } },
+            { id: '2', label: 'Two', action: () => { } }
+        ]
+        registerCommands(cmds)
+        expect(commands.value).toHaveLength(2)
+        expect(commands.value[0].id).toBe('1')
+        expect(commands.value[1].id).toBe('2')
+    })
+
+    it('registerCommands prevents duplicate IDs', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        const cmds = [
+            { id: '1', label: 'One', action: () => { } },
+            { id: '1', label: 'Duplicate', action: () => { } }
+        ]
+        registerCommands(cmds)
+        expect(commands.value).toHaveLength(1)
+        expect(commands.value[0].label).toBe('One')
+    })
 })
