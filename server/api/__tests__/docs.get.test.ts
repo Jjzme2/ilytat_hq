@@ -21,7 +21,6 @@ const createError = vi.fn((err) => err)
 const setResponseHeader = vi.fn()
 const sendStream = vi.fn()
 const defineEventHandler = vi.fn((handler) => handler)
-const verifyAdminToken = vi.fn()
 
 vi.stubGlobal('useRuntimeConfig', useRuntimeConfig)
 vi.stubGlobal('getQuery', getQuery)
@@ -29,7 +28,18 @@ vi.stubGlobal('createError', createError)
 vi.stubGlobal('defineEventHandler', defineEventHandler)
 vi.stubGlobal('setResponseHeader', setResponseHeader)
 vi.stubGlobal('sendStream', sendStream)
-vi.stubGlobal('verifyAdminToken', verifyAdminToken)
+
+// Mock ../utils/adminAuth module
+// We need to use vi.hoisted if we want to reference a variable in the mock factory
+const verifyAdminToken = vi.hoisted(() => vi.fn())
+
+// Correct path relative to this test file: ../../utils/adminAuth
+vi.mock('../../utils/adminAuth', () => ({
+  verifyAdminToken
+}))
+
+// Import the module under test AFTER mocks are set up
+// But we use dynamic import in beforeEach so this is fine.
 
 describe('GET /api/docs', () => {
   let docsGetHandler: any
@@ -44,7 +54,6 @@ describe('GET /api/docs', () => {
     })
     getQuery.mockReturnValue({})
 
-    // Dynamic import to ensure globals are stubbed before module execution
     // Reset module registry to ensure fresh import
     vi.resetModules()
     const mod = await import('../docs.get')
