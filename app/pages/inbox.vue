@@ -49,12 +49,12 @@
                         <button @click="togglePin"
                             class="p-2 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 active:scale-95 transition-all"
                             :title="isPinned ? 'Unpin' : 'Pin'">
-                            <span :class="isPinned ? 'i-ph-push-pin-fill text-accent-primary' : 'i-ph-push-pin'" class="text-xl"></span>
+                            <span :class="isPinned ? 'icon-[ph--push-pin-fill] text-accent-primary' : 'icon-[ph--push-pin]'" class="text-xl"></span>
                         </button>
                         <button @click="toggleMute"
                             class="p-2 rounded-xl text-zinc-500 hover:text-white hover:bg-white/5 active:scale-95 transition-all"
                             :title="isMuted ? 'Unmute' : 'Mute'">
-                            <span :class="isMuted ? 'i-ph-bell-slash-fill text-red-400' : 'i-ph-bell'" class="text-xl"></span>
+                            <span :class="isMuted ? 'icon-[ph--bell-slash-fill] text-red-400' : 'icon-[ph--bell]'" class="text-xl"></span>
                         </button>
                     </div>
                 </header>
@@ -76,7 +76,7 @@
             <!-- Empty state -->
             <div v-else class="flex-1 flex flex-col items-center justify-center text-zinc-500 p-12">
                 <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-8 border border-white/5 shadow-2xl">
-                    <span class="i-ph-chat-circle-dots-bold text-5xl opacity-40"></span>
+                    <span class="icon-[ph--chat-circle-dots-bold] text-5xl opacity-40"></span>
                 </div>
                 <h3 class="text-xl font-black text-white mb-2 tracking-tight">Intelligence Feed</h3>
                 <p class="text-sm text-zinc-500 text-center max-w-sm font-medium leading-relaxed">Select a secure channel to begin transmission or initiate a new secure line.</p>

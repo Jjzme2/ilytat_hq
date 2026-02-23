@@ -45,14 +45,14 @@
                             <!-- Search Bar -->
                             <div class="relative flex-1 max-w-md">
                                 <span
-                                    class="absolute left-3 top-1/2 -translate-y-1/2 i-ph-magnifying-glass text-zinc-500"></span>
+                                    class="absolute left-3 top-1/2 -translate-y-1/2 icon-[ph--magnifying-glass] text-zinc-500"></span>
                                 <input v-model="searchQuery" type="text" placeholder="Search documents..."
                                     class="w-full bg-zinc-900/50 border border-white/10 rounded-lg pl-9 pr-4 py-1.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors placeholder-zinc-600" />
                             </div>
                         </div>
                         <button @click="showDocForm ? resetForm() : openCreateForm()"
                             class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1">
-                            <span :class="showDocForm ? 'i-ph-x-bold' : 'i-ph-plus-bold'"></span>
+                            <span :class="showDocForm ? 'icon-[ph--x-bold]' : 'icon-[ph--plus-bold]'"></span>
                             {{ showDocForm ? 'Cancel' : 'New Document' }}
                         </button>
                     </div>
@@ -65,7 +65,7 @@
                             <div class="flex justify-between items-center p-4 border-b border-white/5 bg-zinc-900">
                                 <h3 class="text-lg font-bold text-white">{{ isEditMode ? 'Edit Document' : 'Create New Document' }}</h3>
                                 <button @click="showDocForm = false" class="text-zinc-500 hover:text-white">
-                                    <span class="i-ph-x-bold text-xl"></span>
+                                    <span class="icon-[ph--x-bold] text-xl"></span>
                                 </button>
                             </div>
 
@@ -102,19 +102,19 @@
                                         <button type="button" @click="handleAIRefine" :disabled="isAIProcessing"
                                             class="px-2.5 py-1 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 rounded-lg text-[11px] font-medium transition-colors flex items-center gap-1 disabled:opacity-50">
                                             <span
-                                                :class="isAIProcessing && aiAction === 'refine' ? 'i-ph-spinner animate-spin' : 'i-ph-magic-wand-bold'"></span>
+                                                :class="isAIProcessing && aiAction === 'refine' ? 'icon-[ph--spinner] animate-spin' : 'icon-[ph--magic-wand-bold]'"></span>
                                             Refine
                                         </button>
                                         <button type="button" @click="handleAIFixGrammar" :disabled="isAIProcessing"
                                             class="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 rounded-lg text-[11px] font-medium transition-colors flex items-center gap-1 disabled:opacity-50">
                                             <span
-                                                :class="isAIProcessing && aiAction === 'fixGrammar' ? 'i-ph-spinner animate-spin' : 'i-ph-check-circle-bold'"></span>
+                                                :class="isAIProcessing && aiAction === 'fixGrammar' ? 'icon-[ph--spinner] animate-spin' : 'icon-[ph--check-circle-bold]'"></span>
                                             Fix Grammar
                                         </button>
                                         <button type="button" @click="handleAIExpand" :disabled="isAIProcessing"
                                             class="px-2.5 py-1 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 rounded-lg text-[11px] font-medium transition-colors flex items-center gap-1 disabled:opacity-50">
                                             <span
-                                                :class="isAIProcessing && aiAction === 'expand' ? 'i-ph-spinner animate-spin' : 'i-ph-arrows-out-bold'"></span>
+                                                :class="isAIProcessing && aiAction === 'expand' ? 'icon-[ph--spinner] animate-spin' : 'icon-[ph--arrows-out-bold]'"></span>
                                             Expand
                                         </button>
                                     </div>
@@ -148,7 +148,7 @@
                                 <button @click.stop="handlePrintDocument(doc)"
                                     class="text-zinc-400 hover:text-emerald-400 p-1.5 rounded-full hover:bg-white/10 transition-all flex items-center justify-center"
                                     title="Export/Print" style="width: 32px; height: 32px;">
-                                    <span class="i-ph-export"></span>
+                                    <span class="icon-[ph--export]"></span>
                                 </button>
                                 <button @click.stop="openEditForm(doc)"
                                     class="text-zinc-400 hover:text-indigo-400 p-1.5 rounded-full hover:bg-white/10 transition-all flex items-center justify-center"
@@ -183,7 +183,7 @@
 
                     <!-- Empty State -->
                     <div v-else class="text-center py-12 text-zinc-500">
-                        <span class="i-ph-file-text text-4xl mb-3 block opacity-50"></span>
+                        <span class="icon-[ph--file-text] text-4xl mb-3 block opacity-50"></span>
                         <p>No documents yet. Create one to get started.</p>
                     </div>
                 </div>
@@ -222,7 +222,7 @@
                         </div>
                         <label
                             class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer">
-                            <span class="i-ph-upload-simple-bold"></span>
+                            <span class="icon-[ph--upload-simple-bold]"></span>
                             Upload File
                             <input type="file" @change="handleFileUpload" class="hidden" />
                         </label>
@@ -402,7 +402,7 @@
 
                     <!-- Empty State -->
                     <div v-else class="text-center py-12 text-zinc-500">
-                        <span class="i-ph-cloud-arrow-up text-4xl mb-3 block opacity-50"></span>
+                        <span class="icon-[ph--cloud-arrow-up] text-4xl mb-3 block opacity-50"></span>
                         <p>No files in R2 storage. Upload one above.</p>
                     </div>
                 </div>
@@ -428,7 +428,7 @@
                         </div>
                         <button @click="isViewModalOpen = false"
                             class="text-zinc-500 hover:text-white transition-colors">
-                            <span class="i-ph-x text-xl"></span>
+                            <span class="icon-[ph--x] text-xl"></span>
                         </button>
                     </div>
                     <div class="p-4 bg-black/20 border border-white/5 rounded-xl">
@@ -517,7 +517,7 @@ const filteredDocuments = computed(() => {
                 createdAt: new Date().toISOString(),
                 isTemplateRef: true,
                 templateId: t.name,
-                typeIcon: 'i-ph-plus-circle-bold text-indigo-400',
+                typeIcon: 'icon-[ph--plus-circle-bold] text-indigo-400',
                 statusColor: 'bg-indigo-500/20 text-indigo-300',
                 formattedStatus: 'New',
             }));
@@ -746,12 +746,12 @@ const getFileName = (key: string) => key.split('/').pop() || key;
 const getFileIcon = (key: string) => {
     const ext = key.split('.').pop()?.toLowerCase();
     switch (ext) {
-        case 'pdf': return 'i-ph-file-pdf text-red-400';
-        case 'doc': case 'docx': return 'i-ph-file-doc text-blue-400';
-        case 'xls': case 'xlsx': return 'i-ph-file-xls text-emerald-400';
-        case 'jpg': case 'jpeg': case 'png': case 'gif': case 'webp': return 'i-ph-image text-purple-400';
-        case 'mp4': case 'mov': case 'avi': return 'i-ph-video-camera text-amber-400';
-        default: return 'i-ph-file text-zinc-400';
+        case 'pdf': return 'icon-[ph--file-pdf] text-red-400';
+        case 'doc': case 'docx': return 'icon-[ph--file-doc] text-blue-400';
+        case 'xls': case 'xlsx': return 'icon-[ph--file-xls] text-emerald-400';
+        case 'jpg': case 'jpeg': case 'png': case 'gif': case 'webp': return 'icon-[ph--image] text-purple-400';
+        case 'mp4': case 'mov': case 'avi': return 'icon-[ph--video-camera] text-amber-400';
+        default: return 'icon-[ph--file] text-zinc-400';
     }
 };
 

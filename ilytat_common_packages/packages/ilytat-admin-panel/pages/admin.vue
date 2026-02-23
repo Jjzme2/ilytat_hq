@@ -98,6 +98,7 @@ onMounted(() => {
     registerTab({ id: 'permissions', label: 'Access', icon: '🔐', component: resolveComponent('AdminPermissions'), order: 40 });
     registerTab({ id: 'modules', label: 'Modules', icon: '🧩', component: resolveComponent('ModuleConfig'), order: 50 });
     registerTab({ id: 'system', label: 'System', icon: '⚙️', component: resolveComponent('AdminSystem'), order: 60 });
+    registerTab({ id: 'tests', label: 'Tests', icon: '🧪', component: resolveComponent('AdminTests'), order: 70 });
     
     // Initialize User Profile
     const { initializeUserProfile: initialize } = useUserProfile();

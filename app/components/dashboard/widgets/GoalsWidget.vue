@@ -2,7 +2,7 @@
   <div class="h-full flex flex-col bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden backdrop-blur-sm">
     <div class="p-4 border-b border-white/5 flex justify-between items-center">
       <h3 class="font-semibold text-zinc-100 flex items-center gap-2">
-        <span class="i-ph-target text-emerald-400"></span>
+        <span class="icon-[ph--target] text-emerald-400"></span>
         Goals
       </h3>
       <NuxtLink to="/projects" class="text-xs text-zinc-500 hover:text-emerald-400 transition-colors">

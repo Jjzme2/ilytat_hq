@@ -32,7 +32,7 @@
                     
                     <span :class="[
                         'text-xl relative z-10 transition-all duration-300', 
-                        !isSupported ? 'i-ph-microphone-slash' : (isListening ? 'i-ph-waveform-fill' : 'i-ph-microphone-fill group-hover/mic:scale-110')
+                        !isSupported ? 'icon-[ph--microphone-slash]' : (isListening ? 'icon-[ph--waveform-fill]' : 'icon-[ph--microphone-fill] group-hover/mic:scale-110')
                     ]"></span>
                 </button>
 
@@ -51,7 +51,7 @@
                 <div v-if="isLoading"
                     class="absolute inset-0 bg-zinc-950/50 z-10 flex items-center justify-center backdrop-blur-sm transition-opacity duration-300">
                     <div class="flex flex-col items-center gap-2">
-                        <span class="i-ph-spinner animate-spin text-3xl text-blue-500"></span>
+                        <span class="icon-[ph--spinner] animate-spin text-3xl text-blue-500"></span>
                         <span class="text-xs text-zinc-500 font-medium">Loading schedule...</span>
                     </div>
                 </div>
@@ -107,7 +107,7 @@
                         </div>
                         <button @click="openEventModalForDate(selectedDate)"
                             class="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors shadow-lg shadow-blue-500/10">
-                            <span class="i-ph-plus-bold"></span>
+                            <span class="icon-[ph--plus-bold]"></span>
                         </button>
                     </div>
 
@@ -119,14 +119,14 @@
                             </div>
                             <div
                                 class="relative flex items-center bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all h-full">
-                                <span class="i-ph-sparkle text-blue-400 mr-2 animate-pulse"></span>
+                                <span class="icon-[ph--sparkle] text-blue-400 mr-2 animate-pulse"></span>
                                 <input v-model="smartInput" @keydown.enter="handleSmartAdd" :disabled="isParsing"
                                     type="text" placeholder="&quot;Lunch with Bob tomorrow at 1pm&quot;"
                                     class="w-full bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none" />
                                 <button v-if="smartInput" @click="handleSmartAdd" :disabled="isParsing"
                                     class="p-1 hover:bg-white/10 rounded-lg transition-colors text-blue-400 ml-1">
-                                    <span v-if="isParsing" class="i-ph-spinner animate-spin"></span>
-                                    <span v-else class="i-ph-arrow-right"></span>
+                                    <span v-if="isParsing" class="icon-[ph--spinner] animate-spin"></span>
+                                    <span v-else class="icon-[ph--arrow-right]"></span>
                                 </button>
                             </div>
                         </div>
@@ -149,7 +149,7 @@
                             
                             <span :class="[
                                 'text-lg relative z-10 transition-all duration-300', 
-                                !isSupported ? 'i-ph-microphone-slash' : (isListening ? 'i-ph-waveform-fill' : 'i-ph-microphone-fill group-hover/side-mic:scale-110')
+                                !isSupported ? 'icon-[ph--microphone-slash]' : (isListening ? 'icon-[ph--waveform-fill]' : 'icon-[ph--microphone-fill] group-hover/side-mic:scale-110')
                             ]"></span>
                         </button>
                     </div>
@@ -158,7 +158,7 @@
                 <!-- Agenda List -->
                 <div class="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
                     <div v-if="getItemsForDate(selectedDate).length === 0" class="text-center py-10 text-zinc-500">
-                        <span class="i-ph-calendar-blank text-4xl mb-2 block opacity-30"></span>
+                        <span class="icon-[ph--calendar-blank] text-4xl mb-2 block opacity-30"></span>
                         <p class="text-sm">No events planned</p>
                         <button @click="openEventModalForDate(selectedDate)"
                             class="text-xs text-blue-400 hover:text-blue-300 mt-2">
@@ -260,8 +260,8 @@
                             <div v-for="(event, idx) in pendingEvents" :key="idx"
                                 class="p-3 bg-zinc-800/50 border border-white/5 rounded-lg flex gap-3">
                                 <div class="mt-1">
-                                    <span v-if="event.type === 'task'" class="i-ph-check-square text-blue-400"></span>
-                                    <span v-else class="i-ph-calendar-blank text-purple-400"></span>
+                                    <span v-if="event.type === 'task'" class="icon-[ph--check-square] text-blue-400"></span>
+                                    <span v-else class="icon-[ph--calendar-blank] text-purple-400"></span>
                                 </div>
                                 <div>
                                     <h4 class="font-medium text-white">{{ event.title }}</h4>
@@ -282,7 +282,7 @@
                             </button>
                             <button @click="confirmCreateEvents" :disabled="isCreating"
                                 class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-                                <span v-if="isCreating" class="i-ph-spinner animate-spin"></span>
+                                <span v-if="isCreating" class="icon-[ph--spinner] animate-spin"></span>
                                 <span v-else>Create {{ pendingEvents.length }} Event{{ pendingEvents.length !== 1 ? 's'
                                     : '' }}</span>
                             </button>
@@ -387,10 +387,10 @@ const getItemIconClass = (item: any) => {
 };
 
 const getItemIcon = (item: any) => {
-    if (item._type === 'event') return 'i-ph-calendar-blank';
-    if (item._type === 'task') return 'i-ph-check-square';
-    if (item._type === 'goal') return 'i-ph-target';
-    return 'i-ph-circle';
+    if (item._type === 'event') return 'icon-[ph--calendar-blank]';
+    if (item._type === 'task') return 'icon-[ph--check-square]';
+    if (item._type === 'goal') return 'icon-[ph--target]';
+    return 'icon-[ph--circle]';
 };
 
 const getEventTimeRange = (item: any) => {

@@ -62,16 +62,16 @@
                         </span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="i-ph-target text-zinc-500"></span>
+                        <span class="icon-[ph--target] text-zinc-500"></span>
                         <span class="text-sm text-zinc-300">{{ currentProject.purpose }}</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="i-ph-flag text-zinc-500"></span>
+                        <span class="icon-[ph--flag] text-zinc-500"></span>
                         <span :class="currentProject.priorityColor">{{ capitalize(currentProject.priority) }}
                             Priority</span>
                     </div>
                     <div class="flex items-center gap-2" v-if="currentProject.deadline">
-                        <span class="i-ph-calendar text-zinc-500"></span>
+                        <span class="icon-[ph--calendar] text-zinc-500"></span>
                         <span class="text-sm text-zinc-300">Due {{ formatDate(currentProject.deadline) }}</span>
                     </div>
                 </div>
@@ -142,7 +142,7 @@
                             <h2 class="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Goals</h2>
                             <button @click="showGoalForm = !showGoalForm"
                                 class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1">
-                                <span class="i-ph-plus-bold"></span>
+                                <span class="icon-[ph--plus-bold]"></span>
                                 {{ showGoalForm ? 'Cancel' : 'New Goal' }}
                             </button>
                         </div>
@@ -190,7 +190,7 @@
                                         <button @click="handleDeleteGoal(goal.id)"
                                             class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
                                             title="Delete goal">
-                                            <span class="i-ph-trash text-sm"></span>
+                                            <span class="icon-[ph--trash] text-sm"></span>
                                         </button>
                                     </div>
                                 </div>
@@ -203,13 +203,13 @@
                                     <div class="flex items-center gap-2 ml-4">
                                         <button v-if="activeLog && activeLog.goalId === goal.id" @click="stopTracking"
                                             class="flex items-center gap-1 px-2 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded text-xs transition-colors border border-red-500/10">
-                                            <span class="i-ph-stop-circle-fill animate-pulse"></span>
+                                            <span class="icon-[ph--stop-circle-fill] animate-pulse"></span>
                                             Stop Timer
                                         </button>
                                         <button v-else
                                             @click="startTracking({ id: goal.id, type: 'goal', projectId: goal.projectId, title: goal.title })"
                                             class="flex items-center gap-1 px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded text-xs transition-colors border border-white/5">
-                                            <span class="i-ph-play-circle"></span>
+                                            <span class="icon-[ph--play-circle]"></span>
                                             Time
                                         </button>
                                     </div>
@@ -219,7 +219,7 @@
 
                         <!-- Empty State -->
                         <div v-else class="text-center py-12 text-zinc-500">
-                            <span class="i-ph-target text-4xl mb-3 block opacity-50"></span>
+                            <span class="icon-[ph--target] text-4xl mb-3 block opacity-50"></span>
                             <p>No goals yet. Create one to get started.</p>
                         </div>
                     </div>
@@ -232,12 +232,12 @@
                                 <button @click="handleSuggestTasks" :disabled="isSuggestingTasks"
                                     class="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 disabled:opacity-50">
                                     <span
-                                        :class="isSuggestingTasks ? 'i-ph-spinner animate-spin' : 'i-ph-magic-wand-bold'"></span>
+                                        :class="isSuggestingTasks ? 'icon-[ph--spinner] animate-spin' : 'icon-[ph--magic-wand-bold]'"></span>
                                     {{ isSuggestingTasks ? 'Thinking...' : 'Suggest Tasks' }}
                                 </button>
                                 <button @click="showTaskForm = !showTaskForm"
                                     class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1">
-                                    <span class="i-ph-plus-bold"></span>
+                                    <span class="icon-[ph--plus-bold]"></span>
                                     {{ showTaskForm ? 'Cancel' : 'New Task' }}
                                 </button>
                             </div>
@@ -290,7 +290,7 @@
                                                     ? 'bg-blue-500 border-blue-500 text-white'
                                                     : 'border-zinc-600 hover:border-blue-400'
                                             ]">
-                                                <span v-if="task.isCompleted" class="i-ph-check text-xs"></span>
+                                                <span v-if="task.isCompleted" class="icon-[ph--check] text-xs"></span>
                                             </button>
                                             <div class="flex-1">
                                                 <h3
@@ -310,12 +310,12 @@
                                             <button @click="toggleSubtaskForm(task.id)"
                                                 class="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-400 transition-all p-1"
                                                 title="Add subtask">
-                                                <span class="i-ph-plus text-sm"></span>
+                                                <span class="icon-[ph--plus] text-sm"></span>
                                             </button>
                                             <button @click="handleDeleteTask(task.id)"
                                                 class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
                                                 title="Delete task">
-                                                <span class="i-ph-trash text-sm"></span>
+                                                <span class="icon-[ph--trash] text-sm"></span>
                                             </button>
                                         </div>
                                     </div>
@@ -343,14 +343,14 @@
                                                     ? 'bg-blue-500 border-blue-500 text-white'
                                                     : 'border-zinc-600 hover:border-blue-400'
                                             ]">
-                                                <span v-if="sub.isCompleted" class="i-ph-check text-[10px]"></span>
+                                                <span v-if="sub.isCompleted" class="icon-[ph--check] text-[10px]"></span>
                                             </button>
                                             <span
                                                 :class="['text-sm flex-1', sub.isCompleted ? 'text-zinc-500 line-through' : 'text-zinc-300']">{{
                                                     sub.title }}</span>
                                             <button @click="handleDeleteTask(sub.id)"
                                                 class="opacity-0 group-hover/sub:opacity-100 text-red-400 hover:text-red-300 transition-all p-1">
-                                                <span class="i-ph-trash text-[10px]"></span>
+                                                <span class="icon-[ph--trash] text-[10px]"></span>
                                             </button>
                                         </div>
                                     </div>
@@ -360,7 +360,7 @@
 
                         <!-- Empty State -->
                         <div v-else class="text-center py-12 text-zinc-500">
-                            <span class="i-ph-check-square text-4xl mb-3 block opacity-50"></span>
+                            <span class="icon-[ph--check-square] text-4xl mb-3 block opacity-50"></span>
                             <p>No tasks yet. Create one to get started.</p>
                         </div>
                     </div>
@@ -371,7 +371,7 @@
                             <h2 class="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Notes</h2>
                             <button @click="showNoteForm = !showNoteForm"
                                 class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1">
-                                <span class="i-ph-plus-bold"></span>
+                                <span class="icon-[ph--plus-bold]"></span>
                                 {{ showNoteForm ? 'Cancel' : 'New Note' }}
                             </button>
                         </div>
@@ -406,7 +406,7 @@
                                     <button @click="handleDeleteNote(note.id)"
                                         class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
                                         title="Delete note">
-                                        <span class="i-ph-trash text-sm"></span>
+                                        <span class="icon-[ph--trash] text-sm"></span>
                                     </button>
                                 </div>
                                 <p class="text-sm text-zinc-400 mt-2 whitespace-pre-wrap leading-relaxed">{{
@@ -418,7 +418,7 @@
 
                         <!-- Empty State -->
                         <div v-else class="text-center py-12 text-zinc-500">
-                            <span class="i-ph-note-pencil text-4xl mb-3 block opacity-50"></span>
+                            <span class="icon-[ph--note-pencil] text-4xl mb-3 block opacity-50"></span>
                             <p>No notes yet. Create one to capture your thoughts.</p>
                         </div>
                     </div>
@@ -430,7 +430,7 @@
                             </h2>
                             <button @click="showLinkForm = !showLinkForm"
                                 class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1">
-                                <span class="i-ph-plus-bold"></span>
+                                <span class="icon-[ph--plus-bold]"></span>
                                 {{ showLinkForm ? 'Cancel' : 'New Link' }}
                             </button>
                         </div>
@@ -462,7 +462,7 @@
                         <div v-else-if="quickLinks.length > 0" class="space-y-2">
                             <div v-for="link in quickLinks" :key="link.id"
                                 class="group flex items-center gap-3 p-4 bg-zinc-900/40 border border-white/5 rounded-xl hover:border-blue-500/20 transition-colors">
-                                <span class="i-ph-link text-zinc-400 text-lg shrink-0"></span>
+                                <span class="icon-[ph--link] text-zinc-400 text-lg shrink-0"></span>
                                 <div class="flex-1 min-w-0">
                                     <h3 class="text-white text-sm font-medium">{{ link.label }}</h3>
                                     <a :href="link.url" target="_blank" rel="noopener"
@@ -477,7 +477,7 @@
                                     <button @click="handleDeleteLink(link.id)"
                                         class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
                                         title="Delete link">
-                                        <span class="i-ph-trash text-sm"></span>
+                                        <span class="icon-[ph--trash] text-sm"></span>
                                     </button>
                                 </div>
                             </div>
@@ -485,7 +485,7 @@
 
                         <!-- Empty State -->
                         <div v-else class="text-center py-12 text-zinc-500">
-                            <span class="i-ph-link text-4xl mb-3 block opacity-50"></span>
+                            <span class="icon-[ph--link] text-4xl mb-3 block opacity-50"></span>
                             <p>No quick launch links yet. Add one to get started.</p>
                         </div>
                     </div>

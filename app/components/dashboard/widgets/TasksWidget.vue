@@ -2,7 +2,7 @@
   <div class="h-full flex flex-col bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden backdrop-blur-sm">
     <div class="p-4 border-b border-white/5 flex justify-between items-center">
       <h3 class="font-semibold text-zinc-100 flex items-center gap-2">
-        <span class="i-ph-check-square text-indigo-400"></span>
+        <span class="icon-[ph--check-square] text-indigo-400"></span>
         My Tasks
       </h3>
       <NuxtLink to="/projects" class="text-xs text-zinc-500 hover:text-indigo-400 transition-colors">
@@ -29,13 +29,13 @@
             @click.stop="completeTask(task)"
             class="mt-0.5 w-4 h-4 rounded border border-zinc-600 hover:border-indigo-500 hover:bg-indigo-500/20 transition-colors flex items-center justify-center group/btn"
           >
-            <span class="i-ph-check text-xs text-indigo-400 opacity-0 group-hover/btn:opacity-100"></span>
+            <span class="icon-[ph--check] text-xs text-indigo-400 opacity-0 group-hover/btn:opacity-100"></span>
           </button>
           <div class="flex-1 min-w-0">
             <p class="text-sm text-zinc-200 font-medium truncate group-hover:text-indigo-200 transition-colors">{{ task.title }}</p>
             <div class="flex items-center gap-2 mt-1">
               <span v-if="task.dueDate" class="text-[10px] text-zinc-500 flex items-center gap-1">
-                <span class="i-ph-calendar-blank"></span>
+                <span class="icon-[ph--calendar-blank]"></span>
                 {{ formatDate(task.dueDate) }}
               </span>
               <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-800 text-zinc-500 border border-white/5">

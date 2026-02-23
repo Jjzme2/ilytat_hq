@@ -142,7 +142,7 @@
                         <div class="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-accent-primary/10 flex items-center justify-center text-accent-primary">
-                                    <span class="i-ph-sparkle-bold text-lg"></span>
+                                    <span class="icon-[ph--sparkle-bold] text-lg"></span>
                                 </div>
                                 <div>
                                     <h3 class="text-sm font-medium text-white">AI Assistant Bar</h3>

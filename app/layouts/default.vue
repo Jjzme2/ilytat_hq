@@ -85,7 +85,7 @@
             class="w-9 h-9 rounded-xl bg-white/5 hover:bg-red-500/10 text-text-tertiary hover:text-red-400 flex items-center justify-center transition-all group"
             title="Log Out"
           >
-            <span class="i-ph-sign-out-bold text-lg group-active:scale-90 transition-transform"></span>
+            <span class="icon-[ph--sign-out-bold] text-lg group-active:scale-90 transition-transform"></span>
           </button>
         </div>
       </div>
@@ -141,6 +141,7 @@ const { open: openCommandPalette } = useCommandPalette();
 const { isModuleEnabled } = useModules();
 const { preferences, loadPreferences } = useUserPreferences();
 const route = useRoute();
+const { checkHolidays } = useHolidays();
 
 // Scroll-Driven Nav Logic
 const mainContent = ref<HTMLElement | null>(null);
@@ -149,6 +150,7 @@ const showNav = ref(true);
 
 onMounted(async () => {
   await loadPreferences();
+  checkHolidays();
 });
 
 watch(directions, (newDirecton) => {

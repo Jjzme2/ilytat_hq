@@ -25,7 +25,7 @@
                     <div class="space-y-1.5">
                         <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Email Identifier</label>
                         <div class="relative group/input">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 i-ph-envelope-simple-bold text-zinc-500 group-focus-within/input:text-accent-primary transition-colors"></span>
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 icon-[ph--envelope-simple-bold] text-zinc-500 group-focus-within/input:text-accent-primary transition-colors"></span>
                             <input v-model="email" type="email" required
                                 class="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none focus:border-accent-primary/50 focus:ring-1 focus:ring-accent-primary/20 transition-all placeholder-zinc-700"
                                 placeholder="name@company.com" />
@@ -35,13 +35,13 @@
                     <div class="space-y-1.5">
                         <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Security Key</label>
                         <div class="relative group/input">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 i-ph-lock-key-bold text-zinc-500 group-focus-within/input:text-accent-primary transition-colors"></span>
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 icon-[ph--lock-key-bold] text-zinc-500 group-focus-within/input:text-accent-primary transition-colors"></span>
                             <input v-model="password" :type="showPassword ? 'text' : 'password'" required
                                 class="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-12 py-3.5 text-sm text-zinc-100 focus:outline-none focus:border-accent-primary/50 focus:ring-1 focus:ring-accent-primary/20 transition-all placeholder-zinc-700"
                                 placeholder="••••••••" />
                             <button type="button" @click="showPassword = !showPassword"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 transition-all">
-                                <span :class="showPassword ? 'i-ph-eye-closed-bold' : 'i-ph-eye-bold'"></span>
+                                <span :class="showPassword ? 'icon-[ph--eye-closed-bold]' : 'icon-[ph--eye-bold]'"></span>
                             </button>
                         </div>
                         <div class="flex justify-end mt-2">
@@ -61,7 +61,7 @@
                         class="w-full bg-white text-black font-black text-xs uppercase tracking-widest py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group/btn overflow-hidden relative"
                     >
                         <span class="relative z-10 flex items-center justify-center gap-2">
-                            <span v-if="isLoading" class="i-ph-circle-notch-bold animate-spin text-lg"></span>
+                            <span v-if="isLoading" class="icon-[ph--circle-notch-bold] animate-spin text-lg"></span>
                             {{ isLoading ? 'Processing...' : 'Establish Connection' }}
                         </span>
                         <div class="absolute inset-0 bg-gradient-to-r from-accent-primary to-accent-secondary opacity-0 group-hover/btn:opacity-10 transition-opacity"></div>
@@ -86,28 +86,15 @@ definePageMeta({
 });
 
 
-// Redirect if already logged in (Fallback for middleware)
-const user = useCurrentUser();
-
-watch(user, async (currentUser) => {
-    if (currentUser) {
-        // Ensure state is fully ready
-        await nextTick();
-        const redirectPath = (route.query.redirect as string) || '/';
-        navigateTo(redirectPath, { replace: true });
-    }
-}, { immediate: true });
+const route = useRoute();
+const { signIn, resetPassword, user: appUser } = useUser();
+const { add: addToast } = useToast();
 
 const email = ref('');
 const password = ref('');
 const error = ref('');
 const isLoading = ref(false);
 const showPassword = ref(false);
-
-
-const { signIn, resetPassword } = useUser();
-const { add: addToast } = useToast();
-const route = useRoute();
 
 const handleLogin = async () => {
     error.value = '';
@@ -116,16 +103,16 @@ const handleLogin = async () => {
     try {
         await signIn(email.value, password.value);
         
-        addToast('Welcome back, Operator.', 'success', null, {
+        const operatorName = appUser.value?.displayName?.split(' ')[0] || appUser.value?.email?.split('@')[0] || 'Operator';
+        addToast(`Welcome back, ${operatorName}.`, 'success', null, {
             position: 'top-right',
             duration: 3000
         });
 
-        // Delay redirection slightly to allow the toast and auth state to propagate
-        setTimeout(() => {
-            const redirectPath = (route.query.redirect as string) || '/';
-            navigateTo(redirectPath, { replace: true });
-        }, 800);
+        // Use window.location.href instead of Nuxt router to guarantee a clean 
+        // state reload and bypass all Nuxt 3 hydration/middleware race conditions.
+        const redirectPath = (route.query.redirect as string) || '/';
+        window.location.href = redirectPath;
         
     } catch (e: any) {
         Logger.error('[Login] Sign in failed', e);

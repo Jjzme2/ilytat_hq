@@ -75,7 +75,7 @@
                         class="px-3 py-1.5 rounded-lg bg-white/50 hover:bg-white border border-zinc-200 text-zinc-700 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
                         title="Export to PDF"
                     >
-                        <span class="i-ph-export-bold text-indigo-500"></span>
+                        <span class="icon-[ph--export-bold] text-indigo-500"></span>
                         Export PDF
                     </button>
                     <button 
@@ -83,7 +83,7 @@
                         class="p-1.5 rounded hover:bg-zinc-200 text-zinc-600 transition-colors"
                         title="Print"
                     >
-                        <span class="i-ph-printer w-4 h-4"></span>
+                        <span class="icon-[ph--printer] w-4 h-4"></span>
                     </button>
                  </div>
             </div>

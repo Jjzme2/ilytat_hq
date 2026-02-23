@@ -107,8 +107,8 @@ export default defineEventHandler(async (event) => {
         }
     }
 
-    // Log Usage (Async, don't block response)
-    logUsage(event, {
+    // Log Usage (Wait for completion to ensure serverless doesn't kill it)
+    await logUsage(event, {
         userId: 'system', // TODO: Extract from auth context
         tenantId: body.tenantId || 'system',
         feature: body.feature || 'unknown',

@@ -54,7 +54,7 @@
                 </button>
                 <button @click="generateFinancialPlan" :disabled="isAiLoading"
                     class="px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50">
-                    <span :class="isAiLoading ? 'i-ph-spinner animate-spin' : 'i-heroicons-sparkles'"></span>
+                    <span :class="isAiLoading ? 'icon-[ph--spinner] animate-spin' : 'i-heroicons-sparkles'"></span>
                     Plan
                 </button>
             </div>

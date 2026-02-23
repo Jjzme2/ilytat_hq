@@ -8,7 +8,7 @@ describe('Quote', () => {
         expect(q.author).toBe('')
         expect(q.source).toBe('')
         expect(q.tags).toEqual([])
-        expect(q.type).toBe('common')
+        expect(q.type).toBe('universal')
         expect(q.userId).toBe('system')
         expect(q.notes).toBe('')
         // date should be today in YYYY-MM-DD format

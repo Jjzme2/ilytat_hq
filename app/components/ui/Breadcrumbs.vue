@@ -3,7 +3,7 @@
         <ol class="flex items-center space-x-2">
             <li v-for="(item, index) in items" :key="index" class="flex items-center">
                 <div v-if="index > 0" class="flex items-center text-zinc-500 mx-1">
-                    <span class="i-ph-caret-right text-xs"></span>
+                    <span class="icon-[ph--caret-right] text-xs"></span>
                 </div>
 
                 <NuxtLink v-if="item.to && index < items.length - 1" :to="item.to"

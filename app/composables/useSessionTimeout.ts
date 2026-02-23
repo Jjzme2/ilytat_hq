@@ -51,6 +51,7 @@ export const useSessionTimeout = () => {
         // Only update if more than 1 second has passed since last recorded activity
         if (now - lastActivity.value > 1000) {
             lastActivity.value = now;
+            localStorage.setItem('hq_last_activity', now.toString());
         }
     };
 
@@ -110,8 +111,11 @@ export const useSessionTimeout = () => {
 
     const logout = async () => {
         if (auth) {
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('hq_last_activity');
+            }
             await signOut(auth);
-            router.push('/login?reason=timeout');
+            router.replace('/login?reason=timeout');
         }
     };
 
@@ -133,11 +137,25 @@ export const useSessionTimeout = () => {
             }
         });
 
+        // Initial set
+        const storedActivity = localStorage.getItem('hq_last_activity');
+        if (storedActivity) {
+            lastActivity.value = parseInt(storedActivity, 10);
+
+            // Check immediately if we need to logout
+            const timeSinceActivity = Date.now() - lastActivity.value;
+            if (timeSinceActivity > TIMEOUT_MS) {
+                console.log('[Session] Timeout reached from previous session. Logging out.');
+                logout();
+                return;
+            }
+        } else {
+            lastActivity.value = Date.now();
+            localStorage.setItem('hq_last_activity', lastActivity.value.toString());
+        }
+
         // Periodic check
         intervalId.value = setInterval(checkTimeout, CHECK_INTERVAL_MS);
-
-        // Initial set
-        lastActivity.value = Date.now();
     };
 
     const stopMonitoring = () => {
@@ -160,8 +178,10 @@ export const useSessionTimeout = () => {
     // trying to avoid resetting on token refreshes if reference changes
     watch(user, (newUser, oldUser) => {
         if (newUser && !oldUser) {
-
             lastActivity.value = Date.now();
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('hq_last_activity', lastActivity.value.toString());
+            }
             warningShown.value = false;
             if (warningToastId.value) {
                 remove(warningToastId.value);

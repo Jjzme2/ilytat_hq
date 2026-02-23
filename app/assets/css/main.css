@@ -1,4 +1,13 @@
 @import "tailwindcss";
+@import "./icons.css";
+
+/* Fallback for strict browser parsing (e.g. Mozilla Firefox) */
+[class^="i-ph-"],
+[class*=" i-ph-"] {
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+  background-color: currentColor;
+}
 
 /* 
   Theme variables and utilities are now provided by @ilytat/theme 

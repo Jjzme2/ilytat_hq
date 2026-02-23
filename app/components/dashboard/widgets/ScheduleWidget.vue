@@ -2,7 +2,7 @@
   <div class="h-full flex flex-col bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden backdrop-blur-sm">
     <div class="p-4 border-b border-white/5 flex justify-between items-center">
       <h3 class="font-semibold text-zinc-100 flex items-center gap-2">
-        <span class="i-ph-calendar-blank text-amber-400"></span>
+        <span class="icon-[ph--calendar-blank] text-amber-400"></span>
         Today's Schedule
       </h3>
       <NuxtLink to="/schedule" class="text-xs text-zinc-500 hover:text-amber-400 transition-colors">

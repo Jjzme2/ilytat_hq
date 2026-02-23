@@ -12,7 +12,7 @@
             </div>
             <button @click="openCreateModal"
                 class="w-full sm:w-auto px-6 py-3.5 sm:py-3 bg-accent-primary hover:bg-accent-secondary text-white rounded-2xl text-sm font-black transition-all shadow-2xl shadow-accent-primary/20 flex items-center justify-center gap-2 group active:scale-95">
-                <span class="i-ph-plus-bold text-xl group-hover:rotate-90 transition-transform duration-300"></span>
+                <span class="icon-[ph--plus-bold] text-xl group-hover:rotate-90 transition-transform duration-300"></span>
                 Inaugurate Project
             </button>
         </header>
@@ -74,11 +74,11 @@
                         <div class="flex items-center justify-between mb-2">
                              <div class="flex items-center gap-3 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
                                 <span v-if="project.deadline" class="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-lg">
-                                    <span class="i-ph-calendar-bold opacity-70 text-accent-primary"></span>
+                                    <span class="icon-[ph--calendar-bold] opacity-70 text-accent-primary"></span>
                                     {{ formatDate(project.deadline) }}
                                 </span>
                                 <span class="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-lg">
-                                    <span class="i-ph-lightning-bold opacity-70" :class="project.priorityColor"></span>
+                                    <span class="icon-[ph--lightning-bold] opacity-70" :class="project.priorityColor"></span>
                                     <span :class="project.priorityColor">{{ project.priority }}</span>
                                 </span>
                             </div>
@@ -97,7 +97,7 @@
                 <div v-if="projects.length === 0"
                     class="col-span-full flex flex-col items-center justify-center h-80 border-2 border-dashed border-white/5 rounded-3xl text-zinc-600 bg-zinc-900/10">
                     <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">
-                        <span class="i-ph-folder-open-bold text-4xl opacity-50"></span>
+                        <span class="icon-[ph--folder-open-bold] text-4xl opacity-50"></span>
                     </div>
                     <h3 class="text-lg font-bold text-white mb-2">No active operations</h3>
                     <p class="text-sm">Initiate a new project to start tracking progress.</p>
@@ -250,7 +250,7 @@ const handleCreate = async () => {
             status: ProjectStatus.ACTIVE,
             progress: 0,
             purpose: newProjectForm.value.purpose,
-            tenantId: null
+            tenantId: tenantId.value
         });
 
         await createProject(project);

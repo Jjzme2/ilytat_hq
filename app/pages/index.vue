@@ -20,13 +20,13 @@
               ? 'bg-accent-primary border-accent-primary text-white shadow-accent-primary/30 scale-105' 
               : 'bg-white/5 border-white/10 text-zinc-400'
           ]">
-          <span :class="isReorderMode ? 'i-ph-check-bold' : 'i-ph-arrows-out-card-bold'" class="text-lg"></span>
+          <span :class="isReorderMode ? 'icon-[ph--check-bold]' : 'icon-[ph--arrows-out-card-bold]'" class="text-lg"></span>
           {{ isReorderMode ? 'Done Reordering' : 'Reorder Layout' }}
         </button>
 
         <button @click="showCustomizer = true"
           class="flex-1 md:flex-none px-5 py-3 bg-zinc-900/50 text-white border border-white/10 rounded-2xl hover:bg-zinc-800 transition-all shadow-xl text-sm font-bold flex items-center justify-center gap-2 backdrop-blur-md">
-          <span class="i-ph-sliders-horizontal-bold text-lg"></span>
+          <span class="icon-[ph--sliders-horizontal-bold] text-lg"></span>
           Customize
         </button>
         <button @click="openCommandPalette"
@@ -84,7 +84,7 @@
 
     <div v-else class="py-24 text-center">
       <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/5">
-        <span class="i-ph-layout-bold text-3xl text-zinc-600"></span>
+        <span class="icon-[ph--layout-bold] text-3xl text-zinc-600"></span>
       </div>
       <p class="text-zinc-500 font-medium">No widgets active in your system.</p>
       <button @click="showCustomizer = true" class="mt-4 text-accent-primary hover:underline font-bold">

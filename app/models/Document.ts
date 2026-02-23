@@ -70,11 +70,11 @@ export class Document extends BaseModel<DocumentData> {
 
     get typeIcon(): string {
         switch (this.type) {
-            case DocumentType.REPORT: return 'i-ph-chart-bar text-blue-400';
-            case DocumentType.TEMPLATE: return 'i-ph-file-code text-purple-400';
-            case DocumentType.PROPOSAL: return 'i-ph-file-text text-amber-400';
-            case DocumentType.NOTE: return 'i-ph-note text-emerald-400';
-            default: return 'i-ph-file text-zinc-400';
+            case DocumentType.REPORT: return 'icon-[ph--chart-bar] text-blue-400';
+            case DocumentType.TEMPLATE: return 'icon-[ph--file-code] text-purple-400';
+            case DocumentType.PROPOSAL: return 'icon-[ph--file-text] text-amber-400';
+            case DocumentType.NOTE: return 'icon-[ph--note] text-emerald-400';
+            default: return 'icon-[ph--file] text-zinc-400';
         }
     }
 }

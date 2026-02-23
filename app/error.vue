@@ -21,7 +21,7 @@
             class="group relative px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all duration-300 backdrop-blur-sm"
         >
             <span class="flex items-center gap-3 text-sm font-medium tracking-wide group-hover:text-white text-zinc-300">
-                <span class="i-ph-house-bold text-lg"></span>
+                <span class="icon-[ph--house-bold] text-lg"></span>
                 Return to Command
             </span>
             <!-- Glow effect -->

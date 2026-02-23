@@ -2,7 +2,7 @@
   <div class="h-full flex flex-col bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden backdrop-blur-sm">
     <div class="p-4 border-b border-white/5 flex justify-between items-center">
       <h3 class="font-semibold text-zinc-100 flex items-center gap-2">
-        <span class="i-ph-file-text text-indigo-400"></span>
+        <span class="icon-[ph--file-text] text-indigo-400"></span>
         Recent Documents
       </h3>
       <NuxtLink to="/documents" class="text-xs text-zinc-500 hover:text-indigo-400 transition-colors">
@@ -26,7 +26,7 @@
         @click="navigateTo('/documents')"
       >
         <div class="flex items-start gap-3">
-          <span :class="['text-xl mt-0.5', doc.typeIcon || 'i-ph-file-text']"></span>
+          <span :class="['text-xl mt-0.5', doc.typeIcon || 'icon-[ph--file-text]']"></span>
           <div class="flex-1 min-w-0">
             <p class="text-sm text-zinc-200 font-medium truncate group-hover:text-indigo-200 transition-colors">{{ doc.title }}</p>
             <div class="flex items-center gap-2 mt-1">

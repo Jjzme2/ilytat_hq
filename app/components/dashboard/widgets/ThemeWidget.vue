@@ -7,7 +7,7 @@
 
     <div class="p-4 border-b border-white/5 flex justify-between items-center relative z-10">
       <h3 class="font-semibold text-zinc-100 flex items-center gap-2">
-        <span class="i-ph-paint-brush-broad text-white"></span>
+        <span class="icon-[ph--paint-brush-broad] text-white"></span>
         Theme
       </h3>
       <NuxtLink to="/themes" class="text-xs text-zinc-400 hover:text-white transition-colors">
@@ -40,7 +40,7 @@
                     <div class="h-1/2" :style="{ background: theme.colors['--bg-secondary'] }"></div>
                 </div>
                 <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 transition-opacity">
-                    <span class="i-ph-check text-white" v-if="currentTheme.id === theme.id"></span>
+                    <span class="icon-[ph--check] text-white" v-if="currentTheme.id === theme.id"></span>
                 </div>
             </button>
        </div>
@@ -50,7 +50,7 @@
          @click="shuffleTheme"
          class="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-xs font-medium text-zinc-300 transition-colors flex items-center justify-center gap-2"
         >
-         <span class="i-ph-shuffle"></span>
+         <span class="icon-[ph--shuffle]"></span>
          Shuffle
         </button>
         <button

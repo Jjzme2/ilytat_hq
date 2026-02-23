@@ -32,7 +32,7 @@
                   class="text-zinc-500 hover:text-accent-primary transition-colors p-1 -m-1"
                   title="Copy to clipboard"
                 >
-                  <span class="i-ph-copy-bold text-[10px]"></span>
+                  <span class="icon-[ph--copy-bold] text-[10px]"></span>
                 </button>
               </div>
               <div class="prose prose-invert prose-xs" v-html="renderMarkdown(msg.content)"></div>
@@ -41,10 +41,10 @@
               <div v-if="msg.draft" class="mt-2.5 p-3 bg-zinc-800/80 border border-white/10 rounded-2xl space-y-3 shadow-xl">
                 <div class="flex items-center justify-between border-b border-white/5 pb-1.5">
                   <span class="text-[9px] font-black uppercase tracking-widest text-accent-primary flex items-center gap-1">
-                    <span class="i-ph-magic-wand-bold"></span> Draft Proposal
+                    <span class="icon-[ph--magic-wand-bold]"></span> Draft Proposal
                   </span>
                   <button @click="messages.splice(i, 1)" class="text-zinc-500 hover:text-white transition-colors">
-                    <span class="i-ph-x-bold text-[10px]"></span>
+                    <span class="icon-[ph--x-bold] text-[10px]"></span>
                   </button>
                 </div>
 
@@ -91,8 +91,8 @@
                     :disabled="isExecuting"
                     class="flex-1 py-2 bg-accent-primary text-white rounded-xl text-[11px] font-black shadow-lg shadow-accent-primary/20 hover:scale-[1.01] active:scale-98 transition-all flex items-center justify-center gap-2"
                   >
-                    <span v-if="isExecuting" class="i-ph-circle-notch-bold animate-spin"></span>
-                    <span v-else class="i-ph-check-bold"></span>
+                    <span v-if="isExecuting" class="icon-[ph--circle-notch-bold] animate-spin"></span>
+                    <span v-else class="icon-[ph--check-bold]"></span>
                     Confirm Action
                   </button>
                 </div>
@@ -101,7 +101,7 @@
               <!-- AI Confirmation UI (Original) -->
               <div v-if="msg.requireConfirmation && !msg.confirmed && !msg.cancelled" class="mt-2.5 p-3 bg-accent-primary/10 border border-accent-primary/20 rounded-xl space-y-2">
                 <p class="text-[9px] text-accent-primary font-black uppercase tracking-widest flex items-center gap-1">
-                  <span class="i-ph-shield-warning-bold"></span> Security Check
+                  <span class="icon-[ph--shield-warning-bold]"></span> Security Check
                 </p>
                 <p class="text-xs text-zinc-300">Detailed AI analysis required. Proceed?</p>
                 <div class="flex gap-2">
@@ -123,7 +123,7 @@
               <!-- Pending Action Confirmation -->
               <div v-if="msg.role === 'assistant' && pendingAction && i === messages.length - 1" class="mt-3 p-3 bg-accent-primary/5 border border-accent-primary/20 rounded-xl space-y-3">
                 <div class="flex items-center gap-2 text-accent-primary font-black uppercase tracking-widest text-[10px]">
-                  <span class="i-ph-shield-check-bold"></span>
+                  <span class="icon-[ph--shield-check-bold]"></span>
                   Confirm Required
                 </div>
                 <div class="flex gap-2">
@@ -160,13 +160,13 @@
           <!-- Toolbar -->
           <div class="absolute -top-10 right-2 flex items-center gap-2 opacity-0 group-hover/bar:opacity-100 transition-opacity">
             <button @click="isMinimized = true" class="w-7 h-7 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-colors" title="Minimize">
-              <span class="i-ph-minus-bold text-xs"></span>
+              <span class="icon-[ph--minus-bold] text-xs"></span>
             </button>
           </div>
 
           <div class="flex-shrink-0 ml-2 hidden sm:block">
             <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-accent-primary via-accent-secondary to-accent-primary bg-[length:200%_200%] animate-gradient flex items-center justify-center text-white shadow-xl">
-              <span class="i-ph-sparkle-bold text-xl"></span>
+              <span class="icon-[ph--sparkle-bold] text-xl"></span>
             </div>
           </div>
           
@@ -184,14 +184,14 @@
               @click="isOpen = !isOpen"
               class="p-2 rounded-full hover:bg-white/10 text-zinc-400 transition-colors"
             >
-              <span :class="isOpen ? 'i-ph-caret-up-bold' : 'i-ph-caret-down-bold'" class="text-lg"></span>
+              <span :class="isOpen ? 'icon-[ph--caret-up-bold]' : 'icon-[ph--caret-down-bold]'" class="text-lg"></span>
             </button>
             <button 
               @click="handleSend"
               :disabled="!input.trim() || isLoading"
               class="p-2.5 rounded-full bg-accent-primary text-white disabled:opacity-30 disabled:grayscale transition-all hover:scale-110 active:scale-95 shadow-lg shadow-accent-primary/20"
             >
-              <span class="i-ph-paper-plane-right-fill text-lg"></span>
+              <span class="icon-[ph--paper-plane-right-fill] text-lg"></span>
             </button>
           </div>
         </div>
@@ -203,10 +203,10 @@
           class="bg-black/60 backdrop-blur-3xl border border-white/10 rounded-full px-4 py-2 flex items-center gap-3 shadow-2xl self-end transition-all hover:scale-105 active:scale-95"
         >
           <div class="w-6 h-6 rounded-full bg-accent-primary flex items-center justify-center text-white">
-            <span class="i-ph-sparkle-bold text-xs"></span>
+            <span class="icon-[ph--sparkle-bold] text-xs"></span>
           </div>
           <span class="text-xs font-bold uppercase tracking-widest text-zinc-400">Assistant Minimized</span>
-          <span class="i-ph-caret-up-bold text-zinc-600"></span>
+          <span class="icon-[ph--caret-up-bold] text-zinc-600"></span>
         </button>
       </div>
     </div>

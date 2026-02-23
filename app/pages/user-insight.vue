@@ -23,7 +23,7 @@
           class="group relative px-6 py-3 bg-white text-black rounded-full font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale overflow-hidden"
         >
           <span class="relative z-10 flex items-center gap-2">
-            <span :class="isAIThinking ? 'i-ph-circle-notch-bold animate-spin' : 'i-ph-sparkle-bold'"></span>
+            <span :class="isAIThinking ? 'icon-[ph--circle-notch-bold] animate-spin' : 'icon-[ph--sparkle-bold]'"></span>
             {{ isAIThinking ? 'Analyzing Context...' : 'Refresh Analysis' }}
           </span>
           <div class="absolute inset-0 bg-gradient-to-r from-accent-primary to-accent-secondary opacity-0 group-hover:opacity-10 transition-opacity"></div>
@@ -39,7 +39,7 @@
             <div class="flex flex-col items-center text-center space-y-4">
               <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-accent-primary to-accent-secondary p-1">
                 <div class="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center overflow-hidden">
-                  <span class="i-ph-user-focus-bold text-4xl text-accent-primary"></span>
+                  <span class="icon-[ph--user-focus-bold] text-4xl text-accent-primary"></span>
                 </div>
               </div>
               <div>
@@ -72,12 +72,12 @@
           <!-- Quick Stats -->
           <div class="grid grid-cols-2 gap-4">
             <div class="bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-2xl p-5">
-              <span class="i-ph-rocket-launch-bold text-2xl text-blue-400 mb-2"></span>
+              <span class="icon-[ph--rocket-launch-bold] text-2xl text-blue-400 mb-2"></span>
               <div class="text-xl font-black">24</div>
               <div class="text-[10px] uppercase font-bold text-zinc-500">Weekly Wins</div>
             </div>
             <div class="bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-2xl p-5">
-              <span class="i-ph-warning-diamond-bold text-2xl text-amber-400 mb-2"></span>
+              <span class="icon-[ph--warning-diamond-bold] text-2xl text-amber-400 mb-2"></span>
               <div class="text-xl font-black">3</div>
               <div class="text-[10px] uppercase font-bold text-zinc-500">Focus Gaps</div>
             </div>
@@ -88,12 +88,12 @@
         <div class="lg:col-span-2">
           <div class="bg-zinc-900/20 backdrop-blur-3xl border border-white/5 rounded-3xl p-8 md:p-10 h-full flex flex-col relative overflow-hidden group">
             <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-20 transition-opacity">
-              <span class="i-ph-quotes-bold text-9xl"></span>
+              <span class="icon-[ph--quotes-bold] text-9xl"></span>
             </div>
 
             <div class="flex items-center gap-3 mb-8">
               <div class="w-10 h-10 rounded-xl bg-accent-primary/20 flex items-center justify-center text-accent-primary border border-accent-primary/20">
-                <span class="i-ph-brain-bold text-2xl"></span>
+                <span class="icon-[ph--brain-bold] text-2xl"></span>
               </div>
               <div>
                 <h3 class="text-lg font-bold">Intelligence Synthesis</h3>
@@ -114,7 +114,7 @@
 
             <div v-else-if="!currentInsight" class="flex-1 flex flex-col items-center justify-center space-y-6 py-20 text-center">
               <div class="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center">
-                <span class="i-ph-fingerprint-bold text-4xl text-zinc-700"></span>
+                <span class="icon-[ph--fingerprint-bold] text-4xl text-zinc-700"></span>
               </div>
               <div class="space-y-2">
                 <h4 class="text-xl font-bold">No Identity Found</h4>
@@ -136,7 +136,7 @@
                   @click="copySummary(currentInsight.summary)"
                   class="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
                 >
-                  <span class="i-ph-copy-bold"></span>
+                  <span class="icon-[ph--copy-bold]"></span>
                   Copy Synthesis
                 </button>
               </div>
@@ -145,7 +145,7 @@
 
             <!-- Footer Tip -->
             <div class="mt-10 pt-8 border-t border-white/5 flex items-center gap-4">
-              <span class="i-ph-lightbulb-bold text-2xl text-amber-400"></span>
+              <span class="icon-[ph--lightbulb-bold] text-2xl text-amber-400"></span>
               <p class="text-xs text-zinc-400 leading-relaxed italic">
                 Tip: The more tasks and goals you manage within HQ, the deeper and more accurate your digital synthesis becomes.
               </p>
@@ -157,7 +157,7 @@
       <!-- History Section -->
       <div v-if="insightsHistory.length > 1" class="space-y-6 animate-fade-in [animation-delay:0.2s]">
         <div class="flex items-center gap-3">
-          <span class="i-ph-clock-counter-clockwise-bold text-2xl text-zinc-500"></span>
+          <span class="icon-[ph--clock-counter-clockwise-bold] text-2xl text-zinc-500"></span>
           <h3 class="text-xl font-bold uppercase tracking-wider">Synthesis History</h3>
         </div>
 
