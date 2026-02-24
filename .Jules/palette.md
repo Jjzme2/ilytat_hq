@@ -3,3 +3,7 @@
 ## 2026-02-13 - Accessible Login Forms
 **Learning:** Adding explicit `for`/`id` associations and `aria-describedby` for error messages ensures screen reader users can navigate login forms confidently. The `aria-pressed` state on password toggles provides critical context often missed in visual-only implementations.
 **Action:** Audit all form inputs for label association and ensure dynamic error messages are announced via `aria-live`.
+
+## 2026-02-14 - Accessibility & Feedback Gaps in Document Forms
+**Learning:** Dynamic form generation (e.g., `DocumentCreator.vue`) often misses label associations (`for`/`id`) and loading feedback for async actions, leading to poor accessibility and user uncertainty. Icon-only buttons frequently lack `aria-label`.
+**Action:** Systematically audit dynamic forms for label associations using `useId()` and ensure all async buttons display loading states.
