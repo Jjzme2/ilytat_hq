@@ -145,4 +145,16 @@ describe('useCommandPalette', () => {
         registerGroup({ id: 'custom', label: 'Custom' })
         expect(groups.value).toHaveLength(initialLength + 1)
     })
+
+    it('registerCommands adds multiple commands in batch and prevents duplicates', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        registerCommands([
+            { id: 'batch1', label: 'Batch 1', action: () => { } },
+            { id: 'batch2', label: 'Batch 2', action: () => { } },
+            { id: 'batch1', label: 'Batch 1 Duplicate', action: () => { } }
+        ])
+        expect(commands.value).toHaveLength(2)
+        expect(commands.value.find(c => c.id === 'batch1')).toBeTruthy()
+        expect(commands.value.find(c => c.id === 'batch2')).toBeTruthy()
+    })
 })
