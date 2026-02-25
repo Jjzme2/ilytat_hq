@@ -6,3 +6,7 @@
 **Vulnerability:** The `server/api/docs.get.ts` endpoint proxied requests to Cloudflare R2 without any authentication or authorization checks.
 **Learning:** Server-side API routes that act as proxies to external storage must always validate authentication before forwarding requests. Relying on obfuscated URLs is not security.
 **Prevention:** Always add `verifyAdminToken` or equivalent middleware at the start of any server-side API handler that accesses sensitive data.
+## 2026-02-15 - [Critical] Hardcoded Admin Backdoor in Auth Utility
+**Vulnerability:** Hardcoded email addresses and UIDs were found in `server/utils/adminAuth.ts`, granting admin access regardless of actual role claims.
+**Learning:** Hardcoded credentials or "super user" checks in code are dangerous backdoors that bypass the centralized auth system (custom claims).
+**Prevention:** Strictly rely on JWT claims (e.g., `role: 'admin'`, `tenantId`) for authorization. Added unit tests to `server/utils/__tests__/adminAuth.test.ts` to prevent regression.
