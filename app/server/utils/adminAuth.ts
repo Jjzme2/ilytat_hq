@@ -43,7 +43,7 @@ export const ensureAdminInitialized = () => {
     const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL
     const projectId = process.env.FIREBASE_PROJECT_ID
 
-    // Diagnostic logging (safe — only format info, never the key itself)
+    // Diagnostic logging (safe — BEGIN/END headers are not sensitive)
     console.log('[Firebase Admin] Key diagnostics:', {
         rawKeyLength: rawKey.length,
         cleanedKeyLength: privateKey.length,
@@ -51,6 +51,10 @@ export const ensureAdminInitialized = () => {
         endsWithQuote: rawKey.endsWith('"'),
         startsWithBegin: privateKey.trimStart().startsWith('-----BEGIN'),
         endsWithEnd: privateKey.trimEnd().endsWith('-----'),
+        rawFirst30: rawKey.substring(0, 30),
+        rawLast30: rawKey.substring(rawKey.length - 30),
+        cleanedFirst30: privateKey.substring(0, 30),
+        first5CharCodes: [...rawKey.substring(0, 5)].map(c => c.charCodeAt(0)),
         hasClientEmail: !!clientEmail,
         hasProjectId: !!projectId,
     })
