@@ -27,7 +27,9 @@ export const ensureAdminInitialized = () => {
         }
     }
 
-    const privateKey = (process.env.FIREBASE_ADMIN_PRIVATE_KEY || '').replace(/\\n/g, '\n')
+    const privateKey = (process.env.FIREBASE_ADMIN_PRIVATE_KEY || '')
+        .replace(/^"|"$/g, '')   // Strip surrounding quotes (Heroku paste artifact)
+        .replace(/\\n/g, '\n')
     const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL
     const projectId = process.env.FIREBASE_PROJECT_ID
 

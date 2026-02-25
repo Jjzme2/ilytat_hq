@@ -48,7 +48,9 @@ export default defineNuxtConfig({
         ? {
           projectId: process.env.FIREBASE_PROJECT_ID,
           clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+          privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY
+            ?.replace(/^"|"$/g, '')   // Strip surrounding quotes (Heroku paste artifact)
+            ?.replace(/\\n/g, '\n'),
         }
         : fileURLToPath(new URL('./app/server/keys/ilytat-structure-firebase-adminsdk-fbsvc-b33fbfaee5.json', import.meta.url))
     },
