@@ -38,17 +38,26 @@ export const useFirebase = () => {
  * This helper retries with a short interval so callers can `await` auth
  * readiness without crashing.
  *
+ * IMPORTANT: We use Firebase SDK's direct getApp()/getAuth() instead of
+ * VueFire composables (useFirebaseAuth) because those composables rely
+ * on Vue's inject() — which only works in setup context. Inside a
+ * setTimeout callback the injection context is lost and the composable
+ * would always return undefined.
+ *
  * @param timeoutMs  Maximum time to wait before throwing (default 5 000 ms).
  */
 export const waitForFirebaseAuth = async (
     timeoutMs = 5000,
 ): Promise<import('firebase/auth').Auth> => {
+    // Direct SDK imports — context-free, safe inside any async callback.
+    const { getApp } = await import('firebase/app');
+    const { getAuth } = await import('firebase/auth');
+
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
         try {
-            const auth = useFirebaseAuth();
-            const unwrapped = isRef(auth) ? auth.value : auth;
-            if (unwrapped) return unwrapped as import('firebase/auth').Auth;
+            const app = getApp();       // throws if initializeApp() hasn't run yet
+            return getAuth(app);        // guaranteed valid once app exists
         } catch {
             /* App not ready yet — keep polling */
         }
