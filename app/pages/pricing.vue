@@ -134,7 +134,7 @@ import { PLANS, type PlanDefinition } from '@/config/plans'
 import { Logger } from '~/utils/Logger'
 
 definePageMeta({
-  layout: 'auth',
+  layout: 'default',
   middleware: ['auth']
 })
 

@@ -25,6 +25,7 @@ import { projectRetrospective } from "./_templates/projectRetrospective";
 import { featureSpec } from "./_templates/featureSpec";
 import { marketingPlan } from "./_templates/marketingPlan";
 import { subcontractorAgreement } from "./_templates/subcontractorAgreement";
+import { discountReason } from "./_templates/discountReason";
 
 // ---------------------------------------------------------------------------
 // 2. Types & Models
@@ -96,4 +97,5 @@ export const documentTemplates: DocumentTemplateModel[] = [
     new DocumentTemplateModel(featureSpec),
     new DocumentTemplateModel(marketingPlan),
     new DocumentTemplateModel(subcontractorAgreement),
+    new DocumentTemplateModel(discountReason),
 ];

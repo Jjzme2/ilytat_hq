@@ -118,7 +118,36 @@
                                             Expand
                                         </button>
                                     </div>
-                                    <div class="flex justify-end gap-2">
+                                    
+                                    <!-- Branding (Growth+) -->
+                                    <div v-if="canUseBranding" class="mt-4 pt-4 border-t border-white/5 space-y-4">
+                                        <div class="flex items-center justify-between">
+                                            <h4 class="text-sm font-semibold text-white">Branding</h4>
+                                            <span class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">Growth+</span>
+                                        </div>
+                                        
+                                        <div class="flex items-center gap-2">
+                                            <input 
+                                                type="checkbox" 
+                                                id="editIncludeLogo" 
+                                                v-model="newDocMetadata.hasLogo"
+                                                class="w-4 h-4 rounded border-white/10 bg-black/20 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-zinc-900"
+                                            />
+                                            <label for="editIncludeLogo" class="text-sm text-zinc-300 cursor-pointer">Include Company Logo</label>
+                                        </div>
+                                        
+                                        <div class="space-y-1">
+                                            <label class="text-xs font-medium text-zinc-400">Custom Watermark</label>
+                                            <input 
+                                                v-model="newDocMetadata.watermark"
+                                                type="text"
+                                                class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                                                placeholder="e.g. CONFIDENTIAL"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-end gap-2 pt-4 border-t border-white/5">
                                         <button type="button" @click="showDocForm = false"
                                             class="px-3 py-1.5 text-zinc-400 hover:text-white text-xs font-medium">Cancel</button>
                                         <button type="submit" :disabled="isLoading"
@@ -437,7 +466,7 @@
                         </button>
                     </div>
                     <div class="p-4 bg-black/20 border border-white/5 rounded-xl">
-                        <p class="text-zinc-300 leading-relaxed whitespace-pre-wrap">{{ viewingDocument.content || 'No content.'}}</p>
+                        <div class="text-zinc-300 leading-relaxed whitespace-pre-wrap" v-html="getBrandedContent(viewingDocument)"></div>
                     </div>
                 </DialogPanel>
             </div>
@@ -474,15 +503,20 @@ import { useToast } from '@ilytat/notifications';
 import { useDocuments } from '~/composables/useDocuments';
 
 
+import { useUser } from '~/composables/useUser';
+import { useOrganization } from '~/composables/useOrganization';
+
 definePageMeta({
     layout: 'default',
     middleware: ['auth']
 });
 
-// --- User Auth ---
+// --- User Auth & Globals ---
 const { auth } = useFirebase();
 const currentUser = computed(() => auth?.currentUser ?? null);
 const { success, error: toastError } = useToast();
+const { user } = useUser();
+const { organization } = useOrganization();
 
 // --- Documents Composable ---
 const {
@@ -501,6 +535,45 @@ const editingDocId = ref<string | null>(null);
 const isViewModalOpen = ref(false);
 const viewingDocument = ref<Document | null>(null);
 const uploadingFileName = ref('');
+
+// --- Branding Editor State ---
+const newDocMetadata = ref<Record<string, any>>({});
+const includeLogo = ref(false);
+const customWatermark = ref('');
+const canUseBranding = computed(() => {
+    return user.value?.subscriberTier === 'growth' || user.value?.subscriberTier === 'scale';
+});
+
+// --- Dynamic Rendering ---
+const getBrandedContent = (doc: any) => {
+    if (!doc?.content) return 'No content.';
+    
+    let renderedContent = doc.content;
+    const metadata = doc.metadata || {};
+    
+    // Only apply if the document metadata says it has branding features active
+    if (metadata.hasLogo || metadata.watermark) {
+        let brandingOverlay = '';
+
+        if (metadata.watermark?.trim()) {
+            const wmText = metadata.watermark.trim();
+            brandingOverlay = `<div style="position: absolute; top: 50%; left: 50%; width: 150%; transform: translate(-50%, -50%) rotate(-45deg); font-size: clamp(3rem, 10vw, 6rem); font-weight: 800; color: rgba(0,0,0,0.05); text-align: center; white-space: pre-wrap; word-wrap: break-word; pointer-events: none; user-select: none; z-index: 0; letter-spacing: 0.15em;">${wmText}</div>`;
+        }
+
+        if (metadata.hasLogo && organization.value?.logo) {
+            renderedContent = `<div style="text-align: right; margin-bottom: 2rem; position: relative; z-index: 1;"><img src="${organization.value.logo}" style="max-height: 60px; max-width: 200px;" alt="Company Logo" /></div>\n` + renderedContent;
+        }
+
+        if (brandingOverlay) {
+            renderedContent = `<div style="position: relative; overflow: hidden; min-height: 100%; width: 100%;">
+                ${brandingOverlay}
+                <div style="position: relative; z-index: 1;">${renderedContent}</div>
+            </div>`;
+        }
+    }
+    
+    return renderedContent;
+};
 
 // --- Share State ---
 const showShareModal = ref(false);
@@ -613,6 +686,7 @@ const resetForm = () => {
     newDocContent.value = '';
     newDocType.value = DocumentType.NOTE;
     newDocStatus.value = DocumentStatus.DRAFT;
+    newDocMetadata.value = {};
     showDocForm.value = false;
     isEditMode.value = false;
     editingDocId.value = null;
@@ -628,7 +702,8 @@ const handleCreateOrUpdateDocument = async () => {
                 title: newDocTitle.value.trim(),
                 content: newDocContent.value,
                 type: newDocType.value as any,
-                status: newDocStatus.value as any
+                status: newDocStatus.value as any,
+                metadata: newDocMetadata.value
             });
             success('Document updated');
         } else {
@@ -638,7 +713,8 @@ const handleCreateOrUpdateDocument = async () => {
                 content: newDocContent.value,
                 type: newDocType.value,
                 status: newDocStatus.value,
-                ownerId: currentUser.value?.uid || ''
+                ownerId: currentUser.value?.uid || '',
+                metadata: newDocMetadata.value
             });
             success('Document created');
         }
@@ -664,6 +740,7 @@ const openEditForm = (doc: any) => {
     newDocContent.value = doc.content;
     newDocType.value = doc.type;
     newDocStatus.value = doc.status;
+    newDocMetadata.value = { ...(doc.metadata || {}) };
 
     editingDocId.value = doc.id;
     isEditMode.value = true;
@@ -678,7 +755,8 @@ const handleFactorySave = async (data: any) => {
             content: data.content,
             type: data.type || DocumentType.OTHER,
             status: DocumentStatus.DRAFT,
-            ownerId: currentUser.value?.uid || ''
+            ownerId: currentUser.value?.uid || '',
+            metadata: data.metadata || {}
         });
         success('Document created from template');
         showDocForm.value = false;
@@ -700,7 +778,7 @@ const handleDeleteDocument = async (id: string) => {
 };
 
 const handlePrintDocument = (doc: any) => {
-    DocumentFactory.print(doc.title, doc.content);
+    DocumentFactory.print(doc.title, getBrandedContent(doc));
 };
 
 const openDocumentView = (doc: any) => {

@@ -20,7 +20,7 @@ export const ALL_MODULES: ModuleDefinition[] = [
 
     // Growth tier — business tools
     { id: 'finance', name: 'Finance', description: 'Financial tracking, budgets, and accounts', icon: '💰', route: '/finance', canDisable: true, requiredPlan: 'growth' },
-    { id: 'ai', name: 'AI', description: 'AI usage tracking and model preferences', icon: '🤖', route: '/settings', canDisable: true, requiredPlan: 'growth' },
+    { id: 'ai', name: 'AI', description: 'AI usage tracking and model preferences', icon: '🤖', route: '/ai', canDisable: true, requiredPlan: 'growth' },
     { id: 'inbox', name: 'Inbox', description: 'Messages and notifications', icon: '📥', route: '/inbox', canDisable: true, requiredPlan: 'growth' },
     { id: 'schedule', name: 'Schedule', description: 'Calendar and event management', icon: '📅', route: '/schedule', canDisable: true, requiredPlan: 'growth' },
 
