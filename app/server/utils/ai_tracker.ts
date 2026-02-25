@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { firestore } from './firebase';
 import { AVAILABLE_MODELS } from './ai_models';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
@@ -51,7 +52,7 @@ export const logUsage = async (event: any, data: {
             }));
             storageUrl = logKey;
         } catch (r2Error) {
-            console.error('Failed to upload AI log to R2:', r2Error);
+            Logger.error('Failed to upload AI log to R2:', r2Error);
             // Non-blocking, we still want the metrics in Firestore
         }
 
@@ -73,6 +74,6 @@ export const logUsage = async (event: any, data: {
                 : data.content
         });
     } catch (e) {
-        console.error('Failed to log AI usage', e);
+        Logger.error('Failed to log AI usage', e);
     }
 };

@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { defineEventHandler, readBody, createError } from 'h3'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { verifyAdminAccess, ensureAdminInitialized } from '../../utils/adminAuth'
@@ -56,7 +57,7 @@ export default defineEventHandler(async (event) => {
             message: `Successfully seeded ${model} (${docRef.id})`
         }
     } catch (e: any) {
-        console.error(`[Seed Wizard Error] ${model}:`, e)
+        Logger.error(`[Seed Wizard Error] ${model}:`, e)
         throw createError({
             statusCode: 500,
             statusMessage: `Seeding failed: ${e.message}`

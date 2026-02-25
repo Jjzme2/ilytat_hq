@@ -6,7 +6,8 @@ import { useFirestore } from 'vuefire';
 
 
 export const useUser = () => {
-    const { auth } = useFirebase();
+    // NOTE: auth from useFirebase() can be null on cold load.
+    // All methods below use waitForFirebaseAuth() for a guaranteed-valid reference.
 
     // Shared state across all instances of the composable
     const user = useState<User | null>('auth-user', () => null);
@@ -107,6 +108,7 @@ export const useUser = () => {
     const signIn = async (email: string, password: string) => {
         isLoading.value = true;
         Logger.info(`[useUser] Attempting sign in for ${email}`);
+        const auth = await waitForFirebaseAuth();
         try {
             const result = await signInWithEmailAndPassword(auth, email, password);
             if (result.user) {
@@ -143,6 +145,7 @@ export const useUser = () => {
 
     const signOutUser = async () => {
         Logger.info('[useUser] Signing out...');
+        const auth = await waitForFirebaseAuth();
         await signOut(auth);
         user.value = null;
         firebaseUser.value = null;
@@ -151,11 +154,13 @@ export const useUser = () => {
 
     const resetPassword = async (email: string) => {
         if (!email) return;
+        const auth = await waitForFirebaseAuth();
         await sendPasswordResetEmail(auth, email);
     };
 
     const verifyEmail = async () => {
         if (firebaseUser.value) {
+            const auth = await waitForFirebaseAuth();
             await sendEmailVerification(firebaseUser.value);
         }
     };

@@ -35,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { ref, watch } from 'vue';
 import { useUser } from '#imports';
 import { useFirestoreRepository } from '~/composables/useFirestoreRepository';
@@ -55,7 +56,7 @@ const loadProjects = async () => {
             limit(5)
         ]);
     } catch (e) {
-        console.error("Failed to load active projects", e);
+        Logger.error("Failed to load active projects", e);
     }
 };
 

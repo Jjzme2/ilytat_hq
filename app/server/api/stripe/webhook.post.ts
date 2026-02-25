@@ -58,18 +58,15 @@ export default defineEventHandler(async (event) => {
             const planId = session.metadata?.planId
 
             Logger.info('[Stripe Webhook] checkout.session.completed', {
-                userId,
                 planId,
-                sessionId: session.id,
-                subscriptionId: session.subscription,
-                metadataTenantId: session.metadata?.tenantId
+                hasSubscription: !!session.subscription
             })
 
             // Resolve organizationId: check metadata first, then user doc, then createdBy query
             let organizationId = session.metadata?.tenantId || ''
 
             if (!organizationId || organizationId === 'pending' || organizationId === '') {
-                Logger.info('[Stripe Webhook] No organizationId in metadata, looking up from user doc', { userId })
+                Logger.info('[Stripe Webhook] No organizationId in metadata, looking up from user doc')
 
                 if (userId) {
                     const userDoc = await db.collection('users').doc(userId).get()
@@ -77,29 +74,24 @@ export default defineEventHandler(async (event) => {
                         const userData = userDoc.data()
                         // Support both new organizationId and legacy tenantId field
                         organizationId = userData?.organizationId || userData?.tenantId || ''
-                        Logger.info('[Stripe Webhook] Found organizationId from user doc', {
-                            userId,
-                            organizationId,
-                            hadOrganizationId: !!userData?.organizationId,
-                            hadTenantId: !!userData?.tenantId
-                        })
+                        Logger.info('[Stripe Webhook] Found organizationId from user doc')
                     } else {
-                        Logger.warn('[Stripe Webhook] User doc not found', { userId })
+                        Logger.warn('[Stripe Webhook] User doc not found')
                     }
                 }
 
                 // Still no org? Try finding one created by this user
                 if (!organizationId) {
-                    Logger.info('[Stripe Webhook] Still no org, searching tenants by createdBy', { userId })
+                    Logger.info('[Stripe Webhook] Still no org, searching tenants by createdBy')
                     const tenantSnap = await db.collection('tenants')
                         .where('createdBy', '==', userId)
                         .limit(1)
                         .get()
                     if (!tenantSnap.empty) {
                         organizationId = tenantSnap.docs[0]?.id || ''
-                        Logger.info('[Stripe Webhook] Found org via createdBy query', { organizationId })
+                        Logger.info('[Stripe Webhook] Found org via createdBy query')
                     } else {
-                        Logger.warn('[Stripe Webhook] No organization found for user', { userId })
+                        Logger.warn('[Stripe Webhook] No organization found for user')
                     }
                 }
             }
@@ -111,10 +103,8 @@ export default defineEventHandler(async (event) => {
                 const periodEnd = rawEnd ? new Date(rawEnd * 1000).toISOString() : new Date().toISOString()
 
                 Logger.info('[Stripe Webhook] Activating subscription', {
-                    organizationId,
                     resolvedPlan,
-                    subscriptionStatus: subscription.status,
-                    periodEnd
+                    subscriptionStatus: subscription.status
                 })
 
                 await db.collection('tenants').doc(organizationId).update({
@@ -129,12 +119,9 @@ export default defineEventHandler(async (event) => {
                 // Update subscriberTier on all organization members
                 await updateMemberTiers(db, organizationId, resolvedPlan, periodEnd)
 
-                Logger.info('[Stripe Webhook] ✓ Subscription activated', { organizationId, plan: resolvedPlan })
+                Logger.info('[Stripe Webhook] ✓ Subscription activated', { plan: resolvedPlan })
             } else {
-                Logger.warn('[Stripe Webhook] checkout.session.completed but missing userId or organizationId', {
-                    userId,
-                    organizationId
-                })
+                Logger.warn('[Stripe Webhook] checkout.session.completed but missing userId or organizationId')
             }
             break
         }
@@ -142,7 +129,6 @@ export default defineEventHandler(async (event) => {
         case 'customer.subscription.updated': {
             const subscription = stripeEvent.data.object as Stripe.Subscription
             Logger.info('[Stripe Webhook] customer.subscription.updated', {
-                subscriptionId: subscription.id,
                 status: subscription.status
             })
 
@@ -158,7 +144,6 @@ export default defineEventHandler(async (event) => {
                 const periodEnd = rawEnd ? new Date(rawEnd * 1000).toISOString() : new Date().toISOString()
 
                 Logger.info('[Stripe Webhook] Updating org subscription', {
-                    orgId: tenantDoc?.id,
                     resolvedPlan,
                     status: subscription.status
                 })
@@ -177,16 +162,16 @@ export default defineEventHandler(async (event) => {
                     await updateMemberTiers(db, tenantDoc.id, tier, tier ? periodEnd : null)
                 }
 
-                Logger.info('[Stripe Webhook] ✓ Subscription updated', { orgId: tenantDoc?.id })
+                Logger.info('[Stripe Webhook] ✓ Subscription updated')
             } else {
-                Logger.warn('[Stripe Webhook] No org found for subscription', { subscriptionId: subscription.id })
+                Logger.warn('[Stripe Webhook] No org found for subscription')
             }
             break
         }
 
         case 'customer.subscription.deleted': {
             const subscription = stripeEvent.data.object as Stripe.Subscription
-            Logger.info('[Stripe Webhook] customer.subscription.deleted', { subscriptionId: subscription.id })
+            Logger.info('[Stripe Webhook] customer.subscription.deleted')
 
             const snapshot = await db.collection('tenants')
                 .where('stripeSubscriptionId', '==', subscription.id)
@@ -205,9 +190,9 @@ export default defineEventHandler(async (event) => {
                     await updateMemberTiers(db, tenantDoc.id, null, null)
                 }
 
-                Logger.info('[Stripe Webhook] ✓ Subscription canceled', { orgId: tenantDoc?.id })
+                Logger.info('[Stripe Webhook] ✓ Subscription canceled')
             } else {
-                Logger.warn('[Stripe Webhook] No org found for deleted subscription', { subscriptionId: subscription.id })
+                Logger.warn('[Stripe Webhook] No org found for deleted subscription')
             }
             break
         }
@@ -227,7 +212,7 @@ function getPlanIdFromPriceId(config: any, priceId: string): string {
     if (config.stripePriceGrowth) map[config.stripePriceGrowth] = 'growth'
     if (config.stripePriceScale) map[config.stripePriceScale] = 'scale'
     const resolved = map[priceId] || 'starter'
-    Logger.debug('[Stripe Webhook] Resolved price → plan', { priceId, resolved })
+    Logger.debug('[Stripe Webhook] Resolved price → plan', { resolved })
     return resolved
 }
 
@@ -257,19 +242,12 @@ async function updateMemberTiers(
         const memberIds: string[] = tenantDoc.data()?.memberIds || []
 
         Logger.info('[Stripe Webhook] updateMemberTiers', {
-            organizationId,
             tier,
-            expiresAt,
-            memberCount: memberIds.length,
-            memberIds
+            memberCount: memberIds.length
         })
 
         if (memberIds.length === 0) {
-            Logger.warn('[Stripe Webhook] No members found in organization — subscriberTier will NOT be updated', {
-                organizationId,
-                docExists: tenantDoc.exists,
-                docData: tenantDoc.data()
-            })
+            Logger.warn('[Stripe Webhook] No members found in organization — subscriberTier will NOT be updated')
             return
         }
 
@@ -280,15 +258,11 @@ async function updateMemberTiers(
                 subscriberTier: tier,
                 subscriberTierExpiresAt: expiresAt
             })
-            Logger.debug('[Stripe Webhook] Queued tier update for user', { uid, tier })
+            Logger.debug('[Stripe Webhook] Queued tier update')
         }
         await batch.commit()
-        Logger.info(`[Stripe Webhook] ✓ Updated subscriberTier=${tier} for ${memberIds.length} members of org ${organizationId}`)
+        Logger.info(`[Stripe Webhook] ✓ Updated subscriberTier for ${memberIds.length} members`)
     } catch (err: any) {
-        Logger.error(`[Stripe Webhook] Failed to update member tiers for org ${organizationId}`, err, {
-            organizationId,
-            tier,
-            expiresAt
-        })
+        Logger.error('[Stripe Webhook] Failed to update member tiers', err)
     }
 }

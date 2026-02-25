@@ -19,12 +19,21 @@ import { useFirebaseApp, useFirestore, useFirebaseAuth } from 'vuefire';
 export const useFirebase = () => {
     const app = useFirebaseApp();
     const db = useFirestore();
-    const auth = useFirebaseAuth();
+
+    // useFirebaseAuth() can return undefined on the very first cold load
+    // before nuxt-vuefire has initialized the app. We catch + return null
+    // so callers don't crash. Any code that needs auth MUST either check
+    // for null or use waitForFirebaseAuth() instead.
+    let _auth: import('firebase/auth').Auth | null = null;
+    try {
+        const rawAuth = useFirebaseAuth();
+        _auth = (isRef(rawAuth) ? rawAuth.value : rawAuth) as import('firebase/auth').Auth | null;
+    } catch {
+        // VueFire not ready yet — _auth stays null
+    }
 
     // VueFire composables might return Refs or instances depending on version/context.
-    // Safe unwrap: check if it has .value (isRef)
     const _db = (isRef(db) ? db.value : db) as import('firebase/firestore').Firestore;
-    const _auth = (isRef(auth) ? auth.value : auth) as import('firebase/auth').Auth | undefined;
 
     return { app, db: _db, auth: _auth! };
 };

@@ -50,6 +50,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { useUser } from '~/composables/useUser';
 import { useFirestoreRepository } from '~/composables/useFirestoreRepository';
 import { Task } from '~/models/Task';
@@ -86,7 +87,7 @@ const fetchTasks = async () => {
     }).slice(0, 10);
     
   } catch (e) {
-    console.error("Failed to fetch tasks", e);
+    Logger.error("Failed to fetch tasks", e);
   } finally {
     isLoading.value = false;
   }
@@ -97,7 +98,7 @@ const completeTask = async (task: Task) => {
         await update(task.id, { isCompleted: true, status: 'done' as any }); // Cast as any or import enum TaskStatus.DONE
         tasks.value = tasks.value.filter(t => t.id !== task.id);
     } catch (e) {
-        console.error("Failed to complete task", e);
+        Logger.error("Failed to complete task", e);
     }
 };
 

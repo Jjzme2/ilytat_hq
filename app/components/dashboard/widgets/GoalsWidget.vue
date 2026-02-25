@@ -41,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { useUser } from '#imports';
 import { useFirestoreRepository } from '~/composables/useFirestoreRepository';
 import { Goal } from '~/models/Goal';
@@ -69,7 +70,7 @@ const fetchGoals = async () => {
     }).slice(0, 5);
     
   } catch (e) {
-    console.error("Failed to fetch goals", e);
+    Logger.error("Failed to fetch goals", e);
   } finally {
     isLoading.value = false;
   }

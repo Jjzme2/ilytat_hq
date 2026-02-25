@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 /**
  * useModules — Composable for organization-level module configuration
  * 
@@ -38,7 +39,7 @@ export const useModules = () => {
             }
 
             if (!db) {
-                console.warn('[useModules] Firestore not initialized')
+                Logger.warn('[useModules] Firestore not initialized')
                 enabledModuleIds.value = ALL_MODULES.map(m => m.id)
                 isLoading.value = false
                 return
@@ -55,7 +56,7 @@ export const useModules = () => {
                 enabledModuleIds.value = ALL_MODULES.map(m => m.id)
             }
         } catch (err) {
-            console.error('[useModules] Failed to load module config:', err)
+            Logger.error('[useModules] Failed to load module config:', err)
             enabledModuleIds.value = ALL_MODULES.map(m => m.id)
         } finally {
             isLoading.value = false

@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 export const usePlaid = () => {
     const isPlaidLoaded = ref(false);
     const plaidHandler = ref<any>(null);
@@ -42,14 +43,14 @@ export const usePlaid = () => {
                     onSuccess: options.onSuccess,
                     onExit: options.onExit,
                     onEvent: (eventName: string, metadata: any) => {
-                        console.log('Plaid Event:', eventName, metadata);
+                        Logger.debug('Plaid Event:', eventName, metadata);
                     }
                 });
             } else {
-                console.error('Plaid SDK not loaded');
+                Logger.error('Plaid SDK not loaded');
             }
         } catch (error) {
-            console.error('Failed to initialize Plaid Link:', error);
+            Logger.error('Failed to initialize Plaid Link:', error);
         }
     };
 
@@ -57,7 +58,7 @@ export const usePlaid = () => {
         if (plaidHandler.value) {
             plaidHandler.value.open();
         } else {
-            console.warn('Plaid Link not initialized yet');
+            Logger.warn('Plaid Link not initialized yet');
         }
     };
 

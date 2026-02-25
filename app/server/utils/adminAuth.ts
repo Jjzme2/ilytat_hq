@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 /**
  * server/utils/adminAuth.ts
  * ─────────────────────────
@@ -37,35 +38,25 @@ export const ensureAdminInitialized = () => {
     // Sanitize the private key from the runtime environment.
     const rawKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY || ''
     const privateKey = rawKey
-        .replace(/^"|"$/g, '')    // Strip surrounding quotes (Heroku paste artifact)
+        .replace(/^["']|["']$/g, '')  // Strip surrounding quotes — both " and ' (Heroku paste artifact)
         .replace(/\\n/g, '\n')
 
     const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL
     const projectId = process.env.FIREBASE_PROJECT_ID
 
-    // Diagnostic logging (safe — BEGIN/END headers are not sensitive)
-    console.log('[Firebase Admin] Key diagnostics:', {
-        rawKeyLength: rawKey.length,
-        cleanedKeyLength: privateKey.length,
-        startsWithQuote: rawKey.startsWith('"'),
-        endsWithQuote: rawKey.endsWith('"'),
-        startsWithBegin: privateKey.trimStart().startsWith('-----BEGIN'),
-        endsWithEnd: privateKey.trimEnd().endsWith('-----'),
-        rawFirst30: rawKey.substring(0, 30),
-        rawLast30: rawKey.substring(rawKey.length - 30),
-        cleanedFirst30: privateKey.substring(0, 30),
-        first5CharCodes: [...rawKey.substring(0, 5)].map(c => c.charCodeAt(0)),
-        hasClientEmail: !!clientEmail,
-        hasProjectId: !!projectId,
-    })
+    // Minimal format validation (no raw key content logged)
+    const keyValid = privateKey.trimStart().startsWith('-----BEGIN') && privateKey.trimEnd().endsWith('-----')
+    if (!keyValid && privateKey.length > 0) {
+        Logger.warn('[Firebase Admin] Private key does not appear to be valid PEM format')
+    }
 
     // If VueFire already created a [DEFAULT] app AND the raw key has quotes,
     // the existing app is broken — delete it so we can re-init with the clean key.
     const existingApps = getApps()
     if (existingApps.length) {
         const defaultApp = existingApps.find(a => a.name === '[DEFAULT]')
-        if (defaultApp && rawKey.startsWith('"')) {
-            console.warn('[Firebase Admin] Detected quoted private key — deleting broken VueFire app and re-initializing.')
+        if (defaultApp && (rawKey.startsWith('"') || rawKey.startsWith("'"))) {
+            Logger.warn('[Firebase Admin] Re-initializing admin app with sanitized credentials.')
             try { deleteApp(defaultApp) } catch { /* ignore */ }
         } else if (defaultApp) {
             // Key looks fine, VueFire's app should be usable.
@@ -75,13 +66,13 @@ export const ensureAdminInitialized = () => {
     }
 
     if (!privateKey || !clientEmail || !projectId) {
-        console.warn('[Firebase Admin] Missing credentials, relying on GOOGLE_APPLICATION_CREDENTIALS')
+        Logger.warn('[Firebase Admin] Missing credentials, relying on GOOGLE_APPLICATION_CREDENTIALS')
         try {
             const app = initializeApp()
             _adminValidated = true
             return app
         } catch (e: any) {
-            console.error('[Firebase Admin] Default init failed:', e.message)
+            Logger.error('[Firebase Admin] Default init failed:', e.message)
             throw createError({
                 statusCode: 500,
                 statusMessage: 'Firebase Admin credentials not configured'
@@ -94,14 +85,13 @@ export const ensureAdminInitialized = () => {
             credential: cert({ projectId, clientEmail, privateKey })
         })
         _adminValidated = true
-        console.log('[Firebase Admin] ✓ Initialized with sanitized credentials.')
         return app
     } catch (e: any) {
         if (e.code === 'app/duplicate-app') {
             _adminValidated = true
             return getApp()
         }
-        console.error('[Firebase Admin] Initialization failed:', e)
+        Logger.error('[Firebase Admin] Initialization failed:', e)
         throw e
     }
 }

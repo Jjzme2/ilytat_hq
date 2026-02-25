@@ -141,6 +141,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { ref, onMounted } from 'vue';
 import { useAI } from '@ai-tracking/composables/useAI';
 import AIUsageWidget from '~/components/ai/AIUsageWidget.vue';
@@ -214,7 +215,7 @@ Be specific and actionable. Format as a bulleted list for each section.`,
 
 const triggerAction = async (action: string) => {
     // Placeholder for action logic
-    console.log('Triggering action:', action);
+    Logger.debug('Triggering action:', action);
     await generate({
         prompt: `System action triggered: ${action}`,
         feature: 'dashboard_action'

@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 /**
  * server/api/admin/user-status.post.ts
  * ─────────────────────────────────────
@@ -37,7 +38,7 @@ export default defineEventHandler(async (event) => {
             message: `User account ${statusLabel} successfully`
         }
     } catch (e: any) {
-        console.error('[API] User status update failed:', e.message)
+        Logger.error('[API] User status update failed:', e.message)
         throw createError({
             statusCode: 500,
             statusMessage: `Failed to update user status: ${e.message}`

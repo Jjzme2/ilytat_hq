@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 /**
  * server/api/admin/users.get.ts
  * ─────────────────────────────
@@ -61,7 +62,7 @@ export default defineEventHandler(async (event) => {
                         employeeId = nextId
                     })
                 } catch (err) {
-                    console.error(`Failed to auto-assign employeeId for ${user.uid}:`, err)
+                    Logger.error(`Failed to auto-assign employeeId for ${user.uid}:`, err)
                 }
             }
 
@@ -82,7 +83,7 @@ export default defineEventHandler(async (event) => {
 
         return enrichedUsers
     } catch (e: any) {
-        console.error('[API] Failed to list users:', e.message)
+        Logger.error('[API] Failed to list users:', e.message)
         throw createError({
             statusCode: 500,
             statusMessage: `Failed to list users: ${e.message}`

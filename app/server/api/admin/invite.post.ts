@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 /**
  * server/api/admin/invite.post.ts
  * ────────────────────────────────
@@ -51,7 +52,7 @@ export default defineEventHandler(async (event) => {
             resetLink
         }
     } catch (e: any) {
-        console.error('[API] Failed to invite user:', e.message)
+        Logger.error('[API] Failed to invite user:', e.message)
         throw createError({
             statusCode: 500,
             statusMessage: `Failed to create user: ${e.message}`

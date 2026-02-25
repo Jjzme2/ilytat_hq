@@ -88,6 +88,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { useGoals } from '~/composables/useGoals';
 import { useProjects } from '~/composables/useProjects';
 import { useToast } from '@ilytat/notifications';
@@ -115,7 +116,7 @@ const handleDelete = async (projectId: string, goalId: string) => {
             await deleteGoal(projectId, goalId);
             success('Goal deleted');
         } catch (e) {
-            console.error('Failed to delete goal', e);
+            Logger.error('Failed to delete goal', e);
             toastError('Failed to delete goal');
         }
     }

@@ -214,6 +214,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { ref, onMounted, nextTick, watch, onUnmounted } from 'vue';
 import { useAI } from '@ai-tracking';
 import { useToast } from '@ilytat/notifications';
@@ -288,7 +289,7 @@ const loadMessages = () => {
       try {
         messages.value = JSON.parse(stored);
       } catch (e) {
-        console.error('Failed to parse stored messages', e);
+        Logger.error('Failed to parse stored messages', e);
       }
     }
   }

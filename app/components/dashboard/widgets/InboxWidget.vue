@@ -25,6 +25,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { ref, onMounted, computed } from 'vue';
 import { useUser } from '#imports';
 import { useFirestoreRepository } from '~/composables/useFirestoreRepository';
@@ -46,7 +47,7 @@ onMounted(async () => {
             ]); 
         }
     } catch (e) {
-        console.error("Failed to load inbox messages", e);
+        Logger.error("Failed to load inbox messages", e);
     }
 });
 </script>

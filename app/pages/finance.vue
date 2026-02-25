@@ -385,6 +385,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { useUser } from '~/composables/useUser';
 import { useToast } from '@ilytat/notifications';
 import FinanceKPIs from '~/components/finance/FinanceKPIs.vue';
@@ -556,7 +557,7 @@ const submitAccount = async () => {
         showAccountModal.value = false;
         success('Account created');
     } catch (e) {
-        console.error('Failed to create account', e);
+        Logger.error('Failed to create account', e);
         toastError('Error creating account');
     }
 };
@@ -603,7 +604,7 @@ const submitTransaction = async () => {
         showTransactionModal.value = false;
         success('Transaction added');
     } catch (e) {
-        console.error('Failed to add transaction', e);
+        Logger.error('Failed to add transaction', e);
         toastError('Error adding transaction');
     }
 };

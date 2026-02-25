@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { useFirestore } from 'vuefire';
 import { UserPreference, type DashboardWidget } from '~/models/UserPreference';
@@ -53,7 +54,7 @@ export const useUserPreferences = () => {
                 preferences.value = defaultPrefs;
             }
         } catch (e) {
-            console.error('Failed to load user preferences', e);
+            Logger.error('Failed to load user preferences', e);
         } finally {
             isLoading.value = false;
         }
@@ -74,7 +75,7 @@ export const useUserPreferences = () => {
             await updateDoc(docRef, { dashboardLayout: layout });
             preferences.value = updatedPrefs;
         } catch (e) {
-            console.error('Failed to update dashboard layout', e);
+            Logger.error('Failed to update dashboard layout', e);
             throw e;
         }
     };
@@ -131,7 +132,7 @@ export const useUserPreferences = () => {
                 assistantEnabled: enabled
             });
         } catch (e) {
-            console.error('Failed to toggle assistant', e);
+            Logger.error('Failed to toggle assistant', e);
             throw e;
         }
     };

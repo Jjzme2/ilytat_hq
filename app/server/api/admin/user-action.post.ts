@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 /**
  * server/api/admin/user-action.post.ts
  * ─────────────────────────────────────
@@ -111,7 +112,7 @@ export default defineEventHandler(async (event) => {
         }
     } catch (e: any) {
         if (e.statusCode) throw e
-        console.error('[API] User action failed:', e.message)
+        Logger.error('[API] User action failed:', e.message)
         throw createError({
             statusCode: 500,
             statusMessage: `User action failed: ${e.message}`

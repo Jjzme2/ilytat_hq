@@ -85,6 +85,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 /**
  * ShortcutManager Component
  *
@@ -191,7 +192,7 @@ const persistOverrides = async () => {
         });
         success('Shortcuts saved');
     } catch (e) {
-        console.error('[ShortcutManager] Failed to persist', e);
+        Logger.error('[ShortcutManager] Failed to persist', e);
         toastError('Failed to save shortcuts');
     } finally {
         isSaving.value = false;

@@ -77,6 +77,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { ref } from 'vue';
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
 import { useFirestore } from 'vuefire';
@@ -127,7 +128,7 @@ const handleSearch = async () => {
             foundUser.value = { uid: doc.id, ...doc.data() };
         }
     } catch (e: any) {
-        console.error("Search failed", e);
+        Logger.error("Search failed", e);
         searchError.value = 'An error occurred during search.';
     } finally {
         isSearching.value = false;

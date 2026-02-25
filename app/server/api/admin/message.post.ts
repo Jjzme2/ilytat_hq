@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { defineEventHandler, readBody, createError } from 'h3'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { verifyAdminAccess, ensureAdminInitialized } from '../../utils/adminAuth'
@@ -48,7 +49,7 @@ export default defineEventHandler(async (event) => {
             messageId: docRef.id
         }
     } catch (e: any) {
-        console.error('[API] Send message failed:', e.message)
+        Logger.error('[API] Send message failed:', e.message)
         throw createError({
             statusCode: 500,
             statusMessage: `Failed to send message: ${e.message}`

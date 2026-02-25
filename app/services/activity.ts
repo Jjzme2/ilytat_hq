@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 /**
  * services/activity.ts
  * ────────────────────
@@ -50,7 +51,7 @@ export const useActivityService = (db: Firestore) => {
                 timestamp: serverTimestamp()
             })
         } catch (e) {
-            console.error('[ActivityService] Failed to log action:', e)
+            Logger.error('[ActivityService] Failed to log action:', e)
         }
     }
 
@@ -75,7 +76,7 @@ export const useActivityService = (db: Firestore) => {
                 ...doc.data()
             } as ActivityItem))
         } catch (e) {
-            console.error('[ActivityService] Failed to fetch user logs:', e)
+            Logger.error('[ActivityService] Failed to fetch user logs:', e)
             return []
         }
     }
@@ -97,7 +98,7 @@ export const useActivityService = (db: Firestore) => {
                 ...doc.data()
             } as ActivityItem))
         } catch (e) {
-            console.error('[ActivityService] Failed to fetch all logs:', e)
+            Logger.error('[ActivityService] Failed to fetch all logs:', e)
             return []
         }
     }

@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 /**
  * composables/useEmail.ts
  * ───────────────────────
@@ -34,7 +35,7 @@ export const useEmail = () => {
             return result
         } catch (e: any) {
             // Fallback: log to console when email API isn't configured
-            console.log('[useEmail] Mock dispatch:', payload)
+            Logger.debug('[useEmail] Mock dispatch:', payload)
             return {
                 success: true,
                 message: `Mock email logged to console (to: ${payload.to_email})`

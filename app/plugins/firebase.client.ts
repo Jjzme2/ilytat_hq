@@ -12,6 +12,7 @@
  * hydration, making them the ideal place for this setup.
  */
 import { onAuthStateChanged } from 'firebase/auth';
+import { Logger } from '~/utils/Logger';
 import {
     doc,
     onSnapshot,
@@ -43,12 +44,12 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         if (user) {
             isAuthenticated.value = true;
             lastAuthEvent.value = 'signed-in';
-            console.log('[Firebase Lifecycle] Auth state → signed-in', user.email);
+            Logger.debug('[Firebase Lifecycle] Auth state → signed-in');
             startFirestoreHealthCheck();
         } else {
             isAuthenticated.value = false;
             lastAuthEvent.value = 'signed-out';
-            console.log('[Firebase Lifecycle] Auth state → signed-out');
+            Logger.debug('[Firebase Lifecycle] Auth state → signed-out');
             stopFirestoreHealthCheck();
         }
     });
@@ -59,14 +60,12 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     const handleOnline = () => {
         isOnline.value = true;
         lastOnlineAt.value = new Date();
-        console.log('[Firebase Lifecycle] Network → online');
     };
 
     const handleOffline = () => {
         isOnline.value = false;
         lastOfflineAt.value = new Date();
-        isFirestoreConnected.value = false; // If browser is offline, Firestore is too
-        console.log('[Firebase Lifecycle] Network → offline');
+        isFirestoreConnected.value = false;
     };
 
     // Seed with current state
@@ -100,9 +99,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
                     const connected = !snapshot.metadata.fromCache;
                     if (isFirestoreConnected.value !== connected) {
                         isFirestoreConnected.value = connected;
-                        console.log(
-                            `[Firebase Lifecycle] Firestore → ${connected ? 'connected' : 'disconnected (serving from cache)'}`
-                        );
                     }
                 },
                 () => {
@@ -125,9 +121,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     // --------------------------------------------------------------------------
     const handleVisibilityChange = () => {
         isAppVisible.value = document.visibilityState === 'visible';
-        console.log(
-            `[Firebase Lifecycle] Visibility → ${isAppVisible.value ? 'visible' : 'hidden'}`
-        );
     };
 
     isAppVisible.value = document.visibilityState === 'visible';
@@ -136,22 +129,16 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     // --------------------------------------------------------------------------
     // 5. Cleanup on app teardown (SSR/hot-reload safety)
     // --------------------------------------------------------------------------
-    const handleBeforeUnload = () => {
-        console.log('[Firebase Lifecycle] Page unloading — cleaning up');
-    };
+    const handleBeforeUnload = () => { /* cleanup handled by app:unmount */ };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    nuxtApp.hook('app:beforeMount', () => {
-        console.log('[Firebase Lifecycle] App about to mount');
-    });
 
-    nuxtApp.hook('app:mounted', () => {
-        console.log('[Firebase Lifecycle] App mounted');
-    });
+
+
 
     nuxtApp.hook('app:error', (error) => {
-        console.error('[Firebase Lifecycle] App error caught:', error);
+        Logger.error('[Firebase Lifecycle] App error caught:', error);
     });
 
     // Cleanup when the Vue app instance is unmounted (HMR / navigation away)
@@ -162,6 +149,5 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         window.removeEventListener('offline', handleOffline);
         window.removeEventListener('beforeunload', handleBeforeUnload);
         document.removeEventListener('visibilitychange', handleVisibilityChange);
-        console.log('[Firebase Lifecycle] All listeners cleaned up');
     });
 });

@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     // Support both organizationId and legacy tenantId from client
     const organizationId = body.organizationId || body.tenantId
 
-    Logger.info('[Stripe Sync] Sync request received', { organizationId, bodyKeys: Object.keys(body) })
+    Logger.info('[Stripe Sync] Sync request received', { organizationId })
 
     if (!organizationId) {
         Logger.warn('[Stripe Sync] No organizationId provided in request body')
@@ -52,18 +52,15 @@ export default defineEventHandler(async (event) => {
     const tenantData = tenantDoc.data()!
     Logger.info('[Stripe Sync] Found organization doc', {
         organizationId,
-        stripeCustomerId: tenantData.stripeCustomerId || 'NONE',
-        stripeSubscriptionId: tenantData.stripeSubscriptionId || 'NONE',
+        hasCustomerId: !!tenantData.stripeCustomerId,
         currentPlan: tenantData.plan || 'NONE',
         currentStatus: tenantData.subscriptionStatus || 'NONE',
-        memberIds: tenantData.memberIds || []
+        memberCount: (tenantData.memberIds || []).length
     })
 
     // Path 1: Organization has a Stripe customer ID — look up their latest subscription
     if (tenantData.stripeCustomerId) {
-        Logger.info('[Stripe Sync] Has stripeCustomerId, listing subscriptions', {
-            customerId: tenantData.stripeCustomerId
-        })
+        Logger.info('[Stripe Sync] Looking up subscriptions for customer')
 
         const subscriptions = await stripe.subscriptions.list({
             customer: tenantData.stripeCustomerId,
@@ -71,13 +68,8 @@ export default defineEventHandler(async (event) => {
             status: 'all'
         })
 
-        Logger.info('[Stripe Sync] Stripe subscriptions response', {
-            count: subscriptions.data.length,
-            subscriptions: subscriptions.data.map(s => ({
-                id: s.id,
-                status: s.status,
-                priceId: s.items.data[0]?.price?.id
-            }))
+        Logger.info('[Stripe Sync] Stripe subscriptions found', {
+            count: subscriptions.data.length
         })
 
         if (subscriptions.data.length > 0) {
@@ -88,13 +80,10 @@ export default defineEventHandler(async (event) => {
             const periodEnd = rawEnd ? new Date(rawEnd * 1000).toISOString() : new Date().toISOString()
             const isActive = sub.status === 'active' || sub.status === 'trialing'
 
-            Logger.info('[Stripe Sync] Resolved subscription details', {
-                subscriptionId: sub.id,
+            Logger.info('[Stripe Sync] Resolved subscription', {
                 status: sub.status,
-                priceId,
                 resolvedPlan,
-                isActive,
-                periodEnd
+                isActive
             })
 
             await tenantDoc.ref.update({
@@ -117,7 +106,7 @@ export default defineEventHandler(async (event) => {
                 maxMembers: getMaxMembers(resolvedPlan)
             }
         } else {
-            Logger.warn('[Stripe Sync] Customer has no subscriptions', { customerId: tenantData.stripeCustomerId })
+            Logger.warn('[Stripe Sync] Customer has no subscriptions')
         }
     }
 
@@ -128,13 +117,7 @@ export default defineEventHandler(async (event) => {
         const sessions = await stripe.checkout.sessions.list({ limit: 10 })
 
         Logger.info('[Stripe Sync] Recent checkout sessions', {
-            count: sessions.data.length,
-            sessions: sessions.data.map(s => ({
-                id: s.id,
-                metadataTenantId: s.metadata?.tenantId,
-                paymentStatus: s.payment_status,
-                subscription: s.subscription
-            }))
+            count: sessions.data.length
         })
 
         // Match by organizationId, OR by userId when tenantId was 'pending'
@@ -145,12 +128,7 @@ export default defineEventHandler(async (event) => {
         )
 
         if (matchingSession && matchingSession.subscription) {
-            Logger.info('[Stripe Sync] Found matching checkout session', {
-                sessionId: matchingSession.id,
-                subscriptionId: matchingSession.subscription,
-                metadataTenantId: matchingSession.metadata?.tenantId,
-                metadataUserId: matchingSession.metadata?.userId
-            })
+            Logger.info('[Stripe Sync] Found matching checkout session')
 
             const sub = await stripe.subscriptions.retrieve(matchingSession.subscription as string)
             const planId = matchingSession.metadata?.planId || ''
@@ -160,11 +138,8 @@ export default defineEventHandler(async (event) => {
             const periodEnd = rawEnd ? new Date(rawEnd * 1000).toISOString() : new Date().toISOString()
 
             Logger.info('[Stripe Sync] Subscription from session', {
-                subscriptionId: sub.id,
                 status: sub.status,
-                resolvedPlan,
-                periodEnd,
-                rawEnd
+                resolvedPlan
             })
 
             await tenantDoc.ref.update({
@@ -209,7 +184,7 @@ function resolvePlanId(config: any, priceId: string): string {
     if (config.stripePriceGrowth) map[config.stripePriceGrowth] = 'growth'
     if (config.stripePriceScale) map[config.stripePriceScale] = 'scale'
     const resolved = map[priceId] || 'starter'
-    Logger.debug('[Stripe Sync] Resolved price → plan', { priceId, resolved, knownPrices: Object.keys(map) })
+    Logger.debug('[Stripe Sync] Resolved price → plan', { resolved })
     return resolved
 }
 
@@ -230,16 +205,12 @@ async function updateMemberTiers(
         Logger.info('[Stripe Sync] updateMemberTiers', {
             organizationId,
             tier,
-            expiresAt,
-            memberCount: memberIds.length,
-            memberIds
+            memberCount: memberIds.length
         })
 
         if (memberIds.length === 0) {
             Logger.warn('[Stripe Sync] ⚠ No members in organization — subscriberTier will NOT be updated', {
-                organizationId,
-                docExists: tenantDoc.exists,
-                allDocData: tenantDoc.data()
+                organizationId
             })
             return
         }
@@ -251,7 +222,7 @@ async function updateMemberTiers(
                 subscriberTier: tier,
                 subscriberTierExpiresAt: expiresAt
             })
-            Logger.debug('[Stripe Sync] Queued tier update', { uid, tier })
+            Logger.debug('[Stripe Sync] Queued tier update')
         }
         await batch.commit()
         Logger.info(`[Stripe Sync] ✓ Updated subscriberTier=${tier} for ${memberIds.length} members`)

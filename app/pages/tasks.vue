@@ -94,6 +94,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { useTasks } from '~/composables/useTasks';
 import { useProjects } from '~/composables/useProjects';
 import { useToast } from '@ilytat/notifications';
@@ -122,7 +123,7 @@ const handleDelete = async (projectId: string, taskId: string) => {
             await deleteTask(projectId, taskId);
             success('Task deleted');
         } catch (e) {
-            console.error('Failed to delete task', e);
+            Logger.error('Failed to delete task', e);
             toastError('Failed to delete task');
         }
     }
@@ -138,7 +139,7 @@ const toggleStatus = async (task: any) => {
         await updateTask(task.projectId, task.id, updates);
         success(`Task marked as ${newStatus ? 'completed' : 'incomplete'}`);
     } catch (e) {
-        console.error('Failed to toggle status', e);
+        Logger.error('Failed to toggle status', e);
         toastError('Failed to update task');
     }
 };

@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { defineEventHandler, readBody, createError } from 'h3'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { getAuth } from 'firebase-admin/auth'
@@ -62,7 +63,7 @@ export default defineEventHandler(async (event) => {
             error: result.error
         }
     } catch (e: any) {
-        console.error(`[Migration Error] ${migrationId}:`, e)
+        Logger.error(`[Migration Error] ${migrationId}:`, e)
         throw createError({
             statusCode: 500,
             statusMessage: `Migration failed: ${e.message}`

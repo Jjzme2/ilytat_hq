@@ -596,6 +596,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -717,10 +718,10 @@ onMounted(async () => {
         if (currentProject.value) {
             initEditForm();
             // Load subcollection data in parallel
-            fetchGoals(id).catch(e => console.error('Failed to load goals', e));
-            fetchTasks(id).catch(e => console.error('Failed to load tasks', e));
-            fetchNotes(id).catch(e => console.error('Failed to load notes', e));
-            fetchQuickLinks(id).catch(e => console.error('Failed to load quick links', e));
+            fetchGoals(id).catch(e => Logger.error('Failed to load goals', e));
+            fetchTasks(id).catch(e => Logger.error('Failed to load tasks', e));
+            fetchNotes(id).catch(e => Logger.error('Failed to load notes', e));
+            fetchQuickLinks(id).catch(e => Logger.error('Failed to load quick links', e));
             initTimeTracking();
         }
     }
@@ -778,7 +779,7 @@ const handleSuggestTasks = async () => {
             toastSuccess(`Added ${addedCount} suggested tasks`);
         }
     } catch (e) {
-        console.error('AI Suggestion Failed', e);
+        Logger.error('AI Suggestion Failed', e);
         toastError('Failed to suggest tasks');
     } finally {
         isSuggestingTasks.value = false;
@@ -823,7 +824,7 @@ const handleUpdate = async () => {
         isEditModalOpen.value = false;
         toastSuccess('Project updated');
     } catch (e) {
-        console.error("Failed to update", e);
+        Logger.error("Failed to update", e);
         toastError('Failed to update project');
     } finally {
         isUpdating.value = false;
@@ -839,7 +840,7 @@ const handleDelete = async () => {
         toastSuccess('Project deleted');
         router.push('/projects');
     } catch (e) {
-        console.error("Failed to delete", e);
+        Logger.error("Failed to delete", e);
         toastError('Failed to delete project');
     }
 };
@@ -853,7 +854,7 @@ const handleAddMember = async (uid: string) => {
         await updateProject(projectId.value, { members: newMembers });
         currentProject.value.members = newMembers;
     } catch (e) {
-        console.error("Failed to add member", e);
+        Logger.error("Failed to add member", e);
         toastError('Failed to add member');
     }
 };
@@ -865,7 +866,7 @@ const handleRemoveMember = async (uid: string) => {
         await updateProject(projectId.value, { members: newMembers });
         currentProject.value.members = newMembers;
     } catch (e) {
-        console.error("Failed to remove member", e);
+        Logger.error("Failed to remove member", e);
         toastError('Failed to remove member');
     }
 };
@@ -881,7 +882,7 @@ const handleCreateGoal = async () => {
             status: GoalStatus.NOT_STARTED
         }); toastSuccess('Goal created');
     } catch (e) {
-        console.error('Failed to create goal', e);
+        Logger.error('Failed to create goal', e);
         toastError('Failed to create goal');
     }
 };
@@ -892,7 +893,7 @@ const handleUpdateGoalStatus = async (goalId: string, newStatus: string) => {
         await updateGoal(projectId.value, goalId, { status: newStatus as GoalStatus });
         toastSuccess('Goal status updated');
     } catch (e) {
-        console.error('Failed to update goal', e);
+        Logger.error('Failed to update goal', e);
         toastError('Failed to update goal');
     }
 };
@@ -904,7 +905,7 @@ const handleDeleteGoal = async (goalId: string) => {
         await deleteGoal(projectId.value, goalId);
         toastSuccess('Goal deleted');
     } catch (e) {
-        console.error('Failed to delete goal', e);
+        Logger.error('Failed to delete goal', e);
         toastError('Failed to delete goal');
     }
 };
@@ -927,7 +928,7 @@ const handleCreateTask = async (parentId?: string) => {
         showTaskForm.value = false;
         toastSuccess('Task created');
     } catch (e) {
-        console.error('Failed to create task', e);
+        Logger.error('Failed to create task', e);
         toastError('Failed to create task');
     }
 };
@@ -946,7 +947,7 @@ const handleCreateSubtask = async (parentId: string) => {
         subtaskFormParentId.value = null;
         toastSuccess('Subtask added');
     } catch (e) {
-        console.error('Failed to create subtask', e);
+        Logger.error('Failed to create subtask', e);
         toastError('Failed to create subtask');
     }
 };
@@ -966,7 +967,7 @@ const handleToggleTask = async (task: any) => {
         });
         toastSuccess(`Task marked as ${newCompleted ? 'completed' : 'incomplete'}`);
     } catch (e) {
-        console.error('Failed to toggle task', e);
+        Logger.error('Failed to toggle task', e);
         toastError('Failed to update task');
     }
 };
@@ -978,7 +979,7 @@ const handleDeleteTask = async (taskId: string) => {
         await deleteTask(projectId.value, taskId);
         toastSuccess('Task deleted');
     } catch (e) {
-        console.error('Failed to delete task', e);
+        Logger.error('Failed to delete task', e);
         toastError('Failed to delete task');
     }
 };
@@ -993,7 +994,7 @@ const handleCreateNote = async () => {
         showNoteForm.value = false;
         toastSuccess('Note created');
     } catch (e) {
-        console.error('Failed to create note', e);
+        Logger.error('Failed to create note', e);
         toastError('Failed to create note');
     }
 };
@@ -1005,7 +1006,7 @@ const handleDeleteNote = async (noteId: string) => {
         await deleteNote(projectId.value, noteId);
         toastSuccess('Note deleted');
     } catch (e) {
-        console.error('Failed to delete note', e);
+        Logger.error('Failed to delete note', e);
         toastError('Failed to delete note');
     }
 };
@@ -1020,7 +1021,7 @@ const handleCreateLink = async () => {
         showLinkForm.value = false;
         toastSuccess('Link added');
     } catch (e) {
-        console.error('Failed to create link', e);
+        Logger.error('Failed to create link', e);
         toastError('Failed to add link');
     }
 };
@@ -1032,7 +1033,7 @@ const handleDeleteLink = async (linkId: string) => {
         await deleteQuickLink(projectId.value, linkId);
         toastSuccess('Link deleted');
     } catch (e) {
-        console.error('Failed to delete link', e);
+        Logger.error('Failed to delete link', e);
         toastError('Failed to delete link');
     }
 };

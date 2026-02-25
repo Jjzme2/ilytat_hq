@@ -25,6 +25,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { ref, computed, watch, nextTick } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { contextActions, type ContextMenuAction } from '~/config/context-menu'
@@ -87,7 +88,7 @@ watch(() => contextMenu.value.visible, async (isVisible) => {
 const handleAction = (action: ContextMenuAction) => {
     // Handle generic actions or emit event
     // For now, we'll log. ideally we should have an action handler.
-    console.log('Action triggered:', action.action, contextMenu.value.data)
+    Logger.debug('Action triggered:', action.action, contextMenu.value.data)
 
     // TODO: Implement a global action handler or bus
 

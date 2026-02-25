@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 /**
  * server/api/admin/tests/run.post.ts
  * ─────────────────────────────
@@ -48,7 +49,7 @@ export default defineEventHandler(async (event) => {
                 results: parsedResult
             }
         } catch (parseError) {
-            console.error('[Admin Tests] Failed to parse vitest JSON output:', parseError)
+            Logger.error('[Admin Tests] Failed to parse vitest JSON output:', parseError)
             return { success: true, rawOutput: stdout, error: 'Unparseable JSON from Vitest' }
         }
 
@@ -63,12 +64,12 @@ export default defineEventHandler(async (event) => {
                     results: parsedResult
                 }
             } catch (parseError) {
-                console.error('[Admin Tests] Failed to parse failing vitest JSON output:', parseError)
+                Logger.error('[Admin Tests] Failed to parse failing vitest JSON output:', parseError)
                 return { success: false, message: error.message, rawStdout: error.stdout }
             }
         }
 
-        console.error('[Admin Tests] Command execution failed entirely:', error.message)
+        Logger.error('[Admin Tests] Command execution failed entirely:', error.message)
         throw createError({
             statusCode: 500,
             statusMessage: `Test execution failed: ${error.message}`

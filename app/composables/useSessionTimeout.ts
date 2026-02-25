@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from '#app';
 import { appConfig } from '../../config/app';
@@ -32,7 +33,7 @@ export const useSessionTimeout = () => {
 
         // 1. Strict Check: Has timeout ALREADY happened?
         if (timeSinceActivity > TIMEOUT_MS) {
-            console.log('[Session] Timeout reached during activity check. Logging out.');
+            Logger.debug('[Session] Timeout reached during activity check. Logging out.');
             logout(); // Immediate logout
             return;
         }
@@ -65,7 +66,7 @@ export const useSessionTimeout = () => {
 
         // Check for Timeout
         if (timeSinceActivity > TIMEOUT_MS) {
-            console.log('[Session] Timeout reached (periodic check). Logging out.');
+            Logger.debug('[Session] Timeout reached (periodic check). Logging out.');
             if (warningToastId.value) remove(warningToastId.value); // Clean up toast
             await logout();
             return;
@@ -79,7 +80,7 @@ export const useSessionTimeout = () => {
 
             // Update if we haven't shown warning OR the minute has changed
             if (!warningShown.value || remainingMinutes !== lastWarningMinute.value) {
-                console.log(`[Session] Warning threshold reached. ${remainingMinutes}m remaining.`);
+                Logger.debug(`[Session] Warning threshold reached. ${remainingMinutes}m remaining.`);
 
                 const message = `You will be logged out in ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}.`;
 
@@ -145,7 +146,7 @@ export const useSessionTimeout = () => {
             // Check immediately if we need to logout
             const timeSinceActivity = Date.now() - lastActivity.value;
             if (timeSinceActivity > TIMEOUT_MS) {
-                console.log('[Session] Timeout reached from previous session. Logging out.');
+                Logger.debug('[Session] Timeout reached from previous session. Logging out.');
                 logout();
                 return;
             }

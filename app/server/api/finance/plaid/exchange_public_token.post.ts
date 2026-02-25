@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { Products } from 'plaid';
 import { getFirestore } from 'firebase-admin/firestore'; // Assuming firebase-admin is available in server context
 
@@ -87,11 +88,10 @@ export default defineEventHandler(async (event) => {
         return { success: true, accountsCount: accounts.length };
 
     } catch (error: any) {
-        console.error('Error exchanging public token:', error.response?.data || error.message);
+        Logger.error('Error exchanging public token:', error.message);
         throw createError({
             statusCode: 500,
-            statusMessage: 'Failed to exchange token',
-            data: error.response?.data
+            statusMessage: 'Failed to exchange token'
         });
     }
 });

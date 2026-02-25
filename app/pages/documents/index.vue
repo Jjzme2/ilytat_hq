@@ -457,6 +457,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
@@ -510,7 +511,7 @@ const searchQuery = ref('');
 const filteredDocuments = computed(() => {
     try {
         const query = (searchQuery.value || '').toLowerCase().trim();
-        console.log('[DEBUG] filteredDocuments run. Query:', query);
+        Logger.debug('[DEBUG] filteredDocuments run. Query:', query);
 
         // Always include existing docs that match
         const matchingDocs = (documents.value || []).filter(doc => {
@@ -523,14 +524,14 @@ const filteredDocuments = computed(() => {
 
         // If searching, also include matching templates as "new" options
         if (query) {
-            console.log('[DEBUG] Searching templates. available:', documentTemplates.length);
+            Logger.debug('[DEBUG] Searching templates. available:', documentTemplates.length);
 
             const matchingTemplates = documentTemplates.filter(t =>
                 (t.name || '').toLowerCase().includes(query) ||
                 (t.type || '').toLowerCase().includes(query)
             );
 
-            console.log('[DEBUG] Matching templates found:', matchingTemplates.length);
+            Logger.debug('[DEBUG] Matching templates found:', matchingTemplates.length);
 
             // Map templates to a structure compatible with the view or distinct
             const templateDocs = matchingTemplates.map(t => ({
@@ -552,7 +553,7 @@ const filteredDocuments = computed(() => {
 
         return matchingDocs;
     } catch (err) {
-        console.error('[ERROR] filteredDocuments crashed:', err);
+        Logger.error('[ERROR] filteredDocuments crashed:', err);
         return [];
     }
 });
@@ -571,8 +572,8 @@ const tabs = computed(() => [
 
 // --- Init ---
 onMounted(async () => {
-    fetchDocuments().catch(e => console.error('Failed to load documents', e));
-    fetchR2Documents().catch(e => console.error('Failed to load R2 files', e));
+    fetchDocuments().catch(e => Logger.error('Failed to load documents', e));
+    fetchR2Documents().catch(e => Logger.error('Failed to load R2 files', e));
 });
 
 // --- Share Actions ---
@@ -590,7 +591,7 @@ const handleAddDocMember = async (uid: string) => {
         documentToShare.value.members = newMembers;
         await fetchDocuments(); // Refresh underlying list
     } catch(e) {
-        console.error("Failed to add member", e);
+        Logger.error("Failed to add member", e);
     }
 };
 
@@ -602,7 +603,7 @@ const handleRemoveDocMember = async (uid: string) => {
         documentToShare.value.members = newMembers;
         await fetchDocuments();
     } catch(e) {
-        console.error("Failed to remove member", e);
+        Logger.error("Failed to remove member", e);
     }
 };
 
@@ -643,7 +644,7 @@ const handleCreateOrUpdateDocument = async () => {
         }
         resetForm();
     } catch (e) {
-        console.error('Failed to save document', e);
+        Logger.error('Failed to save document', e);
         toastError('Failed to save document');
     }
 };
@@ -682,7 +683,7 @@ const handleFactorySave = async (data: any) => {
         success('Document created from template');
         showDocForm.value = false;
     } catch (e) {
-        console.error('Failed to create document from factory', e);
+        Logger.error('Failed to create document from factory', e);
         toastError('Failed to create document');
     }
 };
@@ -693,7 +694,7 @@ const handleDeleteDocument = async (id: string) => {
         await deleteDocument(id);
         success('Document deleted');
     } catch (e) {
-        console.error('Failed to delete document', e);
+        Logger.error('Failed to delete document', e);
         toastError('Failed to delete document');
     }
 };
@@ -722,7 +723,7 @@ const handleFileUpload = async (event: Event) => {
         await uploadR2Document(file);
         success('File uploaded');
     } catch (e) {
-        console.error('Failed to upload file', e);
+        Logger.error('Failed to upload file', e);
         toastError('Failed to upload file');
     } finally {
         uploadingFileName.value = '';
@@ -749,7 +750,7 @@ const handleDeleteR2File = async (key: string) => {
         await deleteR2Document(key);
         success('File deleted');
     } catch (e) {
-        console.error('Failed to delete R2 file', e);
+        Logger.error('Failed to delete R2 file', e);
         toastError('Failed to delete file');
     }
 };
@@ -778,7 +779,7 @@ const runAIDocAction = async (promptTemplate: string, feature: string, action: '
             newDocContent.value = response.content;
         }
     } catch (e) {
-        console.error(`AI ${action} failed`, e);
+        Logger.error(`AI ${action} failed`, e);
     } finally {
         isAIProcessing.value = false;
         aiAction.value = null;

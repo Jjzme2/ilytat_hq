@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { defineEventHandler, readBody } from 'h3';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -63,7 +64,7 @@ export default defineEventHandler(async (event) => {
         return parsed;
 
     } catch (error) {
-        console.error('AI Date Parse Error:', error);
+        Logger.error('AI Date Parse Error:', error);
         throw createError({
             statusCode: 500,
             statusMessage: 'Failed to parse date'

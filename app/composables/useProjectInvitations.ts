@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { Invitation } from '~/models/Invitation';
 import { InvitationStatus } from '~/schemas/InvitationSchema';
 import { where, limit, updateDoc, doc } from 'firebase/firestore';
@@ -82,7 +83,7 @@ export const useProjectInvitations = () => {
                 where('status', '==', InvitationStatus.PENDING)
             ]);
         } catch (e: any) {
-            console.error(e);
+            Logger.error(e);
         } finally {
             isLoading.value = false;
         }
@@ -114,7 +115,7 @@ export const useProjectInvitations = () => {
 
             return result;
         } catch (e: any) {
-            console.error(e);
+            Logger.error(e);
             throw e;
         } finally {
             isLoading.value = false;

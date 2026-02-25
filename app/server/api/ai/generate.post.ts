@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logUsage } from '~/server/utils/ai_tracker';
 import { AVAILABLE_MODELS } from '~/server/utils/ai_models';
@@ -71,12 +72,12 @@ export default defineEventHandler(async (event) => {
         }
 
     } catch (e: any) {
-        console.error(`Model ${requestedModelId} failed:`, e);
+        Logger.error(`Model ${requestedModelId} failed:`, e);
 
         // Fallback to Flash if we didn't use it
         if (requestedModelId !== 'gemini-2.5-flash') {
             try {
-                console.log('Falling back to Gemini 3.0 Flash...');
+                Logger.debug('Falling back to Gemini 3.0 Flash...');
                 modelUsed = 'gemini-2.5-flash';
                 const fallbackModel = client.getGenerativeModel({ model: modelUsed });
                 let prompt = body.prompt;

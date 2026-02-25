@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { ref } from 'vue';
 import { UserInsight } from '~/models/UserInsight';
 import { where, orderBy, limit, serverTimestamp } from 'firebase/firestore';
@@ -40,7 +41,7 @@ export const useUserInsights = () => {
             insightsHistory.value = results;
             return results;
         } catch (e) {
-            console.error('[useUserInsights] fetchInsightsHistory error:', e);
+            Logger.error('[useUserInsights] fetchInsightsHistory error:', e);
         } finally {
             isLoading.value = false;
         }
@@ -64,7 +65,7 @@ export const useUserInsights = () => {
 
             return currentInsight.value;
         } catch (e) {
-            console.error('[useUserInsights] fetchLatestInsight error:', e);
+            Logger.error('[useUserInsights] fetchLatestInsight error:', e);
         } finally {
             isLoading.value = false;
         }
@@ -115,7 +116,7 @@ export const useUserInsights = () => {
                 return newInsight;
             }
         } catch (e) {
-            console.error('[useUserInsights] generateInsights error:', e);
+            Logger.error('[useUserInsights] generateInsights error:', e);
             throw e;
         } finally {
             isLoading.value = false;

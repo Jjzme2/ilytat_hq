@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 
 
 import { useCommandPalette } from '#imports'
@@ -350,7 +351,7 @@ export default defineNuxtPlugin((nuxtApp) => {
                 loadShortcutOverrides(clean);
             }
         } catch (e) {
-            console.warn('[CommandPalette] Could not load shortcut overrides:', e);
+            Logger.warn('[CommandPalette] Could not load shortcut overrides:', e);
         }
     });
 });

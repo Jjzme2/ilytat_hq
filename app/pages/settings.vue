@@ -179,6 +179,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { useIlytatTheme } from '@theme/composables/useIlytatTheme';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useFirestore } from 'vuefire';
@@ -210,7 +211,7 @@ const handleResetPassword = async () => {
         success('Password reset email sent');
     } catch (e) {
         toastError('Failed to send reset email');
-        console.error(e);
+        Logger.error(e);
     }
 };
 
@@ -258,7 +259,7 @@ const saveProfile = async () => {
         isEditing.value = false;
     } catch (e) {
         toastError('Failed to update profile');
-        console.error(e);
+        Logger.error(e);
     }
 };
 
@@ -282,7 +283,7 @@ const claimGlobalID = async () => {
         success(`Claimed Global ID: ${newHandle}`);
     } catch (e) {
         toastError('Failed to claim Global ID');
-        console.error(e);
+        Logger.error(e);
     } finally {
         isClaiming.value = false;
     }
@@ -303,7 +304,7 @@ const handleVerifyEmail = async () => {
         success('Verification email sent');
     } catch (e) {
         toastError('Failed to send verification');
-        console.error(e);
+        Logger.error(e);
     }
 };
 </script>

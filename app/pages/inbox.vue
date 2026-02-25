@@ -120,6 +120,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 /**
  * Inbox page — real-time messaging powered by ilytat-messaging package.
  * 
@@ -298,7 +299,7 @@ async function createNewConversation() {
         selectConversation(id)
         success('Conversation created')
     } catch (e: any) {
-        console.error('Failed to create conversation', e)
+        Logger.error('Failed to create conversation', e)
         toastError(e.message || 'Failed to create conversation')
     } finally {
         isCreatingConvo.value = false

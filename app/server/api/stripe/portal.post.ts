@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     const stripe = new Stripe(config.stripeSecretKey as string)
 
     try {
-        Logger.info('[Stripe Portal] Creating portal session', { stripeCustomerId })
+        Logger.info('[Stripe Portal] Creating portal session')
         const session = await stripe.billingPortal.sessions.create({
             customer: stripeCustomerId,
             return_url: `${getRequestURL(event).origin}/organization`
@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
         Logger.info('[Stripe Portal] ✓ Portal session created', { url: session.url ? 'present' : 'MISSING' })
         return { portalUrl: session.url }
     } catch (err: any) {
-        Logger.error('[Stripe Portal] Portal error', err, { stripeCustomerId })
+        Logger.error('[Stripe Portal] Portal error', err)
         throw createError({ statusCode: 500, statusMessage: err.message })
     }
 })

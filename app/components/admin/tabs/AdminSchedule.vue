@@ -64,6 +64,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { useSchedule } from '~/composables/useSchedule';
 import { useToast } from '@ilytat/notifications';
 import { onMounted, computed } from 'vue';
@@ -85,7 +86,7 @@ const handleDeleteEvent = async (id: string) => {
             await deleteEvent(id);
             success('Event deleted');
         } catch (e) {
-            console.error('Failed to delete event', e);
+            Logger.error('Failed to delete event', e);
             toastError('Failed to delete event');
         }
     }

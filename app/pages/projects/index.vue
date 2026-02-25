@@ -191,6 +191,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
 import { Project } from '~/models/Project';
 import { ProjectStatus } from '../../../config/status';
@@ -256,7 +257,7 @@ const handleCreate = async () => {
         isCreateModalOpen.value = false;
         toastSuccess('Project created');
     } catch (e) {
-        console.error("Failed to create project", e);
+        Logger.error("Failed to create project", e);
         toastError('Failed to create project');
     } finally {
         isCreating.value = false;

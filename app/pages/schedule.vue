@@ -311,6 +311,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, isToday as _isToday } from 'date-fns';
 import { useSpeechRecognition } from '@vueuse/core';
@@ -525,7 +526,7 @@ const handleSmartAdd = async () => {
             showError('No events detected.');
         }
     } catch (e) {
-        console.error(e);
+        Logger.error(e);
         showError('Failed to parse event. Try again.');
     } finally {
         isParsing.value = false;
@@ -567,7 +568,7 @@ const confirmCreateEvents = async () => {
             }
         }
     } catch (e: any) {
-        console.error('Failed to create events', e);
+        Logger.error('Failed to create events', e);
         showError('Failed to create some events');
     } finally {
         isCreating.value = false;
@@ -630,7 +631,7 @@ const handleAddEventMember = async (uid: string) => {
         editingEvent.value.members = newMembers;
         loadSchedule();
     } catch(e) {
-        console.error("Failed to add member to event", e);
+        Logger.error("Failed to add member to event", e);
     }
 };
 
@@ -642,7 +643,7 @@ const handleRemoveEventMember = async (uid: string) => {
         editingEvent.value.members = newMembers;
         loadSchedule();
     } catch(e) {
-        console.error("Failed to remove member from event", e);
+        Logger.error("Failed to remove member from event", e);
     }
 };
 

@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { ref, computed } from 'vue';
 import { Event } from '~/models/Event';
 import { Task } from '~/models/Task';
@@ -106,7 +107,7 @@ export const useSchedule = () => {
             goals.value = allGoals.filter(g => g.targetDate && new Date(g.targetDate) >= start && new Date(g.targetDate) <= end);
 
         } catch (e: any) {
-            console.error(e);
+            Logger.error(e);
             error.value = e.message;
         } finally {
             isLoading.value = false;

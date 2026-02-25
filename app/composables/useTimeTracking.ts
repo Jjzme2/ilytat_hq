@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { ref, computed } from 'vue';
 import { TimeLog } from '~/models/TimeLog';
 import { useFirestoreRepository } from './useFirestoreRepository';
@@ -57,7 +58,7 @@ export const useTimeTracking = () => {
 
             logs.value = await getAll(constraints);
         } catch (e: any) {
-            console.error(e);
+            Logger.error(e);
             error.value = e.message;
         } finally {
             isLoading.value = false;

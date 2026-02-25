@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { CountryCode, Products } from 'plaid';
 
 export default defineEventHandler(async (event) => {
@@ -27,11 +28,10 @@ export default defineEventHandler(async (event) => {
         const createTokenResponse = await plaidClient.linkTokenCreate(request);
         return createTokenResponse.data;
     } catch (error: any) {
-        console.error('Error creating link token:', error.response?.data || error.message);
+        Logger.error('Error creating link token:', error.message);
         throw createError({
             statusCode: 500,
-            statusMessage: 'Failed to create link token',
-            data: error.response?.data
+            statusMessage: 'Failed to create link token'
         });
     }
 });

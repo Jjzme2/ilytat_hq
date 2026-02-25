@@ -18,13 +18,11 @@ export default defineEventHandler(async (event) => {
 
     Logger.info('[Stripe Checkout] Creating checkout session', {
         planId,
-        userId,
-        userEmail,
         organizationId
     })
 
     if (!planId || !userId) {
-        Logger.warn('[Stripe Checkout] Missing required fields', { planId, userId })
+        Logger.warn('[Stripe Checkout] Missing required fields')
         throw createError({ statusCode: 400, statusMessage: 'planId and userId are required' })
     }
 
@@ -65,6 +63,7 @@ export default defineEventHandler(async (event) => {
                 }
             ],
             customer_email: userEmail || undefined,
+            allow_promotion_codes: true,
             metadata: {
                 userId,
                 tenantId: organizationId || 'pending',
@@ -75,14 +74,12 @@ export default defineEventHandler(async (event) => {
         })
 
         Logger.info('[Stripe Checkout] ✓ Session created', {
-            sessionId: session.id,
-            sessionUrl: session.url ? 'present' : 'MISSING',
-            metadata: { userId, tenantId: organizationId || 'pending', planId }
+            sessionUrl: session.url ? 'present' : 'MISSING'
         })
 
         return { sessionUrl: session.url }
     } catch (err: any) {
-        Logger.error('[Stripe Checkout] Checkout error', err, { planId, userId, organizationId })
+        Logger.error('[Stripe Checkout] Checkout error', err)
         throw createError({ statusCode: 500, statusMessage: err.message })
     }
 })

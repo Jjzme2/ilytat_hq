@@ -128,6 +128,7 @@
 </template>
 
 <script setup lang="ts">
+import { Logger } from '~/utils/Logger';
 import { ref, reactive, computed } from 'vue'
 import { doc, setDoc, updateDoc } from 'firebase/firestore'
 import { useFirestore } from 'vuefire'
@@ -216,7 +217,7 @@ const createTenant = async () => {
     // Redirect to pricing to subscribe
     await navigateTo('/pricing')
   } catch (e: any) {
-    console.error('Failed to create tenant:', e)
+    Logger.error('Failed to create tenant:', e)
     statusMessage.value = 'Error: ' + (e.message || 'Failed to create')
   } finally {
     isCreating.value = false

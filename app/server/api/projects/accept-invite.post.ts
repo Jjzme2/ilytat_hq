@@ -1,3 +1,4 @@
+import { Logger } from '~/utils/Logger';
 import { verifyAdminToken, ensureAdminInitialized } from '../../utils/adminAuth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { readBody, createError } from 'h3';
@@ -75,7 +76,7 @@ export default defineEventHandler(async (event) => {
         return { success: true };
 
     } catch (e: any) {
-        console.error('Accept Invite Error:', e);
+        Logger.error('Accept Invite Error:', e);
         // Rethrow proper error if it's one of ours, else 500
         if (e.statusCode) throw e;
         throw createError({ statusCode: 500, statusMessage: e.message || 'Internal Server Error' });
