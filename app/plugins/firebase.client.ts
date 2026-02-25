@@ -17,10 +17,13 @@ import {
     onSnapshot,
     type Unsubscribe,
 } from 'firebase/firestore';
+import { useFirestore } from 'vuefire';
 
-export default defineNuxtPlugin((nuxtApp) => {
-    // Grab Firebase instances (vuefire-managed, no dual-init risk)
-    const { auth, db } = useFirebase();
+export default defineNuxtPlugin(async (nuxtApp) => {
+    // Wait for nuxt-vuefire to finish initialising the Firebase app.
+    // On the first cold production load this may take a few ticks.
+    const auth = await waitForFirebaseAuth();
+    const db = useFirestore();
 
     // Lifecycle state — shared via useState under the hood
     const {

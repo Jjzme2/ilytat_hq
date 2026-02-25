@@ -36,7 +36,7 @@ export const useUser = () => {
     const initUser = (): Promise<User | null> => {
         if (readyPromise.value) return readyPromise.value;
 
-        readyPromise.value = new Promise((resolve) => {
+        readyPromise.value = new Promise(async (resolve) => {
             if (isInitialized.value && isReady.value) {
                 resolve(user.value);
                 return;
@@ -45,7 +45,20 @@ export const useUser = () => {
             isInitialized.value = true;
             isLoading.value = true;
 
-            auth.onAuthStateChanged(async (fUser) => {
+            // Wait for Firebase Auth to be fully initialised by nuxt-vuefire.
+            // On the first cold production load the app may not exist yet.
+            let readyAuth: import('firebase/auth').Auth;
+            try {
+                readyAuth = await waitForFirebaseAuth();
+            } catch (e) {
+                Logger.error('[useUser] Firebase Auth never became available:', e);
+                isLoading.value = false;
+                isReady.value = true;
+                resolve(null);
+                return;
+            }
+
+            readyAuth.onAuthStateChanged(async (fUser) => {
                 firebaseUser.value = fUser;
                 if (fUser) {
                     try {
