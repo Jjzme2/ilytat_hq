@@ -6,14 +6,14 @@
 
             <div>
                 <h1 class="text-3xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/40 tracking-tighter">
-                    Operations
+                    Projects
                 </h1>
-                <p class="text-sm md:text-base text-zinc-500 mt-2 font-medium">Coordinate and execute mission-critical initiatives</p>
+                <p class="text-sm md:text-base text-zinc-500 mt-2 font-medium">Manage and track your business projects</p>
             </div>
             <button @click="openCreateModal"
                 class="w-full sm:w-auto px-6 py-3.5 sm:py-3 bg-accent-primary hover:bg-accent-secondary text-white rounded-2xl text-sm font-black transition-all shadow-2xl shadow-accent-primary/20 flex items-center justify-center gap-2 group active:scale-95">
                 <span class="icon-[ph--plus-bold] text-xl group-hover:rotate-90 transition-transform duration-300"></span>
-                Inaugurate Project
+                New Project
             </button>
         </header>
 
@@ -109,20 +109,20 @@
         </main>
 
         <!-- New Project Bottom Sheet -->
-        <BottomSheet :is-open="isCreateModalOpen" title="New Operation" @close="isCreateModalOpen = false">
-            <template #description>Define the parameters for this new initiative.</template>
+        <BottomSheet :is-open="isCreateModalOpen" title="New Project" @close="isCreateModalOpen = false">
+            <template #description>Set up a new project for your business.</template>
             
             <form @submit.prevent="handleCreate" class="space-y-6 pb-2">
                 <div class="space-y-4">
                     <div class="group">
-                        <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2 px-1">Identity</label>
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2 px-1">Project Name</label>
                         <input v-model="newProjectForm.name" type="text" required
                             class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-accent-primary transition-all shadow-inner"
                             placeholder="e.g. Project Orion" />
                     </div>
                     
                     <div class="group">
-                        <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2 px-1">Objective</label>
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2 px-1">Description</label>
                         <textarea v-model="newProjectForm.description" rows="3"
                             class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-accent-primary transition-all shadow-inner"
                             placeholder="Mission details..."></textarea>
@@ -182,7 +182,7 @@
                     </button>
                     <button type="submit" :disabled="isCreating"
                         class="px-8 py-3 bg-accent-primary hover:bg-accent-secondary text-white rounded-2xl text-sm transition-all disabled:opacity-50 shadow-xl shadow-accent-primary/20 order-1 sm:order-2 uppercase tracking-widest">
-                        {{ isCreating ? 'Initializing...' : 'Confirm Launch' }}
+                        {{ isCreating ? 'Creating...' : 'Create Project' }}
                     </button>
                 </div>
             </form>
@@ -206,7 +206,6 @@ definePageMeta({
 const router = useRouter();
 const { projects, isLoading, error, fetchProjects, createProject } = useProjects();
 const { success: toastSuccess, error: toastError } = useToast();
-const { tenantId } = useTenant();
 
 // Local State
 const isCreateModalOpen = ref(false);
@@ -250,7 +249,7 @@ const handleCreate = async () => {
             status: ProjectStatus.ACTIVE,
             progress: 0,
             purpose: newProjectForm.value.purpose,
-            tenantId: tenantId.value
+            createdBy: useUser().user.value?.uid || ''
         });
 
         await createProject(project);

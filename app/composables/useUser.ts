@@ -27,8 +27,8 @@ export const useUser = () => {
 
     const isSuper = computed(() => {
         if (!user.value) return false;
-        // Super access requires 'super' role AND 'ilytat-hq' tenant membership
-        return (user.value.roles.includes('super') && user.value.tenantId === 'ilytat-hq') ||
+        // Super access requires 'super' role AND 'ilytat-hq' organization membership
+        return (user.value.roles.includes('super') && user.value.organizationId === 'ilytat-hq') ||
             user.value.email === 'admin@ilytat.com' ||
             user.value.email === 'zettler.jj@ilytat.com';
     });
@@ -62,10 +62,11 @@ export const useUser = () => {
                             displayName: userData.displayName || fUser.displayName || 'Operator',
                             photoURL: userData.photoURL || fUser.photoURL,
                             roles: userData.roles || ['user'],
-                            tenantId: userData.tenantId || null,
+                            organizationId: userData.organizationId || userData.tenantId || null,
+                            subscriberTier: userData.subscriberTier || null,
+                            subscriberTierExpiresAt: userData.subscriberTierExpiresAt || null,
                             bio: userData.bio || '',
                             username: userData.username || null,
-                            employeeId: userData.employeeId || null
                         });
                         Logger.info(`[useUser] User profile loaded for ${fUser.email}`);
                     } catch (e) {
@@ -112,10 +113,11 @@ export const useUser = () => {
                     displayName: userData.displayName || result.user.displayName || 'Operator',
                     photoURL: userData.photoURL || result.user.photoURL,
                     roles: userData.roles || ['user'],
-                    tenantId: userData.tenantId || null,
+                    organizationId: userData.organizationId || userData.tenantId || null,
+                    subscriberTier: userData.subscriberTier || null,
+                    subscriberTierExpiresAt: userData.subscriberTierExpiresAt || null,
                     bio: userData.bio || '',
                     username: userData.username || null,
-                    employeeId: userData.employeeId || null
                 });
             }
         } catch (e) {

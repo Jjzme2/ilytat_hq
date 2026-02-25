@@ -6,9 +6,9 @@ import { Priority } from '../../config/priority';
 /**
  * Task Model
  *
- * Stored as subcollection: `projects/{projectId}/tasks/{taskId}`
+ * Stored in flat `tasks` collection, linked via `projectId`.
  * Tasks are concrete steps toward achieving a Goal.
- * Created by tenant admins, assignable to any admin/staff within the tenant.
+ * Owned by the creator, assignable to any project member.
  */
 export class Task extends BaseModel<TaskData> {
     title: string;
@@ -19,10 +19,10 @@ export class Task extends BaseModel<TaskData> {
     dueDate: Date | null;
     assigneeId: string | null;
     createdBy: string;
+    ownerId: string;
     goalId: string | null;
     parentTaskId: string | null;
     tags: string[];
-    tenantId: string;
     projectId: string;
 
     constructor(data: any = {}) {
@@ -36,10 +36,10 @@ export class Task extends BaseModel<TaskData> {
         this.dueDate = parsed.dueDate;
         this.assigneeId = parsed.assigneeId;
         this.createdBy = parsed.createdBy;
+        this.ownerId = parsed.ownerId || parsed.createdBy;
         this.goalId = parsed.goalId;
         this.parentTaskId = parsed.parentTaskId;
         this.tags = parsed.tags;
-        this.tenantId = parsed.tenantId;
         this.projectId = parsed.projectId;
     }
 
@@ -57,10 +57,10 @@ export class Task extends BaseModel<TaskData> {
             dueDate: this.dueDate,
             assigneeId: this.assigneeId,
             createdBy: this.createdBy,
+            ownerId: this.ownerId,
             goalId: this.goalId,
             parentTaskId: this.parentTaskId,
             tags: this.tags,
-            tenantId: this.tenantId,
             projectId: this.projectId
         };
     }

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { Project } from '../Project'
 
 describe('Project', () => {
-    const req = { name: 'Test Project', tenantId: 't1' }
+    const req = { name: 'Test Project' }
 
     it('sets correct defaults', () => {
         const p = new Project({ ...req })
@@ -10,7 +10,6 @@ describe('Project', () => {
         expect(p.description).toBe('')
         expect(p.status).toBe('active')
         expect(p.priority).toBe('medium')
-        expect(p.tenantId).toBe('t1')
         expect(p.createdBy).toBe('')
         expect(p.startDate).toBeNull() // default is null in Zod likely, or check schema
         expect(p.deadline).toBeNull()
@@ -45,11 +44,6 @@ describe('Project', () => {
         expect(p.quickLaunch).toEqual({ 'Docs': 'https://docs.example.com' })
     })
 
-    it.skip('falls back tenantId to ownerId', () => {
-        const p = new Project({ name: 'legacy', ownerId: 'legacy-owner' })
-        expect(p.tenantId).toBe('legacy-owner')
-    })
-
     it('throws when progress is not a number', () => {
         expect(() => new Project({ ...req, progress: 'not-a-number' })).toThrow()
     })
@@ -57,7 +51,7 @@ describe('Project', () => {
     it('toJSON roundtrip preserves all fields', () => {
         const data = {
             id: 'p1', name: 'Beta', description: 'desc',
-            status: 'hold', priority: 'high', tenantId: 't1',
+            status: 'hold', priority: 'high',
             tags: ['a'], progress: 42,
             quickLaunch: { key: 'val' }
         }

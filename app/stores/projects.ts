@@ -25,17 +25,12 @@ export const useProjectsStore = defineStore('projects', () => {
     const addProject = async (name: string, description: string = '') => {
         if (!user.value) throw new Error('Not authenticated');
 
-        const { useTenant } = await import('~/composables/useTenant');
-        const { tenantId } = useTenant();
-
-        if (!tenantId.value) throw new Error('No tenant context');
 
         const data = {
             name,
             description,
             status: 'active',
             priority: 'medium',
-            tenantId: tenantId.value,
             createdBy: user.value.uid,
             startDate: new Date(),
             deadline: null,

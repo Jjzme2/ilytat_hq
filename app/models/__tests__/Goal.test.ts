@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { Goal } from '../Goal'
 
 describe('Goal', () => {
-    const req = { title: 'Test Goal', tenantId: 't1', projectId: 'p1' }
+    const req = { title: 'Test Goal', projectId: 'p1' }
 
     it('sets correct defaults', () => {
         const g = new Goal({ ...req })
@@ -11,6 +11,7 @@ describe('Goal', () => {
         expect(g.targetDate).toBeNull()
         expect(g.status).toBe('not-started')
         expect(g.createdBy).toBe('')
+        expect(g.ownerId).toBe('')
     })
 
     it('constructs from full data', () => {
@@ -28,6 +29,7 @@ describe('Goal', () => {
         expect(g.status).toBe('in-progress')
         expect(g.targetDate).toBeInstanceOf(Date)
         expect(g.createdBy).toBe('user-1')
+        expect(g.ownerId).toBe('user-1')
     })
 
     it('accepts all valid status values', () => {
@@ -45,5 +47,6 @@ describe('Goal', () => {
         expect(json.status).toBe('achieved')
         expect(json.createdBy).toBe('u1')
         expect(json.targetDate).toBeNull()
+        expect(json.ownerId).toBe('u1')
     })
 })

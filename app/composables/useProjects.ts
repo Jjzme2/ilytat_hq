@@ -4,7 +4,6 @@ import { AppError } from '~/utils/AppError';
 import { Logger } from '~/utils/Logger';
 
 export const useProjects = () => {
-    const { tenantId } = useTenant();
     const { user, isAdmin } = useUser();
 
     const {
@@ -42,19 +41,12 @@ export const useProjects = () => {
                 return;
             }
 
-            Logger.debug(`[useProjects] fetchProjects: Fetching for user ${user.value.uid} tenant=${tenantId.value} isAdmin=${isAdmin.value}`);
+            Logger.debug(`[useProjects] fetchProjects: Fetching for user ${user.value.uid} isAdmin=${isAdmin.value}`);
 
-            // Updated Security: 
-            // 1. Members array allows cross-tenant personal projects
-            // 2. Database admins can see all projects in their tenant
-            if (isAdmin.value && tenantId.value) {
-                Logger.debug('[useProjects] fetchProjects: Using OR query for Admin');
-                projects.value = await getAll([
-                    or(
-                        where('members', 'array-contains', user.value.uid),
-                        where('tenantId', '==', tenantId.value)
-                    )
-                ]);
+            // Database admins can see all projects in the system
+            if (isAdmin.value) {
+                Logger.debug('[useProjects] fetchProjects: Using simple query for Admin');
+                projects.value = await getAll([]);
             } else {
                 Logger.debug('[useProjects] fetchProjects: Using simple member query');
                 projects.value = await getAll([where('members', 'array-contains', user.value.uid)]);
@@ -86,25 +78,7 @@ export const useProjects = () => {
         error.value = null;
         try {
             // Allow creation without tenantId for personal projects, unless explicitly required
-            // if (!tenantId.value) throw new AppError("No tenant context", "NO_TENANT", 400);
-
             const data = project.toJSON();
-
-            // Only force tenantId if it's available and not already set (or if we want to enforce it for tenant contexts)
-            // Ideally, the caller sets the tenantId if it's a tenant project.
-            // If tenantId is available in global state, we default to it, but allow it to be null/undefined for personal items.
-            // However, the previous logic enforced it. 
-            // User request: "default to a personal project" when at /projects
-
-            if (!data.tenantId && tenantId.value) {
-                // Check if we should enforce tenant? 
-                // For now, let's assume if tenantId is present in context, we use it, 
-                // UNLESS the project data explicitly set it to null (which toJSON might not carry if undefined).
-                // Logic: use data.tenantId if set, else use global tenantId.
-                data.tenantId = tenantId.value;
-            }
-
-            // If still no tenantId, it's a personal project (tenantId: null/undefined)
 
             // Set Owner & Roles
             const userId = user.value?.uid;
@@ -156,7 +130,7 @@ export const useProjects = () => {
             previousProject = projects.value[index] as Project;
             const existingData = previousProject.toJSON();
             // Optimistic update
-            projects.value[index] = new Project({ ...existingData, ...updates });
+            projects.value[index] = new Project({ ...existingData, ...updates } as any);
         }
 
         // Also update currentProject if it matches
@@ -164,7 +138,7 @@ export const useProjects = () => {
         if (currentProject.value && currentProject.value.id === id) {
             previousCurrentProject = currentProject.value;
             const currentData = currentProject.value.toJSON();
-            currentProject.value = new Project({ ...currentData, ...updates });
+            currentProject.value = new Project({ ...currentData, ...updates } as any);
         }
 
         try {

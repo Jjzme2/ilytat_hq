@@ -165,8 +165,8 @@
                     <ModelSelector />
                 </section>
 
-                <!-- Keyboard Shortcuts Section -->
-                <section class="bg-zinc-900/40 border border-white/5 rounded-xl p-6">
+                <!-- Keyboard Shortcuts Section (desktop-only — not relevant on mobile) -->
+                <section class="hidden md:block bg-zinc-900/40 border border-white/5 rounded-xl p-6">
                     <h2 class="text-lg font-semibold text-white mb-1">Keyboard Shortcuts</h2>
                     <p class="text-xs text-zinc-400 mb-4">Click any command to record a custom keybinding.</p>
                     <ClientOnly>
@@ -193,7 +193,6 @@ definePageMeta({
 const { isDark, toggleTheme } = useIlytatTheme();
 const userStore = useUser();
 const db = useFirestore();
-const { tenant, tenantId } = useTenant();
 const { success, error: toastError } = useToast();
 const { preferences, loadPreferences, toggleAssistant } = useUserPreferences();
 
@@ -294,7 +293,7 @@ const userInitials = computed(() => {
     const name = userStore.user.value.displayName || '';
     if (!name) return 'NU';
     const parts = name.split(' ').filter(p => p.trim());
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    if (parts.length >= 2 && parts[0] && parts[1]) return (parts[0][0]! + parts[1][0]!).toUpperCase();
     return name.substring(0, 2).toUpperCase();
 });
 

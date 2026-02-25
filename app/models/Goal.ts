@@ -5,8 +5,8 @@ import { GoalStatus } from '../../config/status';
 /**
  * Goal Model
  *
- * Stored as subcollection: `projects/{projectId}/goals/{goalId}`
- * Goals are strategic objectives within a project, created by tenant admins.
+ * Stored in flat `goals` collection, linked via `projectId`.
+ * Goals are strategic objectives within a project.
  * Tasks are the concrete steps toward achieving a goal (linked via Task.goalId).
  */
 export class Goal extends BaseModel<GoalData> {
@@ -15,7 +15,7 @@ export class Goal extends BaseModel<GoalData> {
     targetDate: Date | null;
     status: GoalStatus;
     createdBy: string;
-    tenantId: string;
+    ownerId: string;
     projectId: string;
 
     constructor(data: any = {}) {
@@ -26,7 +26,7 @@ export class Goal extends BaseModel<GoalData> {
         this.targetDate = parsed.targetDate;
         this.status = parsed.status;
         this.createdBy = parsed.createdBy;
-        this.tenantId = parsed.tenantId;
+        this.ownerId = parsed.ownerId || parsed.createdBy;
         this.projectId = parsed.projectId;
     }
 
@@ -41,7 +41,7 @@ export class Goal extends BaseModel<GoalData> {
             targetDate: this.targetDate,
             status: this.status,
             createdBy: this.createdBy,
-            tenantId: this.tenantId,
+            ownerId: this.ownerId,
             projectId: this.projectId
         };
     }

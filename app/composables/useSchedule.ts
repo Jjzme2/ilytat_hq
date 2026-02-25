@@ -5,13 +5,10 @@ import { Goal } from '~/models/Goal';
 import { useFirestoreRepository } from './useFirestoreRepository';
 import { useTasks } from './useTasks';
 import { useGoals } from './useGoals';
-import { useTenant } from './useTenant';
 import { useUser } from './useUser';
 import { where, orderBy, Timestamp, type QueryConstraint } from 'firebase/firestore';
-import { startOfMonth, endOfMonth, isSameDay } from 'date-fns';
 
 export const useSchedule = () => {
-    const { tenantId } = useTenant();
     const { user } = useUser();
 
     // Repositories
@@ -40,7 +37,7 @@ export const useSchedule = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            if (!tenantId.value || !user.value) return;
+            if (!user.value) return;
 
             // Fetch Events
             // Firestore doesn't support logical OR for range clauses easily on different fields/collections
@@ -51,7 +48,6 @@ export const useSchedule = () => {
             // Restricted to user's own events now
 
             const eventConstraints: QueryConstraint[] = [
-                where('tenantId', '==', tenantId.value),
                 where('userId', '==', user.value.uid),
                 // where('start', '>=', Timestamp.fromDate(start)), // Needs index
                 // where('start', '<=', Timestamp.fromDate(end))    // Needs index
@@ -91,7 +87,6 @@ export const useSchedule = () => {
             // We will implement a quick fetch for tasks here.
             const { getAll: getAllTasks } = useFirestoreRepository<Task>('tasks', (data) => new Task(data));
             const userTasks = await getAllTasks([
-                where('tenantId', '==', tenantId.value),
                 where('assigneeId', '==', user.value?.uid),
                 where('status', '!=', 'completed'), // Maybe? Or include completed?
                 // where('dueDate', '!=', null) // Firestore limitation: != null and other filters
@@ -107,7 +102,7 @@ export const useSchedule = () => {
             // Typically goals are project/team level.
             // Let's show goals that the user is "driving" or just all tenant goals they have access to?
             // For now, let's fetch all tenant goals with a deadline.
-            const allGoals = await getAllGoals([where('tenantId', '==', tenantId.value)]);
+            const allGoals = await getAllGoals([]);
             goals.value = allGoals.filter(g => g.targetDate && new Date(g.targetDate) >= start && new Date(g.targetDate) <= end);
 
         } catch (e: any) {
@@ -121,11 +116,10 @@ export const useSchedule = () => {
     const createEvent = async (eventData: Partial<Event>) => {
         isLoading.value = true;
         try {
-            if (!tenantId.value || !user.value) throw new Error("No context");
+            if (!user.value) throw new Error("No context");
 
             const newEvent = new Event({
                 ...eventData,
-                tenantId: tenantId.value,
                 userId: user.value.uid,
                 start: eventData.start || new Date(),
                 end: eventData.end || new Date(new Date().getTime() + 3600000) // 1 hour default
@@ -148,7 +142,7 @@ export const useSchedule = () => {
             const idx = events.value.findIndex(e => e.id === id);
             if (idx !== -1) {
                 // simple merge for local update
-                const existing = events.value[idx].toJSON();
+                const existing = (events.value[idx] as Event).toJSON();
                 events.value[idx] = new Event({ ...existing, ...updates });
             }
         } catch (e: any) {

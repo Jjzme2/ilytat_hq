@@ -150,6 +150,11 @@
                                     title="Export/Print" style="width: 32px; height: 32px;">
                                     <span class="icon-[ph--export]"></span>
                                 </button>
+                                <button @click.stop="openShareForm(doc)"
+                                    class="text-zinc-400 hover:text-blue-400 p-1.5 rounded-full hover:bg-white/10 transition-all flex items-center justify-center"
+                                    title="Share" style="width: 32px; height: 32px;">
+                                    <span class="icon-[ph--share-network]"></span>
+                                </button>
                                 <button @click.stop="openEditForm(doc)"
                                     class="text-zinc-400 hover:text-indigo-400 p-1.5 rounded-full hover:bg-white/10 transition-all flex items-center justify-center"
                                     title="Edit" style="width: 32px; height: 32px;">
@@ -285,7 +290,7 @@
                             </div>
 
                             <div class="flex-1 min-w-0">
-                                <h3 class="text-white text-sm font-medium truncate">{{ file.name ||
+                                <h3 class="text-white text-sm font-medium truncate">{{ (file as any).name ||
                                     getFileName(file.key) }}</h3>
                                 <p class="text-[10px] text-zinc-500">{{ formatFileSize(file.size) }} · {{
                                     formatDate(file.lastModified) }}</p>
@@ -358,7 +363,7 @@
 
                             <!-- Footer Info -->
                             <div class="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/90 to-transparent">
-                                <h3 class="text-white text-xs font-medium truncate">{{ file.name ||
+                                <h3 class="text-white text-xs font-medium truncate">{{ (file as any).name ||
                                     getFileName(file.key) }}</h3>
                                 <p class="text-[10px] text-zinc-400">{{ formatFileSize(file.size) }}</p>
                             </div>
@@ -437,20 +442,36 @@
                 </DialogPanel>
             </div>
         </Dialog>
+        
+        <!-- Document Share Modal -->
+        <ShareModal
+            v-if="documentToShare"
+            v-model:isOpen="showShareModal"
+            itemType="Document"
+            :itemId="documentToShare.id"
+            :members="documentToShare.members || []"
+            @add-member="handleAddDocMember"
+            @remove-member="handleRemoveDocMember"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
 import { Document } from '~/models/Document';
 import { DocumentType, DocumentStatus } from '../../../config/document';
 import { documentTemplates } from '../../../config/documentTemplates';
 import DocumentCreator from '~/components/documents/DocumentCreator.vue';
+import ShareModal from '~/components/ui/ShareModal.vue';
 import { useAI } from '@ai-tracking/composables/useAI';
 import { AI_PROMPTS } from '../../config/prompts';
 import Breadcrumbs from '~/components/ui/Breadcrumbs.vue';
 import { DocumentFactory } from '~/utils/DocumentFactory';
 import { useToast } from '@ilytat/notifications';
+import { useDocuments } from '~/composables/useDocuments';
+
 
 definePageMeta({
     layout: 'default',
@@ -479,6 +500,10 @@ const editingDocId = ref<string | null>(null);
 const isViewModalOpen = ref(false);
 const viewingDocument = ref<Document | null>(null);
 const uploadingFileName = ref('');
+
+// --- Share State ---
+const showShareModal = ref(false);
+const documentToShare = ref<any>(null);
 
 // Search
 const searchQuery = ref('');
@@ -549,6 +574,37 @@ onMounted(async () => {
     fetchDocuments().catch(e => console.error('Failed to load documents', e));
     fetchR2Documents().catch(e => console.error('Failed to load R2 files', e));
 });
+
+// --- Share Actions ---
+const openShareForm = (doc: any) => {
+    documentToShare.value = doc;
+    showShareModal.value = true;
+};
+
+const handleAddDocMember = async (uid: string) => {
+    if (!documentToShare.value) return;
+    const currentMembers = documentToShare.value.members || [];
+    const newMembers = [...currentMembers, uid];
+    try {
+        await updateDocument(documentToShare.value.id, { members: newMembers });
+        documentToShare.value.members = newMembers;
+        await fetchDocuments(); // Refresh underlying list
+    } catch(e) {
+        console.error("Failed to add member", e);
+    }
+};
+
+const handleRemoveDocMember = async (uid: string) => {
+    if (!documentToShare.value) return;
+    const newMembers = (documentToShare.value.members || []).filter((m: string) => m !== uid);
+    try {
+        await updateDocument(documentToShare.value.id, { members: newMembers });
+        documentToShare.value.members = newMembers;
+        await fetchDocuments();
+    } catch(e) {
+        console.error("Failed to remove member", e);
+    }
+};
 
 // --- Document Actions ---
 const resetForm = () => {
@@ -770,47 +826,7 @@ const getFileType = (key: string) => {
 };
 
 // --- Custom File Fetching ---
-const { tenant } = useTenant();
-
-// Override or augment fetchR2Documents to use tenant.filesUrl
-// Since useDocuments is a composable, we might need to handle this here or update the composable.
-// Updating the component is safer for now to avoid breaking other things, but we need to inject the data.
-// Let's watch R2Files or just manually fetch if filesUrl is present.
-
-const externalFiles = ref<any[]>([]);
-
-watch(() => tenant.value?.filesUrl, async (url) => {
-    if (url) {
-        try {
-            isLoadingR2.value = true;
-            const res = await fetch(url);
-            if (res.ok) {
-                const data = await res.json();
-                // Expecting array of objects. Map to our structure.
-                externalFiles.value = data.map((f: any) => ({
-                    key: f.url || f.key, // Use URL as key if absolute
-                    size: f.size || 0,
-                    lastModified: f.date || f.lastModified || new Date().toISOString(),
-                    isExternal: true,
-                    name: f.name
-                }));
-            }
-        } catch (e) {
-            console.error("Failed to fetch external files", e);
-            r2Error.value = "Failed to load external files";
-        } finally {
-            isLoadingR2.value = false;
-        }
-    }
-}, { immediate: true });
-
-// computed combined files
-const displayedFiles = computed(() => {
-    if (tenant.value?.filesUrl && externalFiles.value.length > 0) {
-        return externalFiles.value;
-    }
-    return r2Files.value;
-});
+const displayedFiles = computed(() => r2Files.value);
 
 // Update template to use displayedFiles instead of r2Files
 

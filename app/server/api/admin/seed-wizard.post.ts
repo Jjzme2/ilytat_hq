@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     const db = getFirestore()
 
     const body = await readBody(event)
-    const { model, data, tenantId = 'ilytat-hq' } = body
+    const { model, data, organizationId = 'ilytat-hq' } = body
 
     if (!model || !data) {
         throw createError({ statusCode: 400, statusMessage: 'model and data are required' })
@@ -35,10 +35,10 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        // Enforce tenantId for non-user models if not provided
+        // Set ownerId for item-level ownership
         const payload = {
             ...data,
-            tenantId: data.tenantId || tenantId,
+            ownerId: data.ownerId || data.createdBy || '',
             createdAt: FieldValue.serverTimestamp(),
             updatedAt: FieldValue.serverTimestamp()
         }

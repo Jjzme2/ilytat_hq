@@ -67,7 +67,6 @@
 import { useFirestore, useCollection } from 'vuefire';
 import { collection, query, where, orderBy, limit, Timestamp, type QueryConstraint } from 'firebase/firestore';
 import { ref, computed } from 'vue';
-import { useTenant } from '~/composables/useTenant';
 import { useUser } from '~/composables/useUser';
 
 const props = defineProps<{
@@ -75,7 +74,6 @@ const props = defineProps<{
 }>();
 
 const db = useFirestore();
-const { tenantId } = useTenant();
 const { user } = useUser();
 const viewPeriod = ref('All Time');
 const error = ref<string | null>(null);
@@ -91,9 +89,7 @@ const usageQuery = computed(() => {
         limit(100)
     ];
 
-    if (tenantId.value) {
-        constraints.unshift(where('tenantId', '==', tenantId.value));
-    } else if (user.value?.uid) {
+    if (user.value?.uid) {
         constraints.unshift(where('userId', '==', user.value.uid));
     }
 

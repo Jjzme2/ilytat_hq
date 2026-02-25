@@ -59,6 +59,16 @@
                             class="icon-[ph--fingerprint-bold] text-2xl text-zinc-400 group-hover:text-amber-400 mb-2 transition-colors"></span>
                         <span class="text-xs text-zinc-300 font-medium">View Identity</span>
                     </button>
+                    <!-- Dev-Only: Review Website -->
+                    <button v-if="isDev" @click="reviewWebsite"
+                        :disabled="isReviewing"
+                        class="col-span-2 sm:col-span-2 bg-gradient-to-r from-rose-500/10 to-amber-500/10 hover:from-rose-500/20 hover:to-amber-500/20 p-4 rounded-xl border border-rose-500/20 flex flex-col items-center justify-center transition-all group disabled:opacity-50">
+                        <span
+                            :class="isReviewing ? 'icon-[ph--circle-notch-bold] animate-spin' : 'icon-[ph--magnifying-glass-bold]'"
+                            class="text-2xl text-rose-400 group-hover:text-rose-300 mb-2 transition-colors"></span>
+                        <span class="text-xs text-zinc-300 font-medium">{{ isReviewing ? 'Reviewing...' : 'Review Website' }}</span>
+                        <span class="text-[9px] text-zinc-600 mt-0.5">DEV ONLY</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -113,6 +123,21 @@
             </div>
         </div>
     </div>
+
+    <!-- Dev-Only: AI Review Results -->
+    <div v-if="isDev && reviewResult" class="bg-zinc-900/50 border border-rose-500/20 rounded-2xl p-6 space-y-3">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <span class="icon-[ph--magnifying-glass-bold] text-rose-400"></span>
+                Website Review
+                <span class="text-[9px] bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded-full uppercase font-black tracking-wider">Dev</span>
+            </h2>
+            <button @click="reviewResult = null" class="text-xs text-zinc-500 hover:text-white transition-colors">Dismiss</button>
+        </div>
+        <div class="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap font-mono bg-black/30 p-4 rounded-xl border border-white/5 max-h-[50vh] overflow-y-auto">
+            {{ reviewResult }}
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -127,6 +152,9 @@ const formatNumber = (num: number) => new Intl.NumberFormat('en-US', { notation:
 
 const testResults = ref<Record<string, string>>({});
 const testingModelId = ref<string | null>(null);
+const isReviewing = ref(false);
+const reviewResult = ref<string | null>(null);
+const isDev = process.dev;
 
 const testModel = async (modelId: string) => {
     testingModelId.value = modelId;
@@ -144,6 +172,43 @@ const testModel = async (modelId: string) => {
         }
     } finally {
         testingModelId.value = null;
+    }
+};
+
+/**
+ * Dev-only: Ask AI to review the current app for UX, accessibility,
+ * and general improvements. This is a self-improvement tool for the developer.
+ */
+const reviewWebsite = async () => {
+    isReviewing.value = true;
+    reviewResult.value = null;
+
+    try {
+        const response = await generate({
+            prompt: `You are a senior UX auditor reviewing a web application called "ILYTAT HQ" — a digital office platform for early-stage startup founders building their LLC.
+
+The app includes: Dashboard with draggable widgets, Projects, Tasks, Goals, Schedule, Finance, Documents, Inbox/Messaging, AI Tools, Themes, Settings, and an Organization setup page.
+
+It has a dark premium aesthetic with a collapsible sidebar on desktop and a bottom tab bar with "More" menu on mobile.
+
+Please provide a concise review covering:
+1. **UX Issues** — Any friction points, confusing flows, or missing affordances
+2. **Accessibility** — Color contrast, keyboard navigation, screen reader concerns
+3. **Mobile UX** — Touch targets, responsive layout concerns
+4. **Feature Gaps** — What's missing for a startup founder's digital office?
+5. **Quick Wins** — 3 highest-impact improvements that can be made in under 1 hour each
+
+Be specific and actionable. Format as a bulleted list for each section.`,
+            feature: 'website_review'
+        });
+
+        if (response && response.content) {
+            reviewResult.value = response.content;
+        }
+    } catch (err) {
+        reviewResult.value = 'Review failed: ' + (err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+        isReviewing.value = false;
     }
 };
 

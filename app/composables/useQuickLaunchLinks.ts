@@ -18,15 +18,12 @@ export interface QuickLaunchLink {
     id: string;
     label: string;
     url: string;
-    tenantId: string;
     projectId: string;
     createdAt: Date;
 }
 
 export const useQuickLaunchLinks = () => {
     const { db } = useFirebase();
-    const { tenantId } = useTenant();
-
     const links = ref<QuickLaunchLink[]>([]);
     const isLoading = ref(false);
     const error = ref<string | null>(null);
@@ -35,11 +32,9 @@ export const useQuickLaunchLinks = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            if (!tenantId.value) return;
 
             const q = query(
                 collection(db, 'quicklinks'),
-                where('tenantId', '==', tenantId.value),
                 where('projectId', '==', projectId),
                 orderBy('createdAt', 'desc')
             );
@@ -48,7 +43,6 @@ export const useQuickLaunchLinks = () => {
                 id: d.id,
                 label: d.data().label || '',
                 url: d.data().url || '',
-                tenantId: d.data().tenantId || '',
                 projectId: d.data().projectId || '',
                 createdAt: d.data().createdAt?.toDate?.() || new Date()
             }));
@@ -65,12 +59,10 @@ export const useQuickLaunchLinks = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            if (!tenantId.value) throw new Error("No tenant context");
 
             const docRef = await addDoc(collection(db, 'quicklinks'), {
                 label: data.label,
                 url: data.url,
-                tenantId: tenantId.value,
                 projectId,
                 createdAt: serverTimestamp()
             });
@@ -79,7 +71,6 @@ export const useQuickLaunchLinks = () => {
                 id: docRef.id,
                 label: data.label,
                 url: data.url,
-                tenantId: tenantId.value,
                 projectId,
                 createdAt: new Date()
             };

@@ -24,6 +24,6 @@ export interface UserProfile {
     photoURL?: string | null
     role?: 'admin' | 'member' | 'viewer'
     roles?: ('admin' | 'member' | 'viewer')[]
-    tenantId?: string
+    organizationId?: string
     createdAt: any // Firestore Timestamp | serverTimestamp()
 }

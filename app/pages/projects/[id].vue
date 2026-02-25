@@ -43,6 +43,11 @@
                     </div>
 
                     <div class="flex items-center gap-2 md:gap-3">
+                        <button @click="showShareModal = true"
+                            class="px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg text-sm font-medium transition-colors border border-blue-500/10 flex items-center gap-2">
+                            <span class="icon-[ph--share-network]"></span>
+                            Share
+                        </button>
                         <button @click="openEditModal"
                             class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm font-medium transition-colors border border-white/5">
                             Edit
@@ -130,7 +135,7 @@
                             </div>
                             <div class="p-5 bg-zinc-900/40 border border-white/5 rounded-xl">
                                 <h3 class="text-zinc-400 text-xs uppercase tracking-wide mb-1">Owner</h3>
-                                <p class="text-lg font-medium text-white">{{ currentProject.tenantId ? 'Assigned' :
+                                <p class="text-lg font-medium text-white">{{ currentProject.createdBy ? 'Assigned' :
                                     'Unassigned' }}</p>
                             </div>
                         </section>
@@ -493,7 +498,7 @@
             </main>
         </template>
 
-        <!-- Edit Modal -->
+        <!-- Edit Project Modal -->
         <ClientOnly>
             <Dialog :open="isEditModalOpen" @close="isEditModalOpen = false" class="relative z-50">
                 <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" aria-hidden="true" />
@@ -568,7 +573,7 @@
                                 </button>
                                 <button type="submit" :disabled="isUpdating"
                                     class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
-                                    {{ isUpdating ? 'Saving...' : 'Save Changes' }}
+                                    Update Project
                                 </button>
                             </div>
                         </form>
@@ -576,11 +581,30 @@
                 </div>
             </Dialog>
         </ClientOnly>
+
+        <!-- Share Modal -->
+        <ShareModal
+            v-if="currentProject"
+            v-model:isOpen="showShareModal"
+            itemType="Project"
+            :itemId="currentProject.id"
+            :members="currentProject.members"
+            @add-member="handleAddMember"
+            @remove-member="handleRemoveMember"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import {
+    Dialog,
+    DialogPanel,
+    DialogTitle,
+} from '@headlessui/vue';
+import { useUser } from '~/composables/useUser';
+import ShareModal from '~/components/ui/ShareModal.vue';
 import { Goal } from '~/models/Goal';
 import { Task } from '~/models/Task';
 import { Note } from '~/models/Note';
@@ -600,7 +624,6 @@ definePageMeta({
 const route = useRoute();
 const router = useRouter();
 const projectId = computed(() => route.params.id as string);
-const { tenantId } = useTenant();
 
 // --- Toast ---
 const { success: toastSuccess, error: toastError } = useToast();
@@ -627,6 +650,7 @@ const { activeLog, startTracking, stopTracking, init: initTimeTracking } = useTi
 // --- UI State ---
 const activeTab = ref('overview');
 const isEditModalOpen = ref(false);
+const showShareModal = ref(false);
 const isUpdating = ref(false);
 
 // Goal form
@@ -820,17 +844,41 @@ const handleDelete = async () => {
     }
 };
 
+// --- Share Actions ---
+const handleAddMember = async (uid: string) => {
+    if (!currentProject.value || !projectId.value) return;
+    if (!currentProject.value.members) currentProject.value.members = [];
+    const newMembers = [...currentProject.value.members, uid];
+    try {
+        await updateProject(projectId.value, { members: newMembers });
+        currentProject.value.members = newMembers;
+    } catch (e) {
+        console.error("Failed to add member", e);
+        toastError('Failed to add member');
+    }
+};
+
+const handleRemoveMember = async (uid: string) => {
+    if (!currentProject.value || !projectId.value) return;
+    const newMembers = currentProject.value.members.filter(m => m !== uid);
+    try {
+        await updateProject(projectId.value, { members: newMembers });
+        currentProject.value.members = newMembers;
+    } catch (e) {
+        console.error("Failed to remove member", e);
+        toastError('Failed to remove member');
+    }
+};
+
 // --- Goal Actions ---
 const handleCreateGoal = async () => {
     if (!projectId.value || !newGoalTitle.value.trim()) return;
     try {
-        if (!tenantId.value) throw new Error('Tenant ID is required');
         await createGoal(projectId.value, {
             title: newGoalTitle.value,
             description: newGoalDesc.value,
             projectId: projectId.value,
-            status: GoalStatus.NOT_STARTED,
-            tenantId: tenantId.value
+            status: GoalStatus.NOT_STARTED
         }); toastSuccess('Goal created');
     } catch (e) {
         console.error('Failed to create goal', e);
@@ -865,15 +913,13 @@ const handleDeleteGoal = async (goalId: string) => {
 const handleCreateTask = async (parentId?: string) => {
     if (!projectId.value || !newTaskTitle.value.trim()) return;
     try {
-        if (!tenantId.value) throw new Error('Tenant ID is required');
         await createTask(projectId.value, {
             title: newTaskTitle.value.trim(),
             priority: newTaskPriority.value,
             status: TaskStatus.TODO,
             goalId: newTaskGoalId.value || undefined,
             parentTaskId: parentId || null,
-            projectId: projectId.value,
-            tenantId: tenantId.value
+            projectId: projectId.value
         });
         newTaskTitle.value = '';
         newTaskPriority.value = Priority.MEDIUM;
@@ -889,13 +935,11 @@ const handleCreateTask = async (parentId?: string) => {
 const handleCreateSubtask = async (parentId: string) => {
     if (!projectId.value || !newSubtaskTitle.value.trim()) return;
     try {
-        if (!tenantId.value) throw new Error('Tenant ID is required');
         await createTask(projectId.value, {
             title: newSubtaskTitle.value.trim(),
             projectId: projectId.value,
             priority: Priority.MEDIUM,
             status: TaskStatus.TODO,
-            tenantId: tenantId.value,
             parentTaskId: parentId
         });
         newSubtaskTitle.value = '';

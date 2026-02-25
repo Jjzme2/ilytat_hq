@@ -93,7 +93,7 @@ export const verifyAdminAccess = async (event: H3Event) => {
         || decoded.roles?.includes('super')
         || decoded.admin === true
 
-    const isIlytatHq = decoded.tenantId === 'ilytat-hq'
+    const isIlytatHq = decoded.tenantId === 'ilytat-hq' || decoded.organizationId === 'ilytat-hq'
 
     const isAdmin = (hasAdminRole && isIlytatHq)
         || decoded.email === 'zettler.jj@ilytat.com'

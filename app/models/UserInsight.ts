@@ -3,7 +3,6 @@ import { UserInsightSchema, type UserInsightData } from '../schemas/UserInsightS
 
 export class UserInsight extends BaseModel<UserInsightData> {
     userId: string;
-    tenantId: string;
     summary: string;
     focusAreas: string[];
     productivityScore: number;
@@ -14,7 +13,6 @@ export class UserInsight extends BaseModel<UserInsightData> {
         const parsed = UserInsightSchema.parse(data);
         super(parsed);
         this.userId = parsed.userId;
-        this.tenantId = parsed.tenantId;
         this.summary = parsed.summary;
         this.focusAreas = parsed.focusAreas;
         this.productivityScore = parsed.productivityScore;
@@ -42,7 +40,6 @@ export class UserInsight extends BaseModel<UserInsightData> {
             createdAt: this.createdAt,
             updatedAt: this.updatedAt,
             userId: this.userId,
-            tenantId: this.tenantId,
             summary: this.summary,
             focusAreas: this.focusAreas,
             productivityScore: this.productivityScore,

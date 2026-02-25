@@ -14,7 +14,7 @@ export const EventSchema = BaseSchema.extend({
 
     // Relations
     userId: z.string().min(1, "User ID is required"), // Owner/Creator
-    tenantId: z.string().min(1, "Tenant ID is required"),
+    members: z.array(z.string()).default([]),
     projectId: z.string().nullable().default(null),
 
     // Styling

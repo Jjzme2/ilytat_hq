@@ -4,7 +4,7 @@ import { NoteSchema, type NoteData } from '~/schemas/NoteSchema';
 /**
  * Note Model
  *
- * Stored as subcollection: `projects/{projectId}/notes/{noteId}`
+ * Stored in flat `notes` collection, linked via `projectId`.
  * Free-form notes attached to a project for capturing ideas,
  * meeting notes, or any contextual information.
  */
@@ -12,7 +12,6 @@ export class Note extends BaseModel<NoteData> {
     title: string;
     content: string;
     createdBy: string;
-    tenantId: string;
     projectId: string;
 
     constructor(data: any = {}) {
@@ -21,7 +20,6 @@ export class Note extends BaseModel<NoteData> {
         this.title = parsed.title;
         this.content = parsed.content;
         this.createdBy = parsed.createdBy;
-        this.tenantId = parsed.tenantId;
         this.projectId = parsed.projectId;
     }
 
@@ -34,7 +32,6 @@ export class Note extends BaseModel<NoteData> {
             title: this.title,
             content: this.content,
             createdBy: this.createdBy,
-            tenantId: this.tenantId,
             projectId: this.projectId
         };
     }

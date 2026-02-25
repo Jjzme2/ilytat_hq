@@ -1,5 +1,12 @@
-import tailwindcss from '@tailwindcss/vite'
+import tailwind from '@tailwindcss/vite'
 import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+// Force correct service account path for development
+if (process.env.NODE_ENV !== 'production') {
+  const rootDir = dirname(fileURLToPath(import.meta.url))
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = join(rootDir, 'app/server/keys/ilytat-structure-firebase-adminsdk-fbsvc-b33fbfaee5.json')
+}
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -37,13 +44,13 @@ export default defineNuxtConfig({
       sessionCookie: false
     },
     admin: {
-      serviceAccount: process.env.GOOGLE_APPLICATION_CREDENTIALS
+      serviceAccount: process.env.NODE_ENV === 'production' && process.env.FIREBASE_ADMIN_PRIVATE_KEY
         ? {
           projectId: process.env.FIREBASE_PROJECT_ID,
           clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
           privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n'),
         }
-        : undefined
+        : fileURLToPath(new URL('./app/server/keys/ilytat-structure-firebase-adminsdk-fbsvc-b33fbfaee5.json', import.meta.url))
     },
     config: {
       apiKey: process.env.FIREBASE_API_KEY,
@@ -61,7 +68,7 @@ export default defineNuxtConfig({
       }
     },
     plugins: [
-      tailwindcss(),
+      tailwind(),
     ],
   },
   alias: {
@@ -95,15 +102,22 @@ export default defineNuxtConfig({
     plaidSecret: process.env.NUXT_PLAID_SECRET,
     plaidEnv: process.env.NUXT_PLAID_ENV || 'sandbox',
     geminiApiKey: process.env.GEMINI_API_KEY,
+    stripeSecretKey: process.env.STRIPE_SECRET_KEY,
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+    stripePriceStarter: process.env.STRIPE_PRICE_STARTER,
+    stripePriceGrowth: process.env.STRIPE_PRICE_GROWTH,
+    stripePriceScale: process.env.STRIPE_PRICE_SCALE,
     public: {
       firebaseApiKey: process.env.FIREBASE_API_KEY,
       firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN,
       firebaseProjectId: process.env.FIREBASE_PROJECT_ID,
       firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET,
       firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-      firebaseAppId: process.env.FIREBASE_APP_ID
+      firebaseAppId: process.env.FIREBASE_APP_ID,
+      stripePublishableKey: process.env.NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
     }
   }
 })
 
 // Force rebuild
+// Force rebuild Tue Feb 24 02:15:44 PM CST 2026

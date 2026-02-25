@@ -1,12 +1,10 @@
 import { ref, computed } from 'vue';
 import { TimeLog } from '~/models/TimeLog';
 import { useFirestoreRepository } from './useFirestoreRepository';
-import { useTenant } from './useTenant';
 import { useUser } from './useUser';
 import { where, orderBy, limit, type QueryConstraint } from 'firebase/firestore';
 
 export const useTimeTracking = () => {
-    const { tenantId } = useTenant();
     const { user } = useUser();
 
     // Repository
@@ -25,11 +23,10 @@ export const useTimeTracking = () => {
 
     // Initial fetch for active timer
     const init = async () => {
-        if (!user.value || !tenantId.value) return;
+        if (!user.value) return;
 
         // Find if there's an active timer (endTime is null)
         const activeConstraints = [
-            where('tenantId', '==', tenantId.value),
             where('userId', '==', user.value.uid),
             where('endTime', '==', null),
             limit(1)
@@ -44,10 +41,9 @@ export const useTimeTracking = () => {
     const fetchLogs = async (goalId?: string) => {
         isLoading.value = true;
         try {
-            if (!tenantId.value || !user.value) return;
+            if (!user.value) return;
 
             const constraints: QueryConstraint[] = [
-                where('tenantId', '==', tenantId.value),
                 where('userId', '==', user.value.uid),
                 orderBy('startTime', 'desc')
             ];
@@ -77,10 +73,9 @@ export const useTimeTracking = () => {
 
         isLoading.value = true;
         try {
-            if (!tenantId.value || !user.value) throw new Error("No context");
+            if (!user.value) throw new Error("No context");
 
             const newLog = new TimeLog({
-                tenantId: tenantId.value,
                 userId: user.value.uid,
                 goalId: item.type === 'goal' ? item.id : null,
                 taskId: item.type === 'task' ? item.id : null,

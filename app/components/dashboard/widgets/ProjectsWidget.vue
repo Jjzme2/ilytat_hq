@@ -36,22 +36,19 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { useUser, useTenant } from '#imports';
+import { useUser } from '#imports';
 import { useFirestoreRepository } from '~/composables/useFirestoreRepository';
 import { Project } from '~/models/Project';
 import { orderBy, limit, where } from 'firebase/firestore';
 
 const projectRepo = useFirestoreRepository('projects', (data) => new Project(data));
 const activeProjects = ref<Project[]>([]);
-const { tenantId } = useTenant();
-
 const loadProjects = async () => {
     const { user } = useUser();
-    if (!tenantId.value || !user.value?.uid) return;
+    if (!user.value?.uid) return;
     
     try {
          activeProjects.value = await projectRepo.getAll([
-            where('tenantId', '==', tenantId.value),
             where('status', '==', 'active'),
             where('members', 'array-contains', user.value.uid),
             orderBy('updatedAt', 'desc'),
@@ -62,7 +59,7 @@ const loadProjects = async () => {
     }
 };
 
-watch([tenantId, () => useUser().user.value], ([newTenantId, newUser]) => {
-    if (newTenantId && newUser) loadProjects();
+watch(() => useUser().user.value, (newUser) => {
+    if (newUser) loadProjects();
 }, { immediate: true });
 </script>

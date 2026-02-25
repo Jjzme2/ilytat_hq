@@ -9,7 +9,6 @@ export class Quote extends BaseModel {
     userId: string;
     notes: string;
     date: string; // YYYY-MM-DD for ID usually
-    tenantId: string | null;
     projectId: string | null;
 
     constructor(data: any = {}) {
@@ -22,7 +21,6 @@ export class Quote extends BaseModel {
         this.userId = data.userId || 'system';
         this.notes = data.notes || '';
         this.date = data.date || new Date().toISOString().split('T')[0];
-        this.tenantId = data.tenantId || null;
         this.projectId = data.projectId || null;
     }
 
@@ -41,7 +39,6 @@ export class Quote extends BaseModel {
             userId: this.userId,
             notes: this.notes,
             date: this.date,
-            tenantId: this.tenantId,
             projectId: this.projectId,
             isUniversal: this.isUniversal
         };

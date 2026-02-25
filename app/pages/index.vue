@@ -4,11 +4,11 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
       <div>
         <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight mb-2">
-          Control Center
+          Your Office
         </h1>
         <div class="flex items-center gap-2 text-zinc-400">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <p class="text-sm font-medium">System Online. Welcome back, Operator.</p>
+          <p class="text-sm font-medium">{{ greeting }}</p>
         </div>
       </div>
       <div class="flex flex-wrap gap-3 w-full md:w-auto">
@@ -34,6 +34,30 @@
           Quick Action
         </button>
       </div>
+    </div>
+
+    <!-- Quick Actions Bar -->
+    <div class="flex flex-wrap gap-3 mb-8">
+      <NuxtLink to="/projects"
+        class="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl text-sm font-semibold text-zinc-300 hover:text-white transition-all group">
+        <span class="icon-[ph--plus-bold] text-accent-primary group-hover:rotate-90 transition-transform"></span>
+        New Project
+      </NuxtLink>
+      <NuxtLink to="/tasks"
+        class="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl text-sm font-semibold text-zinc-300 hover:text-white transition-all group">
+        <span class="icon-[ph--check-circle-bold] text-emerald-400"></span>
+        View Tasks
+      </NuxtLink>
+      <NuxtLink to="/finance"
+        class="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl text-sm font-semibold text-zinc-300 hover:text-white transition-all group">
+        <span class="icon-[ph--currency-dollar-bold] text-amber-400"></span>
+        Finance
+      </NuxtLink>
+      <NuxtLink to="/schedule"
+        class="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl text-sm font-semibold text-zinc-300 hover:text-white transition-all group">
+        <span class="icon-[ph--calendar-bold] text-blue-400"></span>
+        Schedule
+      </NuxtLink>
     </div>
 
     <!-- Responsive Draggable Grid -->
@@ -117,6 +141,29 @@ const { preferences, loadPreferences, reorderWidgets } = useUserPreferences();
 const showCustomizer = ref(false);
 const isLoading = ref(true);
 const isReorderMode = ref(false);
+
+/**
+ * Time-aware personalized greeting.
+ * Adapts to morning/afternoon/evening and uses the user's first name.
+ */
+const greeting = computed(() => {
+  const hour = new Date().getHours();
+  let timeGreeting = 'Good evening';
+  if (hour < 12) timeGreeting = 'Good morning';
+  else if (hour < 17) timeGreeting = 'Good afternoon';
+
+  const name = preferences.value
+    ? ''
+    : '';
+  
+  // Try to get first name from user store
+  const userStore = useUser();
+  const firstName = userStore.user.value?.displayName?.split(' ')[0] || '';
+  
+  return firstName
+    ? `${timeGreeting}, ${firstName}. Here's your day.`
+    : `${timeGreeting}. Here's your day.`;
+});
 
 // Mobile detection
 const isMobile = ref(false);

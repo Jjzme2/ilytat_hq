@@ -41,25 +41,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useTenant } from '~/composables/useTenant';
+import { useUser } from '#imports';
 import { useFirestoreRepository } from '~/composables/useFirestoreRepository';
 import { Goal } from '~/models/Goal';
 import { where, type QueryConstraint } from 'firebase/firestore';
 
-const { tenantId } = useTenant();
+const { user } = useUser();
 const goals = ref<Goal[]>([]);
 const isLoading = ref(true);
 
 const { getAll } = useFirestoreRepository<Goal>('goals', (data) => new Goal(data));
 
 const fetchGoals = async () => {
-  if (!tenantId.value) return;
+  if (!user.value) return;
   
   try {
     isLoading.value = true;
     const constraints: QueryConstraint[] = [
-      where('tenantId', '==', tenantId.value),
       where('status', 'in', ['not-started', 'in-progress']), // Update to match enum strings likely
     ];
     
@@ -94,7 +92,13 @@ const getStatusColor = (status: string) => {
     }
 };
 
+import { ref, onMounted, watch } from 'vue';
+
 onMounted(() => {
     fetchGoals();
+});
+
+watch(() => user.value, (u) => {
+    if(u) fetchGoals();
 });
 </script>

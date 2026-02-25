@@ -14,36 +14,32 @@ service cloud.firestore {
       return isAuth() && request.auth.uid == userId;
     }
 
-    // Checks if the user belongs to the tenant specified in the document
-    function isTenantMember(tenantId) {
-      return isAuth() && (
-        tenantId == null || 
-        request.auth.token.tenantId == tenantId || 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId
-      );
-    }
-
     // Checks if the user is the owner of the document
     function isDocOwner(resource) {
       return isAuth() && resource.data.ownerId == request.auth.uid;
     }
 
-    // Checks if the document is public to the tenant
-    function isTenantPublic(resource) {
-      return resource.data.access == 'public' && isTenantMember(resource.data.tenantId);
+    // Checks if the user is in the members array of the document
+    function isMember(resource) {
+      return isAuth() && resource.data.members != null && resource.data.members.hasAny([request.auth.uid]);
     }
-    
+
     // Checks if the document is universal (read-only for most)
     function isUniversal(resource) {
         return resource.data.type == 'universal' || resource.data.isUniversal == true;
     }
 
+    // Checks if the document is public
+    function isPublic(resource) {
+      return resource.data.access == 'public';
+    }
+
     // Checks if the user is a super admin
     function isSuper() {
       return isAuth() && (
-        (request.auth.token.keys().hasAny(['roles']) && request.auth.token.roles.toSet().hasAny(['super']) && request.auth.token.tenantId == 'ilytat-hq') || 
+        (request.auth.token.keys().hasAny(['roles']) && request.auth.token.roles.toSet().hasAny(['super'])) || 
         request.auth.token.email == 'admin@ilytat.com' ||
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['super']) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == 'ilytat-hq')
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['super'])
       );
     }
 
@@ -56,7 +52,6 @@ service cloud.firestore {
     }
 
     // Checks if the user has viewer role (read-only access to project data)
-    // Reason: Viewers can observe but not modify project resources
     function isViewer() {
       return isAuth() && (
         (request.auth.token.keys().hasAny(['roles']) && request.auth.token.roles.toSet().hasAny(['viewer'])) || 
@@ -69,44 +64,26 @@ service cloud.firestore {
     // 1. Core Collections (Flattened)
     // ---------------------------------------------------------------
 
-    // Tenants
     match /ai_usage/{docId} {
       allow read: if isAuth() && (
           resource.data.userId == request.auth.uid ||
-          (resource.data.tenantId == request.auth.token.tenantId) ||
           isAdmin() || 
           isSuper()
       );
       allow write: if false; // Only server-side admin SDK can write
     }
 
-    match /tenants/{tenantId} {
-      allow read: if isTenantMember(tenantId) || isSuper();
-      allow write: if isTenantMember(tenantId) || isSuper();
-      
-      match /config/{configId} {
-        allow read: if isTenantMember(tenantId) || isSuper();
-        allow write: if isTenantMember(tenantId) || isSuper();
-      }
-    }
-
     // Projects
     match /projects/{projectId} {
-      // Allow read if user is in members array, or is the owner, or is Super Admin
-      // Backward compatibility: check createdBy if ownerId is missing
-      // Viewers can read but not write
-      allow read: if (resource.data.members.hasAny([request.auth.uid])) 
+      allow read: if isMember(resource)
                   || isOwner(resource.data.ownerId) 
                   || (resource.data.ownerId == null && isOwner(resource.data.createdBy))
-                  || (isTenantMember(resource.data.tenantId) && (isAdmin() || isViewer()))
                   || isSuper();
       
       allow create: if isAuth(); 
       
-      // Update/Delete: Owner, Creator (legacy), Tenant Admin, or Super — NOT viewers
       allow update, delete: if isOwner(resource.data.ownerId) 
                             || (resource.data.ownerId == null && isOwner(resource.data.createdBy))
-                            || (isTenantMember(resource.data.tenantId) && isAdmin()) 
                             || isSuper();
     }
 
@@ -120,56 +97,56 @@ service cloud.firestore {
 
     // Goals (Flattened)
     match /goals/{goalId} {
-      allow read: if isTenantMember(resource.data.tenantId) || isSuper();
-      allow create: if isAuth() && isTenantMember(request.resource.data.tenantId);
-      allow update, delete: if isTenantMember(resource.data.tenantId) || isSuper();
+      allow read: if isOwner(resource.data.createdBy) || isSuper() || (resource.data.projectId != null && get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.members.hasAny([request.auth.uid]));
+      allow create: if isAuth();
+      allow update, delete: if isOwner(resource.data.createdBy) || isSuper();
     }
 
     // Tasks (Flattened)
     match /tasks/{taskId} {
-      allow read: if isTenantMember(resource.data.tenantId) || isSuper();
-      allow create: if isAuth() && isTenantMember(request.resource.data.tenantId);
-      allow update, delete: if isTenantMember(resource.data.tenantId) || isSuper();
+      allow read: if isOwner(resource.data.createdBy) || request.auth.uid == resource.data.assigneeId || isSuper() || (resource.data.projectId != null && get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.members.hasAny([request.auth.uid]));
+      allow create: if isAuth();
+      allow update, delete: if isOwner(resource.data.createdBy) || isSuper();
     }
 
     // Notes (Flattened)
     match /notes/{noteId} {
-      allow read: if isTenantMember(resource.data.tenantId) || isSuper();
-      allow create: if isAuth() && isTenantMember(request.resource.data.tenantId);
-      allow update, delete: if isTenantMember(resource.data.tenantId) || isSuper();
+      allow read: if isOwner(resource.data.createdBy) || isSuper() || (resource.data.projectId != null && get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.members.hasAny([request.auth.uid]));
+      allow create: if isAuth();
+      allow update, delete: if isOwner(resource.data.createdBy) || isSuper();
     }
 
     // Documents
     match /documents/{docId} {
-      allow read: if isDocOwner(resource) || isTenantPublic(resource) || isSuper();
-      allow write: if isDocOwner(resource) || (isTenantMember(resource.data.tenantId) && resource.data.access != 'private') || isSuper();
+      allow read: if isDocOwner(resource) || isMember(resource) || isPublic(resource) || isSuper();
+      allow write: if isDocOwner(resource) || isMember(resource) || isSuper();
       allow create: if isAuth(); // Creating new docs
     }
 
     // Quicklinks (Flattened)
     match /quicklinks/{linkId} {
-      allow read: if isTenantMember(resource.data.tenantId) || isDocOwner(resource) || isTenantPublic(resource) || isSuper();
-      allow create: if isAuth() && isTenantMember(request.resource.data.tenantId);
-      allow update, delete: if isTenantMember(resource.data.tenantId) || isDocOwner(resource) || isSuper();
+      allow read: if isDocOwner(resource) || isPublic(resource) || isSuper() || (resource.data.projectId != null && get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.members.hasAny([request.auth.uid]));
+      allow create: if isAuth();
+      allow update, delete: if isDocOwner(resource) || isSuper();
     }
 
     // Events (Schedule)
     match /events/{eventId} {
-      allow read: if (isTenantMember(resource.data.tenantId) && resource.data.userId == request.auth.uid) || isSuper();
-      allow create: if isAuth() && isTenantMember(request.resource.data.tenantId) && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if (isTenantMember(resource.data.tenantId) && resource.data.userId == request.auth.uid) || isSuper();
+      allow read: if isOwner(resource.data.userId) || isMember(resource) || isSuper();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isOwner(resource.data.userId) || isMember(resource) || isSuper();
     }
 
     // Time Logs
     match /time_logs/{logId} {
-      allow read: if (isTenantMember(resource.data.tenantId) && resource.data.userId == request.auth.uid) || isSuper();
-      allow create: if isAuth() && isTenantMember(request.resource.data.tenantId) && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if (isTenantMember(resource.data.tenantId) && resource.data.userId == request.auth.uid) || isSuper();
+      allow read: if isOwner(resource.data.userId) || isSuper();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isOwner(resource.data.userId) || isSuper();
     }
 
     // Quotes
     match /quotes/{quoteId} {
-      allow read: if isUniversal(resource) || isDocOwner(resource) || isTenantPublic(resource) || isSuper();
+      allow read: if isUniversal(resource) || isDocOwner(resource) || isPublic(resource) || isSuper();
       allow write: if isDocOwner(resource) || isSuper(); // Universal quotes are managed by admins (via Admin SDK)
       allow create: if isAuth();
     }
@@ -188,7 +165,6 @@ service cloud.firestore {
       allow read: if isAuth(); 
       allow write: if isOwner(userId) || isSuper();
       
-
       // Keep inbox nested as it's strictly personal
       match /inbox/{msgId} {
         allow read, write: if isOwner(userId);
@@ -209,37 +185,32 @@ service cloud.firestore {
     // Finance (Flattened, Scoped)
     // ---------------------------------------------------------------
 
-    // Accounts: personal (owner-only), tenant (members read, admin write), project (financial viewers)
+    // Accounts: personal (owner-only), project (financial viewers)
     match /accounts/{accountId} {
       allow read: if isAuth() && (
         resource.data.ownerId == request.auth.uid ||
         (resource.data.financialViewers != null && resource.data.financialViewers.hasAny([request.auth.uid])) ||
-        (resource.data.scope == 'tenant' && isTenantMember(resource.data.tenantId)) ||
         isSuper()
       );
       allow create: if isAuth() && request.resource.data.ownerId == request.auth.uid;
       allow update: if isAuth() && (
         resource.data.ownerId == request.auth.uid ||
-        (resource.data.scope == 'tenant' && isTenantMember(resource.data.tenantId) && isAdmin()) ||
         isSuper()
       );
       allow delete: if resource.data.ownerId == request.auth.uid || isSuper();
     }
 
-    // Transactions: scoped to account owner OR tenant if scoped
+    // Transactions: scoped to account owner
     match /transactions/{txId} {
       allow read: if isAuth() && (
         resource.data.ownerId == request.auth.uid || 
-        (resource.data.scope == 'tenant' && isTenantMember(resource.data.tenantId)) ||
         isSuper()
       );
       allow create: if isAuth() && (
-        request.resource.data.ownerId == request.auth.uid ||
-        (request.resource.data.scope == 'tenant' && isTenantMember(request.resource.data.tenantId))
+        request.resource.data.ownerId == request.auth.uid
       );
       allow update: if isAuth() && (
         resource.data.ownerId == request.auth.uid ||
-        (resource.data.scope == 'tenant' && isTenantMember(resource.data.tenantId) && isAdmin()) ||
         isSuper()
       );
       allow delete: if resource.data.ownerId == request.auth.uid || isSuper();
@@ -255,12 +226,57 @@ service cloud.firestore {
     }
 
     // ---------------------------------------------------------------
-    // 3. System & Shared
+    // 3. Organizations (formerly Tenants / Guilds)
+    // Reason: Users can create one organization to represent their startup.
+    // Members read, owner updates, super deletes.
+    // Collection stays as `tenants` for data continuity.
+    // ---------------------------------------------------------------
+    match /tenants/{tenantId} {
+      // Any authenticated user can read their own organization
+      allow read: if isAuth() && (
+        resource.data.createdBy == request.auth.uid ||
+        resource.data.memberIds.hasAny([request.auth.uid]) ||
+        isSuper()
+      );
+
+      // Any auth user can create an organization (one per user enforced in app logic)
+      allow create: if isAuth() && request.resource.data.createdBy == request.auth.uid;
+
+      // Only the creator or super can update
+      allow update: if isAuth() && (
+        resource.data.createdBy == request.auth.uid ||
+        isSuper()
+      );
+
+      // Only super can delete organizations
+      allow delete: if isSuper();
+
+      // Organization config subcollection (module enable/disable)
+      match /config/{configId} {
+        allow read: if isAuth() && (
+          get(/databases/$(database)/documents/tenants/$(tenantId)).data.createdBy == request.auth.uid ||
+          get(/databases/$(database)/documents/tenants/$(tenantId)).data.memberIds.hasAny([request.auth.uid]) ||
+          isSuper()
+        );
+        allow write: if isAuth() && (
+          get(/databases/$(database)/documents/tenants/$(tenantId)).data.createdBy == request.auth.uid ||
+          isSuper()
+        );
+      }
+
+      // Organization metadata subcollection (counters, etc.)
+      match /metadata/{metaId} {
+        allow read, write: if isAuth() && (
+          get(/databases/$(database)/documents/tenants/$(tenantId)).data.createdBy == request.auth.uid ||
+          isSuper()
+        );
+      }
+    }
+
+    // ---------------------------------------------------------------
+    // 4. System & Shared
     // ---------------------------------------------------------------
     
-    // Messages — Direct messages and system notifications
-    // Reason: Users can read messages they sent or received. Both parties
-    // can update (mark read, reactions). Only sender can delete.
     match /messages/{messageId} {
       allow read: if isAuth() && (
         resource.data.recipientUid == request.auth.uid || 
@@ -273,7 +289,6 @@ service cloud.firestore {
         request.resource.data.senderId == request.auth.uid ||
         isAdmin()
       );
-      // Both sender and recipient can update (e.g., mark as read, add reaction)
       allow update: if isAuth() && (
         resource.data.recipientUid == request.auth.uid || 
         resource.data.senderUid == request.auth.uid || 
@@ -287,8 +302,6 @@ service cloud.firestore {
       );
     }
 
-    // Conversations — Group DM threads between users
-    // Reason: Participants of a conversation can read/update it
     match /conversations/{conversationId} {
       allow read: if isAuth() && resource.data.participants.hasAny([request.auth.uid]);
       allow create: if isAuth() && request.resource.data.participants.hasAny([request.auth.uid]);
@@ -296,9 +309,6 @@ service cloud.firestore {
       allow delete: if isSuper();
     }
 
-    // RBAC — Roles & Permissions
-    // Reason: Admin panel manages roles and permissions. All auth'd users
-    // need read access for client-side role checks. Only admins can write.
     match /roles/{roleId} {
       allow read: if isAuth();
       allow create, update, delete: if isAdmin() || isSuper();
@@ -310,8 +320,7 @@ service cloud.firestore {
     }
 
     match /activity_logs/{logId} {
-       allow read: if isAuth();
-       allow write: if isAuth(); 
+       allow read, write: if isAuth();
     }
 
     match /_lifecycle_ping/{docId} {
@@ -322,22 +331,21 @@ service cloud.firestore {
     // ---------------------------------------------------------------
     // 4. Collection Groups (Recursive Wildcards)
     // ---------------------------------------------------------------
-    // This allows queryAggregation (count) and cross-path queries
     
     match /{path=**}/tasks/{taskId} {
-      allow read: if isTenantMember(resource.data.tenantId) || isSuper(); 
+      allow read: if isOwner(resource.data.createdBy) || request.auth.uid == resource.data.assigneeId || isSuper() || (resource.data.projectId != null && get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.members.hasAny([request.auth.uid]));
     }
 
     match /{path=**}/goals/{goalId} {
-      allow read: if isTenantMember(resource.data.tenantId) || isSuper();
+      allow read: if isOwner(resource.data.createdBy) || isSuper() || (resource.data.projectId != null && get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.members.hasAny([request.auth.uid]));
     }
 
     match /{path=**}/projects/{projectId} {
-      allow read: if isTenantMember(resource.data.tenantId) || isSuper();
+      allow read: if isMember(resource) || isOwner(resource.data.ownerId) || isSuper();
     }
 
     match /{path=**}/documents/{docId} {
-      allow read: if isDocOwner(resource) || isTenantPublic(resource) || isSuper();
+      allow read: if isDocOwner(resource) || isMember(resource) || isPublic(resource) || isSuper();
     }
   }
 }

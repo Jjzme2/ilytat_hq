@@ -17,7 +17,6 @@ import {
 
 export const useNotes = () => {
     const { db, auth } = useFirebase();
-    const { tenantId } = useTenant();
 
     const notes = ref<Note[]>([]);
     const isLoading = ref(false);
@@ -27,11 +26,8 @@ export const useNotes = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            if (!tenantId.value) return;
-
             const q = query(
                 collection(db, 'notes'),
-                where('tenantId', '==', tenantId.value),
                 where('projectId', '==', projectId),
                 orderBy('createdAt', 'desc'),
                 ...constraints
@@ -52,13 +48,10 @@ export const useNotes = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            if (!tenantId.value) throw new Error("No tenant context");
-
             const currentUser = auth?.currentUser;
 
             const rawData = {
                 ...data,
-                tenantId: tenantId.value,
                 projectId: projectId,
                 createdBy: currentUser?.uid || 'system',
                 createdAt: new Date(),

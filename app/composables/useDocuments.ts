@@ -16,7 +16,6 @@ import {
 } from 'firebase/firestore';
 import { useFirestore } from 'vuefire';
 import { useUser } from './useUser';
-import { useTenant } from './useTenant';
 export interface R2File {
     key: string;
     size: number;
@@ -33,7 +32,6 @@ export const useDocuments = () => {
 
     const db = useFirestore();
     const { user } = useUser();
-    const { tenantId } = useTenant();
 
     const documents = ref<DocumentModel[]>([]);
     const currentDocument = ref<DocumentModel | null>(null);
@@ -64,15 +62,12 @@ export const useDocuments = () => {
             );
             promises.push(getDocs(personalQuery));
 
-            // 2. Tenant Public Documents (if tenant exists)
-            if (tenantId.value) {
-                const tenantQuery = query(
-                    docsRef,
-                    where('tenantId', '==', tenantId.value),
-                    where('access', '==', 'public')
-                );
-                promises.push(getDocs(tenantQuery));
-            }
+            // 2. Public Documents
+            const publicQuery = query(
+                docsRef,
+                where('access', '==', 'public')
+            );
+            promises.push(getDocs(publicQuery));
 
             const snapshots = await Promise.all(promises);
             const docMap = new Map<string, DocumentModel>();
@@ -118,16 +113,13 @@ export const useDocuments = () => {
             );
             promises.push(getDocs(personalQuery));
 
-            // 2. Tenant Public Project Documents
-            if (tenantId.value) {
-                const tenantQuery = query(
-                    docsRef,
-                    where('tenantId', '==', tenantId.value),
-                    where('projectId', '==', projectId),
-                    where('access', '==', 'public')
-                );
-                promises.push(getDocs(tenantQuery));
-            }
+            // 2. Public Project Documents
+            const publicQuery = query(
+                docsRef,
+                where('projectId', '==', projectId),
+                where('access', '==', 'public')
+            );
+            promises.push(getDocs(publicQuery));
 
             const snapshots = await Promise.all(promises);
             const docMap = new Map<string, DocumentModel>();
@@ -165,15 +157,8 @@ export const useDocuments = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            // In strict mode, we might need tenantId if the document belongs to a tenant.
-            // foundry/index.vue sets ownerId.
-            // If the user wants documents to be tenant-scoped, we should add tenantId here.
-            // Document model has tenantId | null.
-            const { tenantId } = useTenant(); // Get tenantId here inside the function if possible, or assume it's available
-
             const rawData = {
                 ...data,
-                tenantId: tenantId.value || null,
                 // Default timestamps
                 createdAt: new Date(),
                 updatedAt: new Date()

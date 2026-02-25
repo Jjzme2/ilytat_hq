@@ -224,11 +224,16 @@
                             </div>
 
                             <div class="flex justify-between mt-6">
-                                <button v-if="editingEvent" type="button" @click="handleDeleteRequest"
-                                    class="px-4 py-2 text-sm text-red-500 hover:text-red-400 transition-colors flex items-center gap-1">
-                                    <span class="i-heroicons-trash"></span> Delete
-                                </button>
-                                <div v-else></div> <!-- Spacer -->
+                                <div class="flex gap-2">
+                                    <button v-if="editingEvent" type="button" @click="handleDeleteRequest"
+                                        class="px-3 py-2 text-sm text-red-500 hover:text-red-400 transition-colors flex items-center gap-1">
+                                        <span class="icon-[ph--trash]"></span> Delete
+                                    </button>
+                                    <button v-if="editingEvent" type="button" @click="openShareForm"
+                                        class="px-3 py-2 text-sm text-blue-500 hover:text-blue-400 transition-colors flex items-center gap-1">
+                                        <span class="icon-[ph--share-network]"></span> Share
+                                    </button>
+                                </div>
 
                                 <div class="flex gap-3">
                                     <button type="button" @click="closeModal"
@@ -291,6 +296,17 @@
                 </div>
             </Dialog>
         </ClientOnly>
+
+        <!-- Share Modal -->
+        <ShareModal
+            v-if="editingEvent"
+            v-model:isOpen="showShareModal"
+            itemType="Event"
+            :itemId="editingEvent.id"
+            :members="editingEvent.members || []"
+            @add-member="handleAddEventMember"
+            @remove-member="handleRemoveEventMember"
+        />
     </div>
 </template>
 
@@ -300,6 +316,7 @@ import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, fo
 import { useSpeechRecognition } from '@vueuse/core';
 import Breadcrumbs from '~/components/ui/Breadcrumbs.vue';
 import MonthNavigator from '~/components/ui/MonthNavigator.vue';
+import ShareModal from '~/components/ui/ShareModal.vue';
 
 definePageMeta({
     layout: 'default',
@@ -317,6 +334,8 @@ const showEventModal = ref(false);
 const editingEvent = ref<any>(null);
 const smartInput = ref('');
 const isParsing = ref(false);
+
+const showShareModal = ref(false);
 
 const eventForm = ref({
     title: '',
@@ -595,6 +614,35 @@ const handleSubmit = async () => {
         loadSchedule(); // Refresh to ensure order/content
     } catch (e: any) {
         showError(e.message || 'Failed to save event');
+    }
+};
+
+const openShareForm = () => {
+    showShareModal.value = true;
+};
+
+const handleAddEventMember = async (uid: string) => {
+    if (!editingEvent.value) return;
+    const currentMembers = editingEvent.value.members || [];
+    const newMembers = [...currentMembers, uid];
+    try {
+        await updateEvent(editingEvent.value.id, { members: newMembers });
+        editingEvent.value.members = newMembers;
+        loadSchedule();
+    } catch(e) {
+        console.error("Failed to add member to event", e);
+    }
+};
+
+const handleRemoveEventMember = async (uid: string) => {
+    if (!editingEvent.value) return;
+    const newMembers = (editingEvent.value.members || []).filter((m: string) => m !== uid);
+    try {
+        await updateEvent(editingEvent.value.id, { members: newMembers });
+        editingEvent.value.members = newMembers;
+        loadSchedule();
+    } catch(e) {
+        console.error("Failed to remove member from event", e);
     }
 };
 

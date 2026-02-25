@@ -16,7 +16,7 @@ export abstract class BaseModel<T extends BaseModelData = any> {
         this.updatedAt = this.parseDate(data.updatedAt);
     }
 
-    private parseDate(date: any): Date {
+    protected parseDate(date: any): Date {
         if (!date) return new Date();
         if (date instanceof Date) return date;
         if (typeof date === 'object' && 'seconds' in date) return new Date(date.seconds * 1000);

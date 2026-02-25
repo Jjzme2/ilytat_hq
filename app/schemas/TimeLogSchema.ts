@@ -3,7 +3,6 @@ import { BaseSchema, dateSchema } from './BaseSchema';
 
 export const TimeLogSchema = BaseSchema.extend({
     userId: z.string().min(1, "User ID is required"),
-    tenantId: z.string().min(1, "Tenant ID is required"),
 
     // Target
     goalId: z.string().nullable().default(null),

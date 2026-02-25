@@ -250,9 +250,6 @@ const { generate, isLoading } = useAI();
 const { dev, error: toastError, success: toastSuccess } = useToast();
 const router = useRouter();
 
-// Context
-const { tenantId } = useTenant();
-
 // Actions
 const { createTask } = useTasks();
 const { goals, fetchGoals, createGoal } = useGoals();
@@ -468,8 +465,7 @@ const executeDraft = async (msgIndex: number) => {
     if (!project) {
       const newP = new Project({ 
         name: draft.suggestedProject, 
-        description: 'Created via AI Assistant',
-        tenantId: tenantId.value
+        description: 'Created via AI Assistant'
       });
       project = await createProject(newP);
     }

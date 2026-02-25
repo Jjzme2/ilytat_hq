@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { doc, updateDoc, setDoc } from 'firebase/firestore'
 import { useFirestore, useDocument, useCurrentUser } from 'vuefire'
-import { useTenant } from '~/composables/useTenant'
+import { useOrganization } from '~/composables/useOrganization'
 import { useUserProfile } from '../../composables/useUserProfile'
+import { Logger } from '~/utils/Logger'
 
 const db = useFirestore()
 const user = useCurrentUser()
-const { tenantId } = useTenant()
+const { organizationId: tenantId } = useOrganization()
 const { isAdmin } = useUserProfile()
 
 // Tenant Doc - ensure tenantId is a non-empty string
@@ -38,7 +39,7 @@ const saveTenant = async () => {
     message.value = ''
     try {
         if (!tenantDocRef.value) throw new Error('No tenant document reference found')
-        
+
         // Use setDoc with merge: true to create if missing
         await setDoc(tenantDocRef.value, {
             name: form.name,
@@ -49,7 +50,7 @@ const saveTenant = async () => {
         message.value = 'Tenant updated successfully!'
         setTimeout(() => message.value = '', 3000)
     } catch (e: any) {
-        console.error(e)
+        Logger.error('[AdminTenant] Error updating tenant', e)
         message.value = 'Error updating tenant.'
     } finally {
         loading.value = false

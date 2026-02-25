@@ -3,10 +3,12 @@
         <!-- Header -->
         <div class="flex justify-between items-center">
             <div>
+                <Breadcrumbs
+                    :items="[{ label: 'Home', to: '/', icon: 'i-heroicons-home' }, { label: 'Goals', icon: 'i-heroicons-trophy' }]"
+                    class="mb-2" />
                 <h1 class="text-2xl md:text-3xl font-bold text-white">Goals</h1>
                 <p class="text-zinc-500 mt-1">Strategic objectives across your projects.</p>
             </div>
-            <!-- Future: Add 'New Goal' button here if global creation is supported -->
         </div>
 
         <!-- Goals List -->
@@ -90,6 +92,7 @@ import { useGoals } from '~/composables/useGoals';
 import { useProjects } from '~/composables/useProjects';
 import { useToast } from '@ilytat/notifications';
 import SkeletonLoader from '~/components/ui/SkeletonLoader.vue';
+import Breadcrumbs from '~/components/ui/Breadcrumbs.vue';
 import { onMounted, ref } from 'vue';
 
 definePageMeta({

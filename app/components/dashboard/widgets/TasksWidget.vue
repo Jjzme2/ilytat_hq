@@ -50,27 +50,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
 import { useUser } from '~/composables/useUser';
-import { useTenant } from '~/composables/useTenant';
 import { useFirestoreRepository } from '~/composables/useFirestoreRepository';
 import { Task } from '~/models/Task';
 import { where, orderBy, limit, type QueryConstraint } from 'firebase/firestore';
 
 const { user } = useUser();
-const { tenantId } = useTenant();
 const tasks = ref<Task[]>([]);
 const isLoading = ref(true);
 
 const { getAll, update } = useFirestoreRepository<any>('tasks', (data) => new Task(data));
 
 const fetchTasks = async () => {
-  if (!user.value || !tenantId.value) return;
+  if (!user.value) return;
   
   try {
     isLoading.value = true;
     const constraints: QueryConstraint[] = [
-      where('tenantId', '==', tenantId.value),
       where('assigneeId', '==', user.value.uid),
       where('status', '!=', 'completed'),
        // Firestore limitation: cannot filter by status!=completed AND orderBy different field easily without index.
@@ -110,7 +106,13 @@ const formatDate = (date: Date | string | null) => {
     return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
+import { ref, onMounted, watch } from 'vue';
+
 onMounted(() => {
     fetchTasks();
+});
+
+watch(() => user.value, (u) => {
+    if(u) fetchTasks();
 });
 </script>

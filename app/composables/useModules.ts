@@ -1,8 +1,8 @@
 /**
- * useModules — Composable for tenant-level module configuration
+ * useModules — Composable for organization-level module configuration
  * 
  * Intent: Allows staff/super users to enable/disable feature modules
- * per tenant. Each tenant has a config doc at tenants/{tenantId}/config/modules
+ * per organization. Each org has a config doc at tenants/{orgId}/config/modules
  * that stores which modules are active.
  * 
  * Default modules: finance, documents, inbox, schedule, projects, themes
@@ -11,13 +11,14 @@
 import { ref, computed, watch } from 'vue'
 import { useCurrentUser } from 'vuefire'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { ALL_MODULES, type ModuleDefinition } from '../config/modules'
+import { ALL_MODULES, isPlanSufficient, type ModuleDefinition } from '../config/modules'
 
 export type { ModuleDefinition }
 
 export const useModules = () => {
     const user = useCurrentUser()
     const { db } = useFirebase()
+    const { organization } = useOrganization()
     const enabledModuleIds = ref<string[]>(ALL_MODULES.map(m => m.id))
     const isLoading = ref(true)
 
@@ -27,10 +28,10 @@ export const useModules = () => {
 
         try {
             const tokenResult = await user.value.getIdTokenResult()
-            const tenantId = (tokenResult.claims.tenantId as string) || null
+            const orgId = (tokenResult.claims.tenantId as string) || (tokenResult.claims.organizationId as string) || null
 
-            if (!tenantId) {
-                // No tenant — all modules enabled
+            if (!orgId) {
+                // No organization — all modules enabled
                 enabledModuleIds.value = ALL_MODULES.map(m => m.id)
                 isLoading.value = false
                 return
@@ -43,7 +44,7 @@ export const useModules = () => {
                 return
             }
 
-            const configRef = doc(db, 'tenants', tenantId, 'config', 'modules')
+            const configRef = doc(db, 'tenants', orgId, 'config', 'modules')
             const snap = await getDoc(configRef)
 
             if (snap.exists()) {
@@ -66,10 +67,10 @@ export const useModules = () => {
         if (!user.value || !db) return
 
         const tokenResult = await user.value.getIdTokenResult()
-        const tenantId = (tokenResult.claims.tenantId as string) || null
+        const orgId = (tokenResult.claims.tenantId as string) || (tokenResult.claims.organizationId as string) || null
         const roles = (tokenResult.claims.roles as string[]) || []
 
-        if (!tenantId) return
+        if (!orgId) return
         if (!roles.includes('staff') && !roles.includes('super') && !roles.includes('admin')) {
             throw new Error('Insufficient permissions to modify module config')
         }
@@ -78,13 +79,24 @@ export const useModules = () => {
         const coreIds = ALL_MODULES.filter(m => !m.canDisable).map(m => m.id)
         const finalIds = [...new Set([...coreIds, ...moduleIds])]
 
-        const configRef = doc(db, 'tenants', tenantId, 'config', 'modules')
+        const configRef = doc(db, 'tenants', orgId, 'config', 'modules')
         await setDoc(configRef, { enabled: finalIds, updatedAt: new Date() }, { merge: true })
         enabledModuleIds.value = finalIds
     }
 
     const isModuleEnabled = (moduleId: string): boolean => {
-        return enabledModuleIds.value.includes(moduleId)
+        // Check if module is in the enabled list
+        const isEnabled = enabledModuleIds.value.includes(moduleId)
+        if (!isEnabled) return false
+
+        // Check plan tier gating
+        const moduleDef = ALL_MODULES.find(m => m.id === moduleId)
+        if (moduleDef?.requiredPlan) {
+            const userPlan = (organization.value as any)?.plan || 'free'
+            return isPlanSufficient(userPlan, moduleDef.requiredPlan)
+        }
+
+        return true
     }
 
     const enabledModules = computed(() => {

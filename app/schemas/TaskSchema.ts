@@ -14,11 +14,11 @@ export const TaskSchema = BaseSchema.extend({
 
     assigneeId: z.string().nullable().default(null),
     createdBy: z.string().default(''),
+    ownerId: z.string().default(''),
     goalId: z.string().nullable().default(null),
     parentTaskId: z.string().nullable().default(null),
 
     tags: z.array(z.string()).default([]),
-    tenantId: z.string().min(1, "Tenant ID is required"),
     projectId: z.string().min(1, "Project ID is required")
 });
 

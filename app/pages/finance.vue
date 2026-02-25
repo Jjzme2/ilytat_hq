@@ -24,11 +24,6 @@
                         :class="viewScope === 'personal' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-white'">
                         Personal
                     </button>
-                    <button v-if="isTenantMember" @click="setScope('tenant')"
-                        class="px-3 py-1.5 rounded-md text-sm font-medium transition-all"
-                        :class="viewScope === 'tenant' ? 'bg-accent-primary text-white shadow-sm' : 'text-zinc-400 hover:text-white'">
-                        Company
-                    </button>
                 </div>
 
                 <!-- Date Range -->
@@ -337,7 +332,6 @@
                                             <select v-model="newAccount.scope"
                                                 class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-accent-primary">
                                                 <option value="personal">Personal</option>
-                                                <option value="tenant">Tenant</option>
                                             </select>
                                         </div>
                                     </div>
@@ -391,8 +385,6 @@
 </template>
 
 <script setup lang="ts">
-// import { useFinance } from '~/ilytat_common_packages/packages/ilytat-finance/composables/useFinance'; // Auto-imported
-import { useTenant } from '~/composables/useTenant';
 import { useUser } from '~/composables/useUser';
 import { useToast } from '@ilytat/notifications';
 import FinanceKPIs from '~/components/finance/FinanceKPIs.vue';
@@ -430,7 +422,6 @@ const {
     addAccount
 } = useFinance();
 
-const { isTenantMember } = useTenant();
 const { user } = useUser();
 const { success, error: toastError } = useToast();
 
@@ -493,9 +484,7 @@ const analyzeProfitability = async () => {
 
         const response = await generate({
             prompt,
-            // modelId: 'gemini-2.0-flash-exp', // Removed to use user preference
-            feature: 'finance-analysis',
-            tenantId: viewScope.value === 'tenant' ? (user.value?.tenantId || 'unknown') : 'personal'
+            feature: 'finance-analysis'
         });
 
         if (response) {
@@ -528,8 +517,7 @@ Period: ${dateRange.value}`;
 
         const response = await generate({
             prompt,
-            feature: 'finance-plan',
-            tenantId: viewScope.value === 'tenant' ? (user.value?.tenantId || 'unknown') : 'personal'
+            feature: 'finance-plan'
         });
 
         analysisResult.value = response?.content || 'Failed to generate plan.';
@@ -561,7 +549,6 @@ const submitAccount = async () => {
             currency: newAccount.currency,
             scope: newAccount.scope,
             ownerId: user.value?.uid || '',
-            tenantId: newAccount.scope === 'tenant' ? (user.value?.tenantId || '') : undefined,
             institution: newAccount.institution || undefined,
             financialViewers: []
         });

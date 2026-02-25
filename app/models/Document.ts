@@ -13,7 +13,7 @@ export class Document extends BaseModel<DocumentData> {
     size: number;
     metadata: Record<string, any>;
     projectId: string | null;
-    tenantId: string | null;
+    members: string[];
     ownerId: string;
 
     constructor(data: any = {}) {
@@ -29,7 +29,7 @@ export class Document extends BaseModel<DocumentData> {
         this.size = parsed.size;
         this.metadata = parsed.metadata || {};
         this.projectId = parsed.projectId;
-        this.tenantId = parsed.tenantId;
+        this.members = parsed.members;
         this.ownerId = parsed.ownerId;
     }
 
@@ -49,7 +49,7 @@ export class Document extends BaseModel<DocumentData> {
             size: this.size,
             metadata: this.metadata,
             projectId: this.projectId,
-            tenantId: this.tenantId,
+            members: this.members,
             ownerId: this.ownerId
         };
     }

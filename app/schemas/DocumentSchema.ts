@@ -13,7 +13,7 @@ export const DocumentSchema = BaseSchema.extend({
     size: z.number().default(0),
     metadata: z.record(z.string(), z.any()).default({}),
     projectId: z.string().nullable().default(null),
-    tenantId: z.string().nullable().default(null), // Nullable for compatibility? Or should be required?
+    members: z.array(z.string()).default([]),
     ownerId: z.string().default(''),
 });
 

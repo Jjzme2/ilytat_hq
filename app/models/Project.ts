@@ -16,7 +16,6 @@ export class Project extends BaseModel<ProjectData> {
     status: ProjectStatus;
     association: 'personal' | 'company';
     priority: Priority;
-    tenantId: string;
     createdBy: string;
     ownerId: string;
     roles: Record<string, string>;
@@ -36,7 +35,6 @@ export class Project extends BaseModel<ProjectData> {
         this.status = parsed.status;
         this.association = parsed.association;
         this.priority = parsed.priority;
-        this.tenantId = parsed.tenantId;
         this.createdBy = parsed.createdBy;
         // Fallback: If ownerId is missing but createdBy exists, assume creator is owner
         this.ownerId = parsed.ownerId || parsed.createdBy;
@@ -61,7 +59,6 @@ export class Project extends BaseModel<ProjectData> {
             status: this.status,
             association: this.association,
             priority: this.priority,
-            tenantId: this.tenantId,
             createdBy: this.createdBy,
             ownerId: this.ownerId,
             roles: this.roles,

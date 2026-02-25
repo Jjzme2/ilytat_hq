@@ -9,7 +9,6 @@ import { useProjects } from './useProjects';
 
 export const useUserInsights = () => {
     const { user } = useUser();
-    const { tenantId } = useTenant();
     const { generate, isLoading: isAIThinking } = useAI();
 
     // Actions
@@ -31,12 +30,11 @@ export const useUserInsights = () => {
     const isLoading = ref(false);
 
     const fetchInsightsHistory = async () => {
-        if (!user.value?.uid || !tenantId.value) return;
+        if (!user.value?.uid) return;
         isLoading.value = true;
         try {
             const results = await getAll([
                 where('userId', '==', user.value.uid),
-                where('tenantId', '==', tenantId.value),
                 orderBy('createdAt', 'desc')
             ]);
             insightsHistory.value = results;
@@ -49,12 +47,11 @@ export const useUserInsights = () => {
     };
 
     const fetchLatestInsight = async () => {
-        if (!user.value?.uid || !tenantId.value) return;
+        if (!user.value?.uid) return;
         isLoading.value = true;
         try {
             const results = await getAll([
                 where('userId', '==', user.value.uid),
-                where('tenantId', '==', tenantId.value),
                 orderBy('createdAt', 'desc'),
                 limit(1)
             ]);
@@ -74,7 +71,7 @@ export const useUserInsights = () => {
     };
 
     const generateInsights = async () => {
-        if (!user.value?.uid || !tenantId.value) return;
+        if (!user.value?.uid) return;
         isLoading.value = true;
 
         try {
@@ -102,7 +99,6 @@ export const useUserInsights = () => {
                 // 3. Create Insight Record
                 const newInsight = new UserInsight({
                     userId: user.value.uid,
-                    tenantId: tenantId.value,
                     summary: response.content,
                     focusAreas: [], // Could be extracted with more regex if needed
                     productivityScore: 85, // Placeholder or extracted

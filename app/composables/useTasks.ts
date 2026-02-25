@@ -4,7 +4,6 @@ import { AppError } from '~/utils/AppError';
 import { Logger } from '~/utils/Logger';
 
 export const useTasks = () => {
-    const { tenantId } = useTenant();
 
     const {
         getAll,
@@ -34,10 +33,7 @@ export const useTasks = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            if (!tenantId.value) return;
-
             const finalConstraints = [
-                where('tenantId', '==', tenantId.value),
                 orderBy('createdAt', 'desc'),
                 ...constraints
             ];
@@ -63,17 +59,13 @@ export const useTasks = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            if (!tenantId.value) throw new AppError("No tenant context", "NO_TENANT", 400);
-
             // Prepare data for Task constructor
             // We need to ensure we pass a plain object that Task constructor accepts
             // Task constructor validates via Zod.
             // We merge defaults here or let Logic handle it.
-            // TaskSchema requires projectId and tenantId.
             const taskInput = {
                 ...data,
                 projectId,
-                tenantId: tenantId.value,
                 // Ensure other fields are present if needed, but defaults in Schema handle most
             };
 
@@ -123,10 +115,10 @@ export const useTasks = () => {
         let previousTask: Task | undefined;
 
         if (index !== -1) {
-            previousTask = tasks.value[index];
+            previousTask = tasks.value[index] as Task;
             const existingData = previousTask.toJSON();
             // 2. Optimistic Update
-            tasks.value[index] = new Task({ ...existingData, ...updates });
+            tasks.value[index] = new Task({ ...existingData, ...updates } as any);
         }
 
         try {

@@ -19,7 +19,6 @@ import { useToast } from '@ilytat/notifications';
 
 export const useGoals = () => {
     const { db } = useFirebase();
-    const { tenantId } = useTenant();
     // Verify db is defined found via useFirebase or handle it
     if (!db) throw new AppError("Firebase not initialized", "FIREBASE_ERROR", 500);
 
@@ -31,10 +30,7 @@ export const useGoals = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            if (!tenantId.value) return;
-
-            const baseConstraints = [
-                where('tenantId', '==', tenantId.value),
+            const baseConstraints: QueryConstraint[] = [
                 orderBy('createdAt', 'desc')
             ];
 
@@ -63,8 +59,6 @@ export const useGoals = () => {
         isLoading.value = true;
         error.value = null;
         try {
-            if (!tenantId.value) throw new Error("No tenant context");
-
             // 1. Generate client-side ID
             const tempId = doc(collection(db, 'goals')).id;
 
@@ -72,7 +66,6 @@ export const useGoals = () => {
             const rawData = {
                 ...data,
                 id: tempId,
-                tenantId: tenantId.value,
                 projectId: projectId,
                 createdAt: new Date(),
                 updatedAt: new Date()

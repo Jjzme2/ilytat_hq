@@ -11,7 +11,7 @@ export class Event extends BaseModel<EventData> {
     location: string;
     recurrenceRule: string | null;
     userId: string;
-    tenantId: string;
+    members: string[];
     projectId: string | null;
     color: string;
     type: 'event';
@@ -28,7 +28,7 @@ export class Event extends BaseModel<EventData> {
         this.location = parsed.location;
         this.recurrenceRule = parsed.recurrenceRule;
         this.userId = parsed.userId;
-        this.tenantId = parsed.tenantId;
+        this.members = parsed.members;
         this.projectId = parsed.projectId;
         this.color = parsed.color;
         this.type = parsed.type as 'event';
@@ -41,9 +41,12 @@ export class Event extends BaseModel<EventData> {
         return Math.floor(diff / 1000 / 60);
     }
 
-    toJSON(): EventData & { id: string; createdAt: Date; updatedAt: Date } {
+    override toJSON(): EventData {
         return {
             ...super.toJSON(),
+            id: this.id as string,
+            createdAt: this.createdAt,
+            updatedAt: this.updatedAt,
             title: this.title,
             description: this.description,
             start: this.start,
@@ -52,7 +55,7 @@ export class Event extends BaseModel<EventData> {
             location: this.location,
             recurrenceRule: this.recurrenceRule,
             userId: this.userId,
-            tenantId: this.tenantId,
+            members: this.members,
             projectId: this.projectId,
             color: this.color,
             type: this.type

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { Task } from '../Task'
 
 describe('Task', () => {
-    const req = { title: 'Test Task', tenantId: 'tenant-1', projectId: 'project-1' }
+    const req = { title: 'Test Task', projectId: 'project-1' }
 
     it('sets correct defaults', () => {
         const t = new Task({ ...req })
@@ -17,8 +17,8 @@ describe('Task', () => {
         expect(t.goalId).toBeNull()
         expect(t.parentTaskId).toBeNull()
         expect(t.tags).toEqual([])
-        expect(t.tenantId).toBe('tenant-1')
         expect(t.projectId).toBe('project-1')
+        expect(t.ownerId).toBe('')
     })
 
     it('constructs from full data', () => {
@@ -35,7 +35,6 @@ describe('Task', () => {
             goalId: 'g1',
             parentTaskId: null,
             tags: ['auth', 'security'],
-            tenantId: 'tenant-1',
             projectId: 'project-1'
         })
 
@@ -51,6 +50,16 @@ describe('Task', () => {
     it('handles subtask via parentTaskId', () => {
         const sub = new Task({ ...req, title: 'Sub', parentTaskId: 'parent-1' })
         expect(sub.parentTaskId).toBe('parent-1')
+    })
+
+    it('sets ownerId from createdBy as fallback', () => {
+        const t = new Task({ ...req, createdBy: 'user-1' })
+        expect(t.ownerId).toBe('user-1')
+    })
+
+    it('uses explicit ownerId when provided', () => {
+        const t = new Task({ ...req, createdBy: 'user-1', ownerId: 'user-2' })
+        expect(t.ownerId).toBe('user-2')
     })
 
     it('throws on non-array tags', () => {
@@ -83,5 +92,6 @@ describe('Task', () => {
         expect(json.tags).toEqual(['x'])
         expect(json.goalId).toBe('g1')
         expect(json.parentTaskId).toBe('p1')
+        expect(json.ownerId).toBe('u1')
     })
 })

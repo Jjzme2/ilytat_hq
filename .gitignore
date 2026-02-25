@@ -24,7 +24,7 @@ logs
 !.env.example
 
 # Firebase Admin credentials
-service-account.json
+app/server/keys/*
 
 .dev/*
 AI/Summaries/*

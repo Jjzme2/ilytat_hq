@@ -2,7 +2,6 @@ import { computed, type Ref } from 'vue';
 import { doc } from 'firebase/firestore';
 import { useFirestore, useDocument } from 'vuefire';
 // import { quicklaunch as globalQuickLaunch } from '~/config/quicklaunch';
-import { useTenant } from './useTenant';
 
 /**
  * useQuickLaunch Composable
@@ -16,8 +15,6 @@ import { useTenant } from './useTenant';
  */
 export const useQuickLaunch = (projectId?: string | null | Ref<string | undefined>) => {
     const db = useFirestore();
-    const { tenant } = useTenant();
-
     // Fetch project document if projectId is provided
     const projectDocRef = computed(() => {
         const id = typeof projectId === 'string' ? projectId : projectId?.value;
@@ -36,10 +33,6 @@ export const useQuickLaunch = (projectId?: string | null | Ref<string | undefine
         // If imported, use it:
         // let aggregatedLinks = { ...globalQuickLaunch };
 
-        // 1. Tenant Overrides
-        if (tenant.value?.quickLaunch) {
-            aggregatedLinks = { ...aggregatedLinks, ...tenant.value.quickLaunch };
-        }
 
         // 2. Project Overrides
         if (project.value?.quickLaunch) {
