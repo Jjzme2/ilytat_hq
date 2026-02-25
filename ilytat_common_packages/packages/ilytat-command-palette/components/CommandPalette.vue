@@ -2,7 +2,7 @@
   <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 scale-95"
     enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-100 ease-in"
     leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-    <div v-if="isOpen" class="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4">
+    <div v-if="isOpen" class="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4" role="dialog" aria-modal="true" aria-label="Command Palette">
       <!-- Backdrop -->
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="close"></div>
 
@@ -13,26 +13,39 @@
         <!-- Search Input -->
         <div class="relative border-b border-border-color">
           <svg class="pointer-events-none absolute left-4 top-4 h-6 w-6 text-text-tertiary"
-            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path fill-rule="evenodd"
               d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
               clip-rule="evenodd" />
           </svg>
           <input ref="searchInput" v-model="searchQuery" type="text"
             class="h-14 w-full bg-transparent border-0 pl-12 pr-4 text-text-primary placeholder-text-tertiary focus:ring-0 sm:text-sm"
-            placeholder="Type a command or search..." autofocus @keydown.down.prevent="onArrowDown"
+            placeholder="Type a command or search..." autofocus
+            aria-label="Search commands"
+            aria-controls="command-results"
+            :aria-activedescendant="activeCommandId"
+            @keydown.down.prevent="onArrowDown"
             @keydown.up.prevent="onArrowUp" @keydown.enter.prevent="onEnter" @keydown.esc.prevent="close" />
         </div>
 
         <!-- Command List -->
-        <div v-if="filteredCommands.length > 0" class="max-h-96 overflow-y-auto py-2 scroll-py-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border-color/50 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-border-color">
+        <div v-if="filteredCommands.length > 0"
+             id="command-results"
+             role="listbox"
+             aria-label="Commands"
+             class="max-h-96 overflow-y-auto py-2 scroll-py-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border-color/50 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-border-color">
           <div v-for="(groupCommands, groupName) in groupedCommands" :key="groupName">
             <div v-if="groupName !== 'general'"
-              class="px-4 py-2 text-xs font-semibold text-text-tertiary uppercase tracking-wider">
+              class="px-4 py-2 text-xs font-semibold text-text-tertiary uppercase tracking-wider" role="presentation">
               {{ groupName }}
             </div>
 
-            <div v-for="command in groupCommands" :key="command.id" :class="[
+            <div v-for="command in groupCommands"
+                 :key="command.id"
+                 :id="command.id"
+                 role="option"
+                 :aria-selected="isCommandActive(command)"
+                 :class="[
               'cursor-pointer select-none px-4 py-3 flex items-center justify-between mx-2 rounded-lg transition-colors',
               isCommandActive(command) ? 'bg-accent-primary text-white' : 'text-text-primary hover:bg-secondary'
             ]" @click="executeCommand(command)" @mouseenter="setActiveIndexByCommand(command)">
@@ -80,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue';
 import { useCommandPalette } from '../composables/useCommandPalette';
 
 const {
@@ -93,6 +106,11 @@ const {
 } = useCommandPalette();
 
 const searchInput = ref<HTMLInputElement | null>(null);
+
+const activeCommandId = computed(() => {
+  const cmd = filteredCommands.value[activeIndex.value];
+  return cmd ? cmd.id : undefined;
+});
 
 // Highlight helpers
 const isCommandActive = (command: any) => {
