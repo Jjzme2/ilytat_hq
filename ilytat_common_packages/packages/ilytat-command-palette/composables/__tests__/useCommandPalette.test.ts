@@ -44,6 +44,18 @@ describe('useCommandPalette', () => {
         expect(commands.value).toHaveLength(1)
     })
 
+    it('registerCommands adds multiple commands and ignores duplicates', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        const cmds = [
+            { id: '1', label: 'One', action: () => { } },
+            { id: '2', label: 'Two', action: () => { } },
+            { id: '1', label: 'One Duplicate', action: () => { } }
+        ]
+        registerCommands(cmds)
+        expect(commands.value).toHaveLength(2)
+        expect(commands.value.map(c => c.id)).toEqual(['1', '2'])
+    })
+
     it('filteredCommands filters by label', () => {
         const { registerCommand, filteredCommands, searchQuery } = useCommandPalette()
         registerCommand({ id: 'a', label: 'Dashboard', action: () => { } })
