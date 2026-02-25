@@ -8,37 +8,76 @@
  * Intent: DRY — every admin API route needs token verification.
  */
 
-import { initializeApp, getApps, cert, getApp } from 'firebase-admin/app'
+import { initializeApp, getApps, cert, getApp, deleteApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 import { getHeader, createError } from 'h3'
 import type { H3Event } from 'h3'
 
+/** Module-level flag: once we've validated/fixed the app, skip re-checking. */
+let _adminValidated = false
+
 /**
- * Ensure Firebase Admin SDK is initialized.
- * Safe to call multiple times — only initializes once.
+ * Ensure Firebase Admin SDK is initialized with VALID credentials.
+ *
+ * WHY the complexity? nuxt-vuefire initializes the [DEFAULT] admin app
+ * at BUILD TIME using the private key from nuxt.config.ts. If that key
+ * was malformed (e.g. wrapped in literal double-quotes from Heroku),
+ * the app exists but every Firestore call fails with:
+ *   "DECODER routines::unsupported"
+ *
+ * This function detects the bad key, DELETES VueFire's broken app,
+ * and re-initializes with the sanitized key from process.env.
  */
 export const ensureAdminInitialized = () => {
-    const apps = getApps()
-    if (apps.length) {
-        const appNames = apps.map(app => app.name)
-        console.log('[Firebase Admin] Apps already exist:', appNames)
-        if (appNames.includes('[DEFAULT]')) {
-            return getApp()
-        }
+    // Fast path: already validated on a previous call.
+    if (_adminValidated && getApps().length) {
+        return getApp()
     }
 
-    const privateKey = (process.env.FIREBASE_ADMIN_PRIVATE_KEY || '')
-        .replace(/^"|"$/g, '')   // Strip surrounding quotes (Heroku paste artifact)
+    // Sanitize the private key from the runtime environment.
+    const rawKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY || ''
+    const privateKey = rawKey
+        .replace(/^"|"$/g, '')    // Strip surrounding quotes (Heroku paste artifact)
         .replace(/\\n/g, '\n')
+
     const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL
     const projectId = process.env.FIREBASE_PROJECT_ID
 
+    // Diagnostic logging (safe — only format info, never the key itself)
+    console.log('[Firebase Admin] Key diagnostics:', {
+        rawKeyLength: rawKey.length,
+        cleanedKeyLength: privateKey.length,
+        startsWithQuote: rawKey.startsWith('"'),
+        endsWithQuote: rawKey.endsWith('"'),
+        startsWithBegin: privateKey.trimStart().startsWith('-----BEGIN'),
+        endsWithEnd: privateKey.trimEnd().endsWith('-----'),
+        hasClientEmail: !!clientEmail,
+        hasProjectId: !!projectId,
+    })
+
+    // If VueFire already created a [DEFAULT] app AND the raw key has quotes,
+    // the existing app is broken — delete it so we can re-init with the clean key.
+    const existingApps = getApps()
+    if (existingApps.length) {
+        const defaultApp = existingApps.find(a => a.name === '[DEFAULT]')
+        if (defaultApp && rawKey.startsWith('"')) {
+            console.warn('[Firebase Admin] Detected quoted private key — deleting broken VueFire app and re-initializing.')
+            try { deleteApp(defaultApp) } catch { /* ignore */ }
+        } else if (defaultApp) {
+            // Key looks fine, VueFire's app should be usable.
+            _adminValidated = true
+            return defaultApp
+        }
+    }
+
     if (!privateKey || !clientEmail || !projectId) {
-        console.warn('[Firebase Admin] Missing manual credentials, relying on GOOGLE_APPLICATION_CREDENTIALS')
+        console.warn('[Firebase Admin] Missing credentials, relying on GOOGLE_APPLICATION_CREDENTIALS')
         try {
-            return initializeApp()
+            const app = initializeApp()
+            _adminValidated = true
+            return app
         } catch (e: any) {
-            console.error('[Firebase Admin] Manual credentials missing AND default init failed:', e.message)
+            console.error('[Firebase Admin] Default init failed:', e.message)
             throw createError({
                 statusCode: 500,
                 statusMessage: 'Firebase Admin credentials not configured'
@@ -47,16 +86,19 @@ export const ensureAdminInitialized = () => {
     }
 
     try {
-        return initializeApp({
+        const app = initializeApp({
             credential: cert({ projectId, clientEmail, privateKey })
         })
+        _adminValidated = true
+        console.log('[Firebase Admin] ✓ Initialized with sanitized credentials.')
+        return app
     } catch (e: any) {
         if (e.code === 'app/duplicate-app') {
+            _adminValidated = true
             return getApp()
-        } else {
-            console.error('[Firebase Admin] Initialization failed:', e)
-            throw e
         }
+        console.error('[Firebase Admin] Initialization failed:', e)
+        throw e
     }
 }
 
