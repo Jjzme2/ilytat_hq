@@ -49,9 +49,10 @@
                     <h2 class="text-lg font-semibold text-white mb-4">Organization</h2>
                     <div class="space-y-4">
                          <div>
-                            <label class="block text-sm font-medium text-zinc-400 mb-1">Company Logo URL</label>
+                            <label :for="logoInputId" class="block text-sm font-medium text-zinc-400 mb-1">Company Logo URL</label>
                             <div class="flex gap-2">
                                 <input 
+                                    :id="logoInputId"
                                     v-model="logoInput" 
                                     type="text" 
                                     placeholder="https://example.com/logo.png"
@@ -83,11 +84,14 @@
                     <div class="space-y-4">
                         <div class="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
                             <div>
-                                <h3 class="text-sm font-medium text-white">Dark Mode</h3>
+                                <h3 :id="darkModeLabelId" class="text-sm font-medium text-white">Dark Mode</h3>
                                 <p class="text-xs text-zinc-400">Toggle application theme</p>
                             </div>
                             <button 
                                 @click="themeStore.toggleTheme"
+                                role="switch"
+                                :aria-checked="themeStore.isDark"
+                                :aria-labelledby="darkModeLabelId"
                                 class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-zinc-900"
                                 :class="themeStore.isDark ? 'bg-accent-primary' : 'bg-zinc-700'"
                             >
@@ -99,10 +103,15 @@
                         </div>
                          <div class="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
                             <div>
-                                <h3 class="text-sm font-medium text-white">Notifications</h3>
+                                <h3 :id="notificationsLabelId" class="text-sm font-medium text-white">Notifications</h3>
                                 <p class="text-xs text-zinc-400">Receive system alerts</p>
                             </div>
-                            <button class="relative inline-flex h-6 w-11 items-center rounded-full bg-accent-primary transition-colors">
+                            <button
+                                role="switch"
+                                aria-checked="true"
+                                :aria-labelledby="notificationsLabelId"
+                                class="relative inline-flex h-6 w-11 items-center rounded-full bg-accent-primary transition-colors"
+                            >
                                 <span class="inline-block h-4 w-4 transform translate-x-6 rounded-full bg-white transition-transform" />
                             </button>
                         </div>
@@ -131,6 +140,10 @@ const { success, error: toastError } = useToast();
 
 const logoInput = ref('');
 const isSaving = ref(false);
+
+const logoInputId = useId();
+const darkModeLabelId = useId();
+const notificationsLabelId = useId();
 
 // Initialize input with current logo
 watch(() => tenant.value?.logo, (newLogo) => {
