@@ -57,6 +57,25 @@ export const useCommandPalette = () => {
         }
     };
 
+    /**
+     * Batch registration of commands to minimize reactivity updates.
+     * Only triggers one update for the entire batch.
+     */
+    const registerCommands = (newCommands: Command[]) => {
+        const uniqueCommands: Command[] = [];
+
+        for (const cmd of newCommands) {
+            if (!commandIds.has(cmd.id)) {
+                commandIds.add(cmd.id);
+                uniqueCommands.push(cmd);
+            }
+        }
+
+        if (uniqueCommands.length > 0) {
+            commands.value.push(...uniqueCommands);
+        }
+    };
+
     const registerGroup = (group: CommandGroup) => {
         // Prevent duplicates with O(1) lookup
         if (!groupIds.has(group.id)) {
@@ -122,6 +141,7 @@ export const useCommandPalette = () => {
         close,
         toggle,
         registerCommand,
+        registerCommands,
         registerGroup,
         clearCommandsByGroup,
         setActiveIndex,
