@@ -75,6 +75,65 @@ export const useCommandPalette = () => {
         });
     };
 
+    /**
+     * Batch register commands.
+     * Reduces reactivity overhead compared to loop + registerCommand.
+     */
+    const registerCommands = (newCommands: Command[]) => {
+        const toAdd: Command[] = [];
+        newCommands.forEach(cmd => {
+            if (!commandIds.has(cmd.id)) {
+                commandIds.add(cmd.id);
+                toAdd.push(cmd);
+            }
+        });
+
+        if (toAdd.length > 0) {
+            commands.value.push(...toAdd);
+        }
+    };
+
+    /**
+     * Remove commands based on a predicate.
+     * Efficiently updates the commands list and ID set.
+     */
+    const removeCommands = (predicate: (cmd: Command) => boolean) => {
+        let changed = false;
+        const newCommands = commands.value.filter(c => {
+            if (predicate(c)) {
+                commandIds.delete(c.id);
+                changed = true;
+                return false;
+            }
+            return true;
+        });
+
+        if (changed) {
+            commands.value = newCommands;
+        }
+    };
+
+    /**
+     * Atomically remove and add commands in a single reactive update.
+     */
+    const updateCommands = (predicate: (cmd: Command) => boolean, newCommands: Command[]) => {
+        // 1. Filter out commands to remove
+        const kept = commands.value.filter(c => {
+            if (predicate(c)) {
+                commandIds.delete(c.id);
+                return false;
+            }
+            return true;
+        });
+
+        // 2. Identify new commands to add
+        const toAdd = newCommands.filter(c => !commandIds.has(c.id));
+        toAdd.forEach(c => commandIds.add(c.id));
+
+        // 3. Update state once
+        commands.value = [...kept, ...toAdd];
+    };
+
     // For testing/reset purposes
     const clearAllCommands = () => {
         commands.value = [];
@@ -122,6 +181,9 @@ export const useCommandPalette = () => {
         close,
         toggle,
         registerCommand,
+        registerCommands,
+        removeCommands,
+        updateCommands,
         registerGroup,
         clearCommandsByGroup,
         setActiveIndex,
