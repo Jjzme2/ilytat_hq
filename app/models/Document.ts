@@ -15,6 +15,7 @@ export class Document extends BaseModel<DocumentData> {
     projectId: string | null;
     members: string[];
     ownerId: string;
+    access: 'personal' | 'organization' | 'individual' | 'public';
 
     constructor(data: any = {}) {
         const parsed = DocumentSchema.parse(data);
@@ -31,6 +32,7 @@ export class Document extends BaseModel<DocumentData> {
         this.projectId = parsed.projectId;
         this.members = parsed.members;
         this.ownerId = parsed.ownerId;
+        this.access = parsed.access;
     }
 
     override toJSON(): DocumentData {
@@ -50,7 +52,8 @@ export class Document extends BaseModel<DocumentData> {
             metadata: this.metadata,
             projectId: this.projectId,
             members: this.members,
-            ownerId: this.ownerId
+            ownerId: this.ownerId,
+            access: this.access
         };
     }
 
@@ -76,5 +79,19 @@ export class Document extends BaseModel<DocumentData> {
             case DocumentType.NOTE: return 'icon-[ph--note] text-emerald-400';
             default: return 'icon-[ph--file] text-zinc-400';
         }
+    }
+
+    get accessIcon(): string {
+        switch (this.access) {
+            case 'public': return 'icon-[ph--globe-bold]';
+            case 'organization': return 'icon-[ph--buildings-bold]';
+            case 'individual': return 'icon-[ph--users-three-bold]';
+            case 'personal': return 'icon-[ph--lock-key-bold]';
+            default: return 'icon-[ph--lock-bold]';
+        }
+    }
+
+    get accessLabel(): string {
+        return this.access.charAt(0).toUpperCase() + this.access.slice(1);
     }
 }

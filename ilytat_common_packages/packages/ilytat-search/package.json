@@ -1,0 +1,10 @@
+{
+    "name": "@ilytat/search",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Collection-agnostic search and filtering engine for ILYTAT applications",
+    "main": "index.ts",
+    "dependencies": {
+        "vue": "^3.5.0"
+    }
+}

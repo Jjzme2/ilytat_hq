@@ -69,6 +69,21 @@ export const useDocuments = () => {
             );
             promises.push(getDocs(publicQuery));
 
+            // 3. Organization Documents
+            const orgQuery = query(
+                docsRef,
+                where('access', '==', 'organization')
+            );
+            promises.push(getDocs(orgQuery));
+
+            // 4. Individual Access (if user is in members array)
+            const individualQuery = query(
+                docsRef,
+                where('access', '==', 'individual'),
+                where('members', 'array-contains', user.value.uid)
+            );
+            promises.push(getDocs(individualQuery));
+
             const snapshots = await Promise.all(promises);
             const docMap = new Map<string, DocumentModel>();
 
@@ -120,6 +135,23 @@ export const useDocuments = () => {
                 where('access', '==', 'public')
             );
             promises.push(getDocs(publicQuery));
+
+            // 3. Organization Project Documents
+            const orgQuery = query(
+                docsRef,
+                where('projectId', '==', projectId),
+                where('access', '==', 'organization')
+            );
+            promises.push(getDocs(orgQuery));
+
+            // 4. Individual Project Access
+            const individualQuery = query(
+                docsRef,
+                where('projectId', '==', projectId),
+                where('access', '==', 'individual'),
+                where('members', 'array-contains', user.value.uid)
+            );
+            promises.push(getDocs(individualQuery));
 
             const snapshots = await Promise.all(promises);
             const docMap = new Map<string, DocumentModel>();

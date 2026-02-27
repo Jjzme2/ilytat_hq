@@ -109,6 +109,36 @@
           </div>
         </section>
 
+        <!-- Workspace Section -->
+        <section class="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 space-y-5">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="icon-[ph--folder-notch-bold] text-accent-primary text-lg"></span>
+            <h2 class="text-lg font-bold text-white">Workspace</h2>
+          </div>
+
+          <div class="space-y-4">
+            <div class="space-y-1.5">
+              <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                Project Directory <span class="text-zinc-600 normal-case">(optional)</span>
+              </label>
+              <input v-model="form.directoryPath" type="text"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-accent-primary transition-all font-mono text-sm"
+                placeholder="e.g. ~/Projects/my-startup" />
+              <p class="text-zinc-600 text-xs">The local folder path where your project lives.</p>
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                Machine / PC Name <span class="text-zinc-600 normal-case">(optional)</span>
+              </label>
+              <input v-model="form.machineName" type="text"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-accent-primary transition-all text-sm"
+                placeholder="e.g. JJ-Desktop" />
+              <p class="text-zinc-600 text-xs">The PC or device associated with this workspace.</p>
+            </div>
+          </div>
+        </section>
+
         <!-- Actions -->
         <div class="flex items-center justify-between">
           <p v-if="statusMessage" class="text-sm font-medium animate-pulse"
@@ -164,7 +194,9 @@ const form = reactive({
   name: '',
   domain: '',
   logo: '',
-  missionStatement: ''
+  missionStatement: '',
+  directoryPath: '',
+  machineName: ''
 })
 
 const isCreating = ref(false)
@@ -194,6 +226,8 @@ const createTenant = async () => {
       domain: form.domain,
       logo: form.logo,
       missionStatement: form.missionStatement,
+      directoryPath: form.directoryPath,
+      machineName: form.machineName,
       pillars: [],
       coreValues: [],
       createdBy: user.value.uid,

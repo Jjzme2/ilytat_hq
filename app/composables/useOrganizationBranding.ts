@@ -34,12 +34,24 @@ export const useOrganizationBranding = () => {
     /** Full branded title for the browser tab */
     const brandTitle = computed(() => `${brandName.value} HQ`)
 
+    /** SEO description — org mission statement or generic fallback */
+    const brandDescription = computed(() =>
+        organization.value?.seoDescription ||
+        organization.value?.missionStatement ||
+        'Digital Product Studio Operating System — Manage projects, documents, finances, and team operations from a single premium dashboard.'
+    )
+
+    /** Search keywords */
+    const brandKeywords = computed(() => organization.value?.keywords || '')
+
     return {
         brandName,
         brandInitials,
         brandLogo,
         brandTagline,
         brandTitle,
+        brandDescription,
+        brandKeywords,
         isBrandingLoading: organizationPending
     }
 }

@@ -20,7 +20,12 @@ export const ProjectSchema = BaseSchema.extend({
     progress: z.number().min(0).max(100).default(0),
     purpose: z.string().default('General'),
     quickLaunch: z.record(z.string(), z.string()).default({}),
-    members: z.array(z.string()).default([])
+    members: z.array(z.string()).default([]),
+
+    /** Optional local project directory path (e.g. ~/Projects/my-startup) */
+    directoryPath: z.string().default(''),
+    /** Optional associated PC/device name (e.g. JJ-Desktop) */
+    machineName: z.string().default('')
 });
 
 

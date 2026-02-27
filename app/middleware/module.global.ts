@@ -2,6 +2,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
     // We only care about client-side navigation for module gating to avoid SSR issues with auth state
     if (import.meta.server) return
 
+    // Wait for user profile to be fully loaded before checking org membership.
+    // Without this, organizationId is empty on cold load → perpetual /tenant-setup redirect.
+    const { ensureUserIsReady } = useUser()
+    await ensureUserIsReady()
+
     const { allModules } = useModules()
 
     // Check if the route matches any module's route

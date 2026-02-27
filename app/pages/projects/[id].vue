@@ -566,6 +566,22 @@
                                     class="w-full accent-blue-500" />
                             </div>
 
+                            <div class="border-t border-white/5 pt-4 space-y-4">
+                                <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Workspace Settings</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-zinc-400 mb-1">Directory Path</label>
+                                        <input v-model="editForm.directoryPath" type="text" placeholder="/home/user/project"
+                                            class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-blue-500 font-mono" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-zinc-400 mb-1">Machine Name/PC</label>
+                                        <input v-model="editForm.machineName" type="text" placeholder="Dev-Station-01"
+                                            class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-blue-500 font-mono" />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="flex justify-end gap-3 mt-6">
                                 <button type="button" @click="isEditModalOpen = false"
                                     class="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">
@@ -688,7 +704,9 @@ const editForm = ref({
     purpose: '',
     startDate: '',
     deadline: '',
-    progress: 0
+    progress: 0,
+    directoryPath: '',
+    machineName: ''
 });
 
 // --- Tab Config ---
@@ -798,7 +816,9 @@ const initEditForm = () => {
         purpose: currentProject.value.purpose,
         startDate: currentProject.value.startDate ? (new Date(currentProject.value.startDate).toISOString().split('T')[0] as string) : '',
         deadline: currentProject.value.deadline ? (new Date(currentProject.value.deadline).toISOString().split('T')[0] as string) : '',
-        progress: currentProject.value.progress
+        progress: currentProject.value.progress || 0,
+        directoryPath: currentProject.value.directoryPath || '',
+        machineName: currentProject.value.machineName || ''
     };
 };
 
@@ -819,7 +839,9 @@ const handleUpdate = async () => {
             purpose: editForm.value.purpose,
             startDate: editForm.value.startDate ? new Date(editForm.value.startDate) : null,
             deadline: editForm.value.deadline ? new Date(editForm.value.deadline) : null,
-            progress: editForm.value.progress
+            progress: editForm.value.progress,
+            directoryPath: editForm.value.directoryPath,
+            machineName: editForm.value.machineName
         });
         isEditModalOpen.value = false;
         toastSuccess('Project updated');

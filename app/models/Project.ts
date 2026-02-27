@@ -27,6 +27,11 @@ export class Project extends BaseModel<ProjectData> {
     quickLaunch: Record<string, string>;
     members: string[];
 
+    /** Optional local project directory path (e.g. ~/Projects/my-startup) */
+    directoryPath: string;
+    /** Optional associated PC/device name (e.g. JJ-Desktop) */
+    machineName: string;
+
     constructor(data: any = {}) {
         const parsed = ProjectSchema.parse(data);
         super(parsed);
@@ -46,6 +51,8 @@ export class Project extends BaseModel<ProjectData> {
         this.purpose = parsed.purpose;
         this.quickLaunch = parsed.quickLaunch as Record<string, string>;
         this.members = parsed.members;
+        this.directoryPath = parsed.directoryPath;
+        this.machineName = parsed.machineName;
     }
 
     override toJSON(): ProjectData {
@@ -68,7 +75,9 @@ export class Project extends BaseModel<ProjectData> {
             progress: this.progress,
             purpose: this.purpose,
             quickLaunch: this.quickLaunch as Record<string, string>,
-            members: this.members
+            members: this.members,
+            directoryPath: this.directoryPath,
+            machineName: this.machineName
         };
     }
 

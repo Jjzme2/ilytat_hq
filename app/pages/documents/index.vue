@@ -93,6 +93,28 @@
                                             <option :value="DocumentStatus.PUBLISHED">Published</option>
                                             <option :value="DocumentStatus.ARCHIVED">Archived</option>
                                         </select>
+                                        <select v-model="newDocAccess"
+                                            class="bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500">
+                                            <option value="personal">Personal (Private)</option>
+                                            <option value="organization">Organization</option>
+                                            <option value="public">Public</option>
+                                            <option value="individual">Individual (Select members)</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Individual member selection (if individual access selected) -->
+                                    <div v-if="newDocAccess === 'individual'" class="space-y-2">
+                                        <label class="text-[10px] text-zinc-500 uppercase tracking-wider">Permitted Members</label>
+                                        <div class="flex flex-wrap gap-2 p-3 bg-black/20 border border-white/10 rounded-xl min-h-[44px]">
+                                            <div v-for="uid in newDocMembers" :key="uid" 
+                                                class="flex items-center gap-1.5 px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded-md text-[10px] border border-indigo-500/30">
+                                                <span>{{ getUserName(uid) }}</span>
+                                                <button type="button" @click="toggleMember(uid)" class="hover:text-white">
+                                                    <span class="icon-[ph--x-bold]"></span>
+                                                </button>
+                                            </div>
+                                            <span v-if="newDocMembers.length === 0" class="text-xs text-zinc-600 italic">No members selected. Add them via Share later or select now.</span>
+                                        </div>
                                     </div>
                                     <textarea v-model="newDocContent" rows="10" placeholder="Document content..."
                                         class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500 font-mono"></textarea>
@@ -210,6 +232,10 @@
                             <div class="flex items-center gap-2">
                                 <span :class="['text-[10px] px-1.5 py-0.5 rounded', doc.statusColor]">{{
                                     doc.formattedStatus }}</span>
+                                <div class="flex items-center gap-1 text-[10px] text-zinc-500">
+                                    <span :class="doc.accessIcon" class="text-xs"></span>
+                                    <span>{{ doc.accessLabel }}</span>
+                                </div>
                                 <span class="text-[10px] text-zinc-600">{{ formatDate(doc.createdAt) }}</span>
                             </div>
                         </div>
@@ -455,6 +481,10 @@
                             <div class="flex items-center gap-2 mt-1">
                                 <span :class="['text-[10px] px-1.5 py-0.5 rounded', viewingDocument.statusColor]">{{
                                     viewingDocument.formattedStatus }}</span>
+                                <div class="flex items-center gap-1 text-[10px] text-zinc-400">
+                                    <span :class="viewingDocument.accessIcon" class="text-xs"></span>
+                                    <span>{{ viewingDocument.accessLabel }}</span>
+                                </div>
                                 <span class="text-[10px] text-zinc-500">{{ capitalize(viewingDocument.type) }}</span>
                                 <span class="text-[10px] text-zinc-600">{{ formatDate(viewingDocument.createdAt)
                                 }}</span>
@@ -619,6 +649,9 @@ const filteredDocuments = computed(() => {
                 typeIcon: 'icon-[ph--plus-circle-bold] text-indigo-400',
                 statusColor: 'bg-indigo-500/20 text-indigo-300',
                 formattedStatus: 'New',
+                accessIcon: 'icon-[ph--star-bold]',
+                accessLabel: 'Template',
+                access: 'public'
             }));
 
             return [...templateDocs, ...matchingDocs];
@@ -635,7 +668,21 @@ const filteredDocuments = computed(() => {
 const newDocTitle = ref('');
 const newDocType = ref<DocumentType>(DocumentType.NOTE);
 const newDocStatus = ref<DocumentStatus>(DocumentStatus.DRAFT);
+const newDocAccess = ref<'personal' | 'organization' | 'individual' | 'public'>('personal');
+const newDocMembers = ref<string[]>([]);
 const newDocContent = ref('');
+
+const getUserName = (uid: string) => {
+    // Helper to get name from organization members or cache
+    const member = organization.value?.members?.find((m: any) => m.uid === uid);
+    return member?.displayName || member?.email || uid;
+};
+
+const toggleMember = (uid: string) => {
+    const idx = newDocMembers.value.indexOf(uid);
+    if (idx === -1) newDocMembers.value.push(uid);
+    else newDocMembers.value.splice(idx, 1);
+};
 
 // Tabs config
 const tabs = computed(() => [
@@ -670,7 +717,7 @@ const handleAddDocMember = async (uid: string) => {
 
 const handleRemoveDocMember = async (uid: string) => {
     if (!documentToShare.value) return;
-    const newMembers = (documentToShare.value.members || []).filter((m: string) => m !== uid);
+    const newMembers = (documentToShare.value.members || []).filter((m: any) => m !== uid);
     try {
         await updateDocument(documentToShare.value.id, { members: newMembers });
         documentToShare.value.members = newMembers;
@@ -686,6 +733,8 @@ const resetForm = () => {
     newDocContent.value = '';
     newDocType.value = DocumentType.NOTE;
     newDocStatus.value = DocumentStatus.DRAFT;
+    newDocAccess.value = 'personal';
+    newDocMembers.value = [];
     newDocMetadata.value = {};
     showDocForm.value = false;
     isEditMode.value = false;
@@ -703,6 +752,8 @@ const handleCreateOrUpdateDocument = async () => {
                 content: newDocContent.value,
                 type: newDocType.value as any,
                 status: newDocStatus.value as any,
+                access: newDocAccess.value,
+                members: newDocMembers.value,
                 metadata: newDocMetadata.value
             });
             success('Document updated');
@@ -713,6 +764,8 @@ const handleCreateOrUpdateDocument = async () => {
                 content: newDocContent.value,
                 type: newDocType.value,
                 status: newDocStatus.value,
+                access: newDocAccess.value,
+                members: newDocMembers.value,
                 ownerId: currentUser.value?.uid || '',
                 metadata: newDocMetadata.value
             });
@@ -740,6 +793,8 @@ const openEditForm = (doc: any) => {
     newDocContent.value = doc.content;
     newDocType.value = doc.type;
     newDocStatus.value = doc.status;
+    newDocAccess.value = doc.access || 'personal';
+    newDocMembers.value = [...(doc.members || [])];
     newDocMetadata.value = { ...(doc.metadata || {}) };
 
     editingDocId.value = doc.id;

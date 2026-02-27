@@ -10,6 +10,8 @@ describe('Organization', () => {
         expect(org.plan).toBe('free')
         expect(org.memberIds).toEqual([])
         expect(org.createdBy).toBe('')
+        expect(org.directoryPath).toBe('')
+        expect(org.machineName).toBe('')
         expect(org.stripeCustomerId).toBe('')
         expect(org.subscriptionStatus).toBe('none')
         expect(org.maxMembers).toBe(2)
@@ -26,6 +28,8 @@ describe('Organization', () => {
             plan: 'pro',
             memberIds: ['u1', 'u2'],
             createdBy: 'u1',
+            directoryPath: '~/Projects/ilytat',
+            machineName: 'JJ-Desktop',
             stripeCustomerId: 'cus_123',
             subscriptionStatus: 'active',
             maxMembers: 10,
@@ -39,6 +43,8 @@ describe('Organization', () => {
         expect(org.plan).toBe('pro')
         expect(org.memberIds).toEqual(['u1', 'u2'])
         expect(org.createdBy).toBe('u1')
+        expect(org.directoryPath).toBe('~/Projects/ilytat')
+        expect(org.machineName).toBe('JJ-Desktop')
         expect(org.subscriptionStatus).toBe('active')
         expect(org.maxMembers).toBe(10)
     })
@@ -47,6 +53,8 @@ describe('Organization', () => {
         const json = new Organization({
             name: 'Test', domain: 'd.com', plan: 'enterprise',
             memberIds: ['u1'], createdBy: 'u1',
+            directoryPath: '/home/user/project',
+            machineName: 'dev-machine',
             missionStatement: 'mission', pillars: ['p1'], coreValues: ['c1']
         }).toJSON()
 
@@ -54,6 +62,8 @@ describe('Organization', () => {
         expect(json.plan).toBe('enterprise')
         expect(json.memberIds).toEqual(['u1'])
         expect(json.createdBy).toBe('u1')
+        expect(json.directoryPath).toBe('/home/user/project')
+        expect(json.machineName).toBe('dev-machine')
         expect(json.missionStatement).toBe('mission')
     })
 })

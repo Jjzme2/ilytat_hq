@@ -19,7 +19,9 @@ export default defineNuxtConfig({
     './ilytat_common_packages/packages/ilytat-finance',
     './ilytat_common_packages/packages/ilytat-logger',
     './ilytat_common_packages/packages/ilytat-theme',
-    './ilytat_common_packages/packages/ilytat-ai-tracking'
+    './ilytat_common_packages/packages/ilytat-ai-tracking',
+    './ilytat_common_packages/packages/ilytat-seo',
+    './ilytat_common_packages/packages/ilytat-search'
   ],
   future: {
     compatibilityVersion: 4,

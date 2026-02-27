@@ -143,6 +143,20 @@
           </div>
         </div>
 
+        <div class="space-y-1.5">
+          <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest">SEO Description</label>
+          <textarea v-model="form.seoDescription" rows="2"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-accent-primary transition-all text-sm"
+            placeholder="Search engine optimized description for your dashboard..."></textarea>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest">Meta Keywords (Comma separated)</label>
+          <input v-model="form.keywords" type="text"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-accent-primary transition-all text-sm"
+            placeholder="startup, productivity, dashboard..." />
+        </div>
+
         <div class="flex justify-end gap-3 pt-2">
           <span v-if="statusMessage" class="text-sm font-medium self-center"
             :class="statusMessage.includes('Error') ? 'text-red-400' : 'text-emerald-400'">
@@ -265,7 +279,9 @@ const form = reactive({
   name: '',
   domain: '',
   logo: '',
-  missionStatement: ''
+  missionStatement: '',
+  seoDescription: '',
+  keywords: ''
 })
 
 const isSaving = ref(false)
@@ -312,6 +328,8 @@ watch(organization, (t: any) => {
     form.domain = t.domain || ''
     form.logo = t.logo || ''
     form.missionStatement = t.missionStatement || ''
+    form.seoDescription = t.seoDescription || ''
+    form.keywords = t.keywords || ''
   }
 }, { immediate: true })
 
@@ -327,6 +345,8 @@ const saveSettings = async () => {
       domain: form.domain,
       logo: form.logo,
       missionStatement: form.missionStatement,
+      seoDescription: form.seoDescription,
+      keywords: form.keywords,
       updatedAt: new Date().toISOString()
     })
     Logger.info('[Organization] Settings saved', { organizationId: organizationId.value })

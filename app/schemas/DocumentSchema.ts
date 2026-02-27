@@ -15,6 +15,7 @@ export const DocumentSchema = BaseSchema.extend({
     projectId: z.string().nullable().default(null),
     members: z.array(z.string()).default([]),
     ownerId: z.string().default(''),
+    access: z.enum(['personal', 'organization', 'individual', 'public']).default('personal'),
 });
 
 export type DocumentData = z.infer<typeof DocumentSchema>;

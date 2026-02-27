@@ -25,6 +25,11 @@ export class Organization extends BaseModel {
 
     createdBy: string;
 
+    /** Optional local project directory path (e.g. ~/Projects/my-startup) */
+    directoryPath: string;
+    /** Optional associated PC/device name (e.g. JJ-Desktop) */
+    machineName: string;
+
     // Stripe subscription fields
     stripeCustomerId: string;
     stripeSubscriptionId: string;
@@ -44,6 +49,8 @@ export class Organization extends BaseModel {
         this.pillars = Array.isArray(data.pillars) ? data.pillars : [];
         this.coreValues = Array.isArray(data.coreValues) ? data.coreValues : [];
         this.createdBy = data.createdBy || '';
+        this.directoryPath = data.directoryPath || '';
+        this.machineName = data.machineName || '';
         this.stripeCustomerId = data.stripeCustomerId || '';
         this.stripeSubscriptionId = data.stripeSubscriptionId || '';
         this.subscriptionStatus = data.subscriptionStatus || 'none';
@@ -64,6 +71,8 @@ export class Organization extends BaseModel {
             coreValues: this.coreValues,
             filesUrl: this.filesUrl,
             createdBy: this.createdBy,
+            directoryPath: this.directoryPath,
+            machineName: this.machineName,
             stripeCustomerId: this.stripeCustomerId,
             stripeSubscriptionId: this.stripeSubscriptionId,
             subscriptionStatus: this.subscriptionStatus,

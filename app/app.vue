@@ -24,8 +24,16 @@ import { AdminAdapterKey } from '@admin/types/AdminAdapter'
 const { initTheme } = useIlytatTheme();
 const { user } = useUser();
 const { startMonitoring, stopMonitoring } = useSessionTimeout();
-const { brandName } = useOrganizationBranding();
+const { brandName, brandTitle, brandDescription, brandLogo, brandKeywords } = useOrganizationBranding();
 provide(AdminAdapterKey, new FirebaseAdminAdapter())
+
+// Dynamic SEO — switches from ILYTAT HQ defaults to org branding when loaded
+useSeo({
+  siteName: brandTitle,
+  description: brandDescription,
+  image: brandLogo,
+  keywords: brandKeywords
+})
 
 const isAppReady = ref(false);
 

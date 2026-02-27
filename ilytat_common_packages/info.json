@@ -1,0 +1,114 @@
+{
+    "metadata": {
+        "version": "1.0.0",
+        "license": "UNLICENSED",
+        "last_update": "2026-02-27",
+        "nuxt_compatibility": ">=3.0.0",
+        "node_compatibility": ">=18.0.0"
+    },
+    "name": "ilytat_common_packages",
+    "description": "Modular Nuxt layer packages and shared utilities for ILYTAT HQ — the Digital Product Studio Operating System.",
+    "author": "ILYTAT LLC",
+    "repository": "Jjzme2/ilytat_hq",
+    "packages": {
+        "nuxt_layers": {
+            "description": "Nuxt layer packages auto-imported via extends[] in nuxt.config.ts. Provide composables, components, and server utilities.",
+            "items": {
+                "@ilytat/admin-panel": {
+                    "path": "packages/ilytat-admin-panel",
+                    "description": "Admin dashboard with adapter-based backend abstraction",
+                    "type": "nuxt-layer"
+                },
+                "@ilytat/ai-tracking": {
+                    "path": "packages/ilytat-ai-tracking",
+                    "description": "AI feature usage tracking and Gemini integration",
+                    "type": "nuxt-layer"
+                },
+                "@ilytat/animations": {
+                    "path": "packages/ilytat-animations",
+                    "description": "Weighted animation utility (splash screens, transitions)",
+                    "type": "nuxt-layer"
+                },
+                "@ilytat/command-palette": {
+                    "path": "packages/ilytat-command-palette",
+                    "description": "Global ⌘K command palette for quick navigation and actions",
+                    "type": "nuxt-layer"
+                },
+                "@ilytat/finance": {
+                    "path": "packages/ilytat-finance",
+                    "description": "Financial tracking, Plaid integration, and transaction management",
+                    "type": "nuxt-layer"
+                },
+                "@ilytat/logger": {
+                    "path": "packages/ilytat-logger",
+                    "description": "Structured logging system with dev/prod modes",
+                    "type": "nuxt-layer"
+                },
+                "@ilytat/notifications": {
+                    "path": "packages/ilytat-notifications",
+                    "description": "Toast notification system with position, duration, and type support",
+                    "type": "nuxt-layer"
+                },
+                "@ilytat/theme": {
+                    "path": "packages/ilytat-theme",
+                    "description": "Theme engine with premium presets, CSS variable system, and persistence",
+                    "type": "nuxt-layer"
+                },
+                "@ilytat/search": {
+                    "path": "packages/ilytat-search",
+                    "description": "Collection-agnostic search and filtering engine with weighted relevance scoring",
+                    "type": "nuxt-layer",
+                    "status": "active"
+                },
+                "@ilytat/seo": {
+                    "path": "packages/ilytat-seo",
+                    "description": "Dynamic org-aware SEO meta management with automatic branding switching and keywords support",
+                    "type": "nuxt-layer",
+                    "status": "active"
+                }
+            }
+        },
+        "standalone": {
+            "description": "Non-layer packages consumed via direct import or alias.",
+            "items": {
+                "@ilytat/common": {
+                    "path": "packages/ilytat-common",
+                    "description": "Shared data services, API client, and config",
+                    "type": "standalone"
+                },
+                "@ilytat/composables": {
+                    "path": "packages/ilytat-composables",
+                    "description": "Reusable Vue composables (useDevice, useEventListener, useR2Bucket)",
+                    "type": "standalone"
+                },
+                "@ilytat/messaging": {
+                    "path": "packages/ilytat-messaging",
+                    "description": "Real-time messaging components and composables",
+                    "type": "standalone"
+                },
+                "@ilytat/utils": {
+                    "path": "packages/ilytat-utils",
+                    "description": "Universal framework-agnostic utilities",
+                    "type": "standalone"
+                },
+                "@ilytat/data-sync": {
+                    "path": "packages/ilytat-data-sync",
+                    "description": "Offline-first data synchronization (IndexedDB + Firestore)",
+                    "type": "standalone",
+                    "status": "active"
+                }
+            }
+        }
+    },
+    "conventions": {
+        "naming": "@ilytat/{package-name} for npm scope, ilytat-{package-name} for directory",
+        "structure_layer": "nuxt.config.ts + composables/ + components/ + index.ts",
+        "structure_standalone": "package.json + src/ + index.ts",
+        "testing": "Vitest unit tests in composables/__tests__/ or src/__tests__/",
+        "exports": "Barrel re-export via index.ts at package root",
+        "metadata": {
+            "project": "directoryPath (string, opt), machineName (string, opt)",
+            "document": "access (personal|organization|individual|public), members (string[])"
+        }
+    }
+}
