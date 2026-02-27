@@ -22,9 +22,10 @@
                  <!-- Search -->
                  <div class="p-4 border-b border-white/5">
                      <div class="relative">
-                         <span class="absolute left-3 top-2.5 i-ph-magnifying-glass text-zinc-500"></span>
+                         <span class="absolute left-3 top-2.5 i-ph-magnifying-glass text-zinc-500" aria-hidden="true"></span>
                          <input 
                             type="text" 
+                            aria-label="Search messages"
                             placeholder="Search messages..." 
                             class="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors"
                         />
@@ -34,7 +35,7 @@
                  <!-- List -->
                  <div class="flex-1 overflow-y-auto scrollbar-thin">
                      <!-- Loading State -->
-                     <div v-if="loading" class="p-4 text-center text-zinc-500">
+                     <div v-if="loading" class="p-4 text-center text-zinc-500" role="status">
                          Loading messages...
                      </div>
                      <!-- Empty State -->
@@ -42,13 +43,15 @@
                          No messages found.
                      </div>
                      <!-- Message Items -->
-                     <div 
+                     <button
                         v-else
                         v-for="message in messages" 
                         :key="message.id"
                         @click="selectMessage(message)"
-                        class="p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group"
+                        type="button"
+                        class="w-full text-left p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group focus:outline-none focus:bg-white/5 focus:ring-1 focus:ring-inset focus:ring-blue-500"
                         :class="{'bg-blue-500/5 border-l-2 border-l-blue-500': selectedMessage?.id === message.id}"
+                        :aria-current="selectedMessage?.id === message.id ? 'true' : undefined"
                      >
                         <div class="flex justify-between items-start mb-1">
                             <span class="font-medium text-zinc-200 text-sm">{{ message.from || 'System' }}</span>
@@ -59,7 +62,7 @@
                         <p class="text-xs text-zinc-500 line-clamp-2 mt-1">
                             {{ message.body }}
                         </p>
-                     </div>
+                     </button>
                  </div>
             </div>
 
@@ -78,11 +81,11 @@
                                 </div>
                             </div>
                             <div class="flex gap-2 text-zinc-500">
-                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Archive">
-                                    <span class="i-ph-archive"></span>
+                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Archive" aria-label="Archive message">
+                                    <span class="i-ph-archive" aria-hidden="true"></span>
                                 </button>
-                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Delete">
-                                    <span class="i-ph-trash"></span>
+                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Delete" aria-label="Delete message">
+                                    <span class="i-ph-trash" aria-hidden="true"></span>
                                 </button>
                             </div>
                         </div>
