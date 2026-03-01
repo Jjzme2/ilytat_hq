@@ -34,7 +34,7 @@
       <!-- Right: Theme Toggle + Profile Badge -->
       <div class="flex items-center gap-3 shrink-0">
         <button @click="themeStore.toggleTheme"
-          class="p-1.5 rounded-lg hover:bg-secondary text-text-secondary transition-colors" title="Toggle Theme">
+          class="p-1.5 rounded-lg hover:bg-secondary text-text-secondary transition-colors" title="Toggle Theme" aria-label="Toggle Theme">
           <svg v-if="themeStore.isDark" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
             viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
