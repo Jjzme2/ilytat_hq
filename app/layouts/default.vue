@@ -20,6 +20,7 @@
 
       <!-- Center: Search / Command Palette Trigger -->
       <button @click="openCommandPalette"
+        aria-label="Search or jump to... (Open Command Palette)"
         class="flex items-center gap-2 px-3 py-1.5 text-sm text-text-tertiary hover:text-text-secondary bg-secondary hover:bg-secondary/80 border border-border rounded-lg transition-colors max-w-xs w-full md:w-72">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24"
           stroke="currentColor">
@@ -34,6 +35,7 @@
       <!-- Right: Theme Toggle + Profile Badge -->
       <div class="flex items-center gap-3 shrink-0">
         <button @click="themeStore.toggleTheme"
+          aria-label="Toggle Theme"
           class="p-1.5 rounded-lg hover:bg-secondary text-text-secondary transition-colors" title="Toggle Theme">
           <svg v-if="themeStore.isDark" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
             viewBox="0 0 24 24" stroke="currentColor">
