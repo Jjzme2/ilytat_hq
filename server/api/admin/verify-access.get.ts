@@ -12,21 +12,12 @@ import { defineEventHandler } from 'h3'
 import { verifyAdminAccess } from '../../utils/adminAuth'
 
 export default defineEventHandler(async (event) => {
-    try {
-        const decoded = await verifyAdminAccess(event)
-        return {
-            access: true,
-            verifiedAt: new Date().toISOString(),
-            role: 'admin',
-            uid: decoded.uid
-        }
-    } catch {
-        // Fallback: grant access if Firebase Admin isn't configured
-        // (local dev without service account credentials)
-        return {
-            access: true,
-            verifiedAt: new Date().toISOString(),
-            role: 'admin'
-        }
+    // SECURITY: Strictly enforce admin access, no fail-open
+    const decoded = await verifyAdminAccess(event)
+    return {
+        access: true,
+        verifiedAt: new Date().toISOString(),
+        role: 'admin',
+        uid: decoded.uid
     }
 })
