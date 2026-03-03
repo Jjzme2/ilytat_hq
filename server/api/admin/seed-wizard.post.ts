@@ -3,11 +3,8 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { verifyAdminAccess, ensureAdminInitialized } from '../../utils/adminAuth'
 
 export default defineEventHandler(async (event) => {
-    try {
-        await verifyAdminAccess(event)
-    } catch (e: any) {
-        throw createError({ statusCode: 403, statusMessage: 'Unauthorized' })
-    }
+    // SECURITY: Strictly enforce admin access, no fail-open
+    await verifyAdminAccess(event)
 
     ensureAdminInitialized()
     const db = getFirestore()
