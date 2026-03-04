@@ -22,7 +22,7 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <div class="flex items-center gap-2 mb-2">
-                             <button @click="router.push('/projects')" class="text-zinc-500 hover:text-white transition-colors">
+                             <button @click="router.push('/projects')" class="text-zinc-500 hover:text-white transition-colors" aria-label="Go back to Command Center">
                                 <span class="i-ph-arrow-left text-xl"></span>
                             </button>
                             <span class="text-xs font-mono text-zinc-500 uppercase tracking-widest">Project</span>
@@ -192,6 +192,7 @@
                                             @click="handleDeleteGoal(goal.id)" 
                                             class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
                                             title="Delete goal"
+                                            aria-label="Delete goal"
                                         >
                                             <span class="i-ph-trash text-sm"></span>
                                         </button>
@@ -273,6 +274,7 @@
                                                         ? 'bg-blue-500 border-blue-500 text-white' 
                                                         : 'border-zinc-600 hover:border-blue-400'
                                                 ]"
+                                                aria-label="Toggle task completion"
                                             >
                                                 <span v-if="task.isCompleted" class="i-ph-check text-xs"></span>
                                             </button>
@@ -289,6 +291,7 @@
                                                 @click="toggleSubtaskForm(task.id)"
                                                 class="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-400 transition-all p-1"
                                                 title="Add subtask"
+                                                aria-label="Add subtask"
                                             >
                                                 <span class="i-ph-plus text-sm"></span>
                                             </button>
@@ -296,6 +299,7 @@
                                                 @click="handleDeleteTask(task.id)" 
                                                 class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
                                                 title="Delete task"
+                                                aria-label="Delete task"
                                             >
                                                 <span class="i-ph-trash text-sm"></span>
                                             </button>
@@ -331,6 +335,7 @@
                                                         ? 'bg-blue-500 border-blue-500 text-white' 
                                                         : 'border-zinc-600 hover:border-blue-400'
                                                 ]"
+                                                aria-label="Toggle subtask completion"
                                             >
                                                 <span v-if="sub.isCompleted" class="i-ph-check text-[10px]"></span>
                                             </button>
@@ -338,6 +343,7 @@
                                             <button 
                                                 @click="handleDeleteTask(sub.id)" 
                                                 class="opacity-0 group-hover/sub:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
+                                                aria-label="Delete subtask"
                                             >
                                                 <span class="i-ph-trash text-[10px]"></span>
                                             </button>
@@ -407,6 +413,7 @@
                                         @click="handleDeleteNote(note.id)" 
                                         class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
                                         title="Delete note"
+                                        aria-label="Delete note"
                                     >
                                         <span class="i-ph-trash text-sm"></span>
                                     </button>
@@ -489,6 +496,7 @@
                                         @click="handleDeleteLink(link.id)" 
                                         class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
                                         title="Delete link"
+                                        aria-label="Delete link"
                                     >
                                         <span class="i-ph-trash text-sm"></span>
                                     </button>

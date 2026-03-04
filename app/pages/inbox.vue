@@ -78,10 +78,10 @@
                                 </div>
                             </div>
                             <div class="flex gap-2 text-zinc-500">
-                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Archive">
+                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Archive" aria-label="Archive Message">
                                     <span class="i-ph-archive"></span>
                                 </button>
-                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Delete">
+                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Delete" aria-label="Delete Message">
                                     <span class="i-ph-trash"></span>
                                 </button>
                             </div>
