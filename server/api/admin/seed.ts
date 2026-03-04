@@ -2,12 +2,13 @@ import { defineEventHandler } from 'h3';
 import { runMigration } from '../../../AI/Migrations/20260210_InitialSeed';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
-import { ensureAdminInitialized } from '../../utils/adminAuth';
+import { ensureAdminInitialized, verifyAdminAccess } from '../../utils/adminAuth';
 
 // Initialize Firebase Admin SDK
 // This runs on the server (Nitro)
 
 export default defineEventHandler(async (event) => {
+    await verifyAdminAccess(event);
     ensureAdminInitialized();
 
     try {
@@ -18,8 +19,7 @@ export default defineEventHandler(async (event) => {
     } catch (e: any) {
         return {
             success: false,
-            error: e.message,
-            stack: e.stack
+            error: e.message
         };
     }
 });

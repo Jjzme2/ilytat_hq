@@ -5,11 +5,7 @@ import { verifyAdminAccess, ensureAdminInitialized } from '../../utils/adminAuth
 import path from 'node:path'
 
 export default defineEventHandler(async (event) => {
-    try {
-        await verifyAdminAccess(event)
-    } catch (e: any) {
-        throw createError({ statusCode: 403, statusMessage: 'Unauthorized' })
-    }
+    await verifyAdminAccess(event)
 
     ensureAdminInitialized()
     const db = getFirestore()
