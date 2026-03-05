@@ -36,6 +36,25 @@ describe('useCommandPalette', () => {
         expect(commands.value[0].id).toBe('test')
     })
 
+    it('registerCommands adds multiple commands and prevents duplicates', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        const cmd1 = { id: 'test1', label: 'Test 1', action: () => { } }
+        const cmd2 = { id: 'test2', label: 'Test 2', action: () => { } }
+        const dupCmd = { id: 'test1', label: 'Test 1 Duplicate', action: () => { } }
+
+        // Test adding multiple commands in a batch
+        registerCommands([cmd1, cmd2, dupCmd])
+
+        // Dup shouldn't be added since its id matches cmd1
+        expect(commands.value).toHaveLength(2)
+        expect(commands.value[0].id).toBe('test1')
+        expect(commands.value[1].id).toBe('test2')
+
+        // Add them again, length shouldn't change
+        registerCommands([cmd1, cmd2])
+        expect(commands.value).toHaveLength(2)
+    })
+
     it('registerCommand prevents duplicate IDs', () => {
         const { registerCommand, commands } = useCommandPalette()
         const cmd = { id: 'dup', label: 'Dup', action: () => { } }
