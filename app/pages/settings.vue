@@ -90,6 +90,9 @@
                                 @click="themeStore.toggleTheme"
                                 class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-zinc-900"
                                 :class="themeStore.isDark ? 'bg-accent-primary' : 'bg-zinc-700'"
+                                role="switch"
+                                :aria-checked="themeStore.isDark"
+                                aria-label="Toggle dark mode"
                             >
                                 <span 
                                     class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
@@ -102,7 +105,12 @@
                                 <h3 class="text-sm font-medium text-white">Notifications</h3>
                                 <p class="text-xs text-zinc-400">Receive system alerts</p>
                             </div>
-                            <button class="relative inline-flex h-6 w-11 items-center rounded-full bg-accent-primary transition-colors">
+                            <button
+                                class="relative inline-flex h-6 w-11 items-center rounded-full bg-accent-primary transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-zinc-900"
+                                role="switch"
+                                aria-checked="true"
+                                aria-label="Toggle notifications"
+                            >
                                 <span class="inline-block h-4 w-4 transform translate-x-6 rounded-full bg-white transition-transform" />
                             </button>
                         </div>

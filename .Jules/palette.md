@@ -1,5 +1,3 @@
-## PALETTE'S JOURNAL - CRITICAL LEARNINGS ONLY
-
-## 2026-02-13 - Accessible Login Forms
-**Learning:** Adding explicit `for`/`id` associations and `aria-describedby` for error messages ensures screen reader users can navigate login forms confidently. The `aria-pressed` state on password toggles provides critical context often missed in visual-only implementations.
-**Action:** Audit all form inputs for label association and ensure dynamic error messages are announced via `aria-live`.
+## 2024-03-07 - Accessibility on Custom Toggles
+**Learning:** Found custom toggle switches built with `div`/`button` combinations (e.g., in Settings) that lacked proper ARIA roles and state attributes.
+**Action:** When building custom interactive elements like toggles or switches, always ensure `role="switch"`, `aria-checked` bindings, and `aria-label`s are applied to the wrapping `<button>` element to make them accessible to screen readers, and add visible focus states (`focus-visible:ring-2`) for keyboard users.
