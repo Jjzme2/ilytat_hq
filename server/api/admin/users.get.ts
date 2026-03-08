@@ -34,38 +34,21 @@ export default defineEventHandler(async (event) => {
             firestoreUsersMap.set(doc.id, doc.data())
         })
 
-        const enrichedUsers = await Promise.all(listResult.users.map(async user => {
+        // ⚡ Bolt Optimization: Group user employeeId assignments by tenantId.
+        // This avoids N+1 transaction queries and severe contention on the tenant's counter document
+        // by batching all counter increments and user updates for a given tenant into a single transaction.
+        const usersNeedingEmployeeIdByTenant: Record<string, any[]> = {}
+
+        const baseUsers = listResult.users.map(user => {
             const claims = user.customClaims || {}
             const firestoreData = firestoreUsersMap.get(user.uid) || {}
 
             // Priority: Firestore > Claims > Default
             const tenantId = firestoreData.tenantId || claims.tenantId || null
             const role = claims.role || firestoreData.role || 'member'
-            let employeeId = firestoreData.employeeId || null
+            const employeeId = firestoreData.employeeId || null
 
-            // Auto-assign employeeId if missing and we have a tenant
-            if (!employeeId && tenantId) {
-                try {
-                    const tenantMetaRef = db.collection('tenants').doc(tenantId).collection('metadata').doc('counters')
-                    await db.runTransaction(async (transaction) => {
-                        const metaDoc = await transaction.get(tenantMetaRef)
-                        let nextId = 1
-                        if (metaDoc.exists) {
-                            nextId = (metaDoc.data()?.lastEmployeeId || 0) + 1
-                        }
-                        transaction.set(tenantMetaRef, { lastEmployeeId: nextId }, { merge: true })
-
-                        // Update user doc in transaction
-                        const userRef = db.collection('users').doc(user.uid)
-                        transaction.set(userRef, { employeeId: nextId, tenantId }, { merge: true })
-                        employeeId = nextId
-                    })
-                } catch (err) {
-                    console.error(`Failed to auto-assign employeeId for ${user.uid}:`, err)
-                }
-            }
-
-            return {
+            const userData = {
                 uid: user.uid,
                 email: user.email || '',
                 displayName: user.displayName || firestoreData.displayName || '',
@@ -78,9 +61,41 @@ export default defineEventHandler(async (event) => {
                 forcePasswordReset: claims.forcePasswordReset || false,
                 photoURL: user.photoURL || firestoreData.photoURL || ''
             }
-        }))
 
-        return enrichedUsers
+            if (!employeeId && tenantId) {
+                if (!usersNeedingEmployeeIdByTenant[tenantId]) {
+                    usersNeedingEmployeeIdByTenant[tenantId] = []
+                }
+                usersNeedingEmployeeIdByTenant[tenantId].push(userData)
+            }
+
+            return userData
+        })
+
+        const tenantUpdates = Object.entries(usersNeedingEmployeeIdByTenant).map(async ([tenantId, usersToUpdate]) => {
+            try {
+                const tenantMetaRef = db.collection('tenants').doc(tenantId).collection('metadata').doc('counters')
+                await db.runTransaction(async (transaction) => {
+                    const metaDoc = await transaction.get(tenantMetaRef)
+                    let nextId = metaDoc.exists ? (metaDoc.data()?.lastEmployeeId || 0) + 1 : 1
+
+                    for (const user of usersToUpdate) {
+                        const userRef = db.collection('users').doc(user.uid)
+                        transaction.set(userRef, { employeeId: nextId, tenantId }, { merge: true })
+                        user.employeeId = nextId
+                        nextId++
+                    }
+
+                    transaction.set(tenantMetaRef, { lastEmployeeId: nextId - 1 }, { merge: true })
+                })
+            } catch (err) {
+                console.error(`Failed to auto-assign employeeIds for tenant ${tenantId}:`, err)
+            }
+        })
+
+        await Promise.all(tenantUpdates)
+
+        return baseUsers
     } catch (e: any) {
         console.error('[API] Failed to list users:', e.message)
         throw createError({
