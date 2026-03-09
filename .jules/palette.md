@@ -1,0 +1,3 @@
+## 2024-05-28 - Custom Switch Buttons Accessibility
+**Learning:** In the settings pages of this app, custom toggle buttons are built visually using `<button>` and `<span>` elements, but they were missing the necessary ARIA attributes to be announced correctly by screen readers as switches.
+**Action:** When building custom interactive toggle or switch elements, always include `role="switch"`, dynamic `aria-checked` bindings, and an `aria-label`. Use visible focus states (e.g., `focus-visible:ring-2`) instead of just `focus:` for keyboard users, and add `aria-hidden="true"` to purely visual inner elements (like sliding circles).
