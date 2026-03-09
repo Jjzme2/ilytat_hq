@@ -44,6 +44,31 @@ describe('useCommandPalette', () => {
         expect(commands.value).toHaveLength(1)
     })
 
+    it('registerCommands adds multiple commands', () => {
+        const { registerCommands, commands } = useCommandPalette()
+        registerCommands([
+            { id: 'test1', label: 'Test 1', action: () => { } },
+            { id: 'test2', label: 'Test 2', action: () => { } }
+        ])
+        expect(commands.value).toHaveLength(2)
+        expect(commands.value[0].id).toBe('test1')
+        expect(commands.value[1].id).toBe('test2')
+    })
+
+    it('registerCommands prevents duplicate IDs within the array and against existing commands', () => {
+        const { registerCommands, registerCommand, commands } = useCommandPalette()
+        registerCommand({ id: 'existing', label: 'Existing', action: () => { } })
+
+        registerCommands([
+            { id: 'existing', label: 'Existing Duplicate', action: () => { } },
+            { id: 'new1', label: 'New 1', action: () => { } },
+            { id: 'new1', label: 'New 1 Duplicate', action: () => { } }, // Will not be caught by simple array filter if set is not updated during iteration, but our implementation updates the set
+        ])
+
+        expect(commands.value).toHaveLength(2) // 'existing' and 'new1'
+        expect(commands.value.find(c => c.id === 'new1')).toBeDefined()
+    })
+
     it('filteredCommands filters by label', () => {
         const { registerCommand, filteredCommands, searchQuery } = useCommandPalette()
         registerCommand({ id: 'a', label: 'Dashboard', action: () => { } })
