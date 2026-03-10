@@ -34,50 +34,70 @@ export default defineEventHandler(async (event) => {
             firestoreUsersMap.set(doc.id, doc.data())
         })
 
-        const enrichedUsers = await Promise.all(listResult.users.map(async user => {
+        // Initial map to collect basic data and identify users needing employeeIds
+        const parsedUsers = listResult.users.map(user => {
             const claims = user.customClaims || {}
             const firestoreData = firestoreUsersMap.get(user.uid) || {}
 
             // Priority: Firestore > Claims > Default
             const tenantId = firestoreData.tenantId || claims.tenantId || null
             const role = claims.role || firestoreData.role || 'member'
-            let employeeId = firestoreData.employeeId || null
+            const employeeId = firestoreData.employeeId || null
 
-            // Auto-assign employeeId if missing and we have a tenant
-            if (!employeeId && tenantId) {
-                try {
-                    const tenantMetaRef = db.collection('tenants').doc(tenantId).collection('metadata').doc('counters')
-                    await db.runTransaction(async (transaction) => {
-                        const metaDoc = await transaction.get(tenantMetaRef)
-                        let nextId = 1
-                        if (metaDoc.exists) {
-                            nextId = (metaDoc.data()?.lastEmployeeId || 0) + 1
-                        }
-                        transaction.set(tenantMetaRef, { lastEmployeeId: nextId }, { merge: true })
+            return { user, claims, firestoreData, tenantId, role, employeeId }
+        })
 
-                        // Update user doc in transaction
-                        const userRef = db.collection('users').doc(user.uid)
-                        transaction.set(userRef, { employeeId: nextId, tenantId }, { merge: true })
-                        employeeId = nextId
-                    })
-                } catch (err) {
-                    console.error(`Failed to auto-assign employeeId for ${user.uid}:`, err)
+        // Group users missing employeeIds by tenant to optimize transactions
+        const missingIdsByTenant = new Map<string, typeof parsedUsers>()
+        for (const u of parsedUsers) {
+            if (!u.employeeId && u.tenantId) {
+                if (!missingIdsByTenant.has(u.tenantId)) {
+                    missingIdsByTenant.set(u.tenantId, [])
                 }
+                missingIdsByTenant.get(u.tenantId)!.push(u)
             }
+        }
 
-            return {
-                uid: user.uid,
-                email: user.email || '',
-                displayName: user.displayName || firestoreData.displayName || '',
-                role: role,
-                tenantId: tenantId,
-                employeeId: employeeId,
-                lastSignInTime: user.metadata.lastSignInTime || '',
-                creationTime: user.metadata.creationTime || '',
-                disabled: user.disabled,
-                forcePasswordReset: claims.forcePasswordReset || false,
-                photoURL: user.photoURL || firestoreData.photoURL || ''
+        // Perform a single transaction per tenant for all missing employeeIds
+        await Promise.all(Array.from(missingIdsByTenant.entries()).map(async ([tenantId, group]) => {
+            try {
+                const tenantMetaRef = db.collection('tenants').doc(tenantId).collection('metadata').doc('counters')
+                await db.runTransaction(async (transaction) => {
+                    const metaDoc = await transaction.get(tenantMetaRef)
+                    let nextId = 1
+                    if (metaDoc.exists) {
+                        nextId = (metaDoc.data()?.lastEmployeeId || 0) + 1
+                    }
+
+                    // Increment the counter once by the total number of IDs needed
+                    transaction.set(tenantMetaRef, { lastEmployeeId: nextId + group.length - 1 }, { merge: true })
+
+                    // Update all users in the group within the same transaction
+                    for (const u of group) {
+                        const userRef = db.collection('users').doc(u.user.uid)
+                        transaction.set(userRef, { employeeId: nextId, tenantId }, { merge: true })
+                        u.employeeId = nextId // Update local state
+                        nextId++
+                    }
+                })
+            } catch (err) {
+                console.error(`Failed to auto-assign employeeIds for tenant ${tenantId}:`, err)
             }
+        }))
+
+        // Map the final enriched user data
+        const enrichedUsers = parsedUsers.map(u => ({
+            uid: u.user.uid,
+            email: u.user.email || '',
+            displayName: u.user.displayName || u.firestoreData.displayName || '',
+            role: u.role,
+            tenantId: u.tenantId,
+            employeeId: u.employeeId,
+            lastSignInTime: u.user.metadata.lastSignInTime || '',
+            creationTime: u.user.metadata.creationTime || '',
+            disabled: u.user.disabled,
+            forcePasswordReset: u.claims.forcePasswordReset || false,
+            photoURL: u.user.photoURL || u.firestoreData.photoURL || ''
         }))
 
         return enrichedUsers
