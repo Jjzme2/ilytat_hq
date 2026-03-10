@@ -23,6 +23,19 @@ const sendStream = vi.fn()
 const defineEventHandler = vi.fn((handler) => handler)
 const verifyAdminToken = vi.fn()
 
+vi.mock('h3', () => ({
+  createError: vi.fn((err) => err),
+  defineEventHandler: vi.fn((handler) => handler),
+  getQuery: vi.fn(),
+  setResponseHeader: vi.fn(),
+  sendStream: vi.fn(),
+  getHeader: vi.fn()
+}))
+
+vi.mock('../../utils/adminAuth', () => ({
+  verifyAdminToken: verifyAdminToken
+}))
+
 vi.stubGlobal('useRuntimeConfig', useRuntimeConfig)
 vi.stubGlobal('getQuery', getQuery)
 vi.stubGlobal('createError', createError)
@@ -53,6 +66,8 @@ describe('GET /api/docs', () => {
 
   it('should call verifyAdminToken to ensure authentication', async () => {
     const event = { context: {} } as any
+
+    verifyAdminToken.mockResolvedValueOnce(true)
 
     await docsGetHandler(event)
 
