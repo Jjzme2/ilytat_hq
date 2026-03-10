@@ -18,8 +18,7 @@ export default defineEventHandler(async (event) => {
     } catch (e: any) {
         return {
             success: false,
-            error: e.message,
-            stack: e.stack
+            error: e.message
         };
     }
 });
