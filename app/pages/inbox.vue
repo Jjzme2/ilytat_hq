@@ -78,11 +78,11 @@
                                 </div>
                             </div>
                             <div class="flex gap-2 text-zinc-500">
-                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Archive">
-                                    <span class="i-ph-archive"></span>
+                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Archive" aria-label="Archive">
+                                    <span class="i-ph-archive" aria-hidden="true"></span>
                                 </button>
-                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Delete">
-                                    <span class="i-ph-trash"></span>
+                                <button class="p-2 hover:bg-white/5 rounded-lg transition-colors hover:text-white" title="Delete" aria-label="Delete">
+                                    <span class="i-ph-trash" aria-hidden="true"></span>
                                 </button>
                             </div>
                         </div>
