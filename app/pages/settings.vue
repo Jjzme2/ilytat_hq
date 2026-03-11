@@ -49,9 +49,10 @@
                     <h2 class="text-lg font-semibold text-white mb-4">Organization</h2>
                     <div class="space-y-4">
                          <div>
-                            <label class="block text-sm font-medium text-zinc-400 mb-1">Company Logo URL</label>
+                            <label for="logoInput" class="block text-sm font-medium text-zinc-400 mb-1">Company Logo URL</label>
                             <div class="flex gap-2">
                                 <input 
+                                    id="logoInput"
                                     v-model="logoInput" 
                                     type="text" 
                                     placeholder="https://example.com/logo.png"
@@ -88,10 +89,14 @@
                             </div>
                             <button 
                                 @click="themeStore.toggleTheme"
-                                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-zinc-900"
+                                role="switch"
+                                :aria-checked="themeStore.isDark"
+                                aria-label="Toggle dark mode"
+                                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
                                 :class="themeStore.isDark ? 'bg-accent-primary' : 'bg-zinc-700'"
                             >
                                 <span 
+                                    aria-hidden="true"
                                     class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
                                     :class="themeStore.isDark ? 'translate-x-6' : 'translate-x-1'"
                                 />
@@ -102,8 +107,13 @@
                                 <h3 class="text-sm font-medium text-white">Notifications</h3>
                                 <p class="text-xs text-zinc-400">Receive system alerts</p>
                             </div>
-                            <button class="relative inline-flex h-6 w-11 items-center rounded-full bg-accent-primary transition-colors">
-                                <span class="inline-block h-4 w-4 transform translate-x-6 rounded-full bg-white transition-transform" />
+                            <button
+                                role="switch"
+                                aria-checked="true"
+                                aria-label="Toggle notifications"
+                                class="relative inline-flex h-6 w-11 items-center rounded-full bg-accent-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
+                            >
+                                <span aria-hidden="true" class="inline-block h-4 w-4 transform translate-x-6 rounded-full bg-white transition-transform" />
                             </button>
                         </div>
                     </div>
