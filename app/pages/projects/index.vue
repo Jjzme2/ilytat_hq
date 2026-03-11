@@ -39,16 +39,13 @@
                         <span :class="[
                             'text-xs px-2 py-1 rounded-full border',
                             project.statusColor
-                           project.statusColor
                         ]">
-                            {{ project.formattedStatus }}
                             {{ project.formattedStatus }}
                         </span>
                     </div>
 
                     <h3 class="text-lg font-semibold text-zinc-100 pr-20 truncate">{{ project.name }}</h3>
-                    <p class="text-sm text-zinc-500 mt-2 line-clamp-2 h-10">{{ project.description || 'No description
-                        provided.' }}</p>
+                    <p class="text-sm text-zinc-500 mt-2 line-clamp-2 h-10">{{ project.description || 'No description provided.' }}</p>
 
                     <!-- Meta Info -->
                     <div class="mt-6 flex items-center justify-between text-xs text-zinc-500">
