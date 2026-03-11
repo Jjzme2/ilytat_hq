@@ -6,3 +6,7 @@
 **Vulnerability:** The `server/api/docs.get.ts` endpoint proxied requests to Cloudflare R2 without any authentication or authorization checks.
 **Learning:** Server-side API routes that act as proxies to external storage must always validate authentication before forwarding requests. Relying on obfuscated URLs is not security.
 **Prevention:** Always add `verifyAdminToken` or equivalent middleware at the start of any server-side API handler that accesses sensitive data.
+## 2024-05-23 - [Critical] Authentication Bypass (Fail Open) in Admin API Routes
+**Vulnerability:** Several admin API routes (`server/api/admin/*.ts`) wrapped the `await verifyAdminAccess(event)` call in a `try-catch` block that suppressed errors (intended as a "local dev fallback"), effectively allowing unauthorized users to bypass authentication and execute privileged admin actions.
+**Learning:** Suppressing authentication errors (Fail Open) is a critical security anti-pattern. Admin API routes must strictly enforce authorization checks and throw errors if access is denied.
+**Prevention:** Never wrap `verifyAdminAccess` or `verifyAdminToken` in a `try-catch` block without explicitly re-throwing the error or terminating the request. Always use strict, fail-closed authorization.
