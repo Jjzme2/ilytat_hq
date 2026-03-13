@@ -192,8 +192,9 @@
                                             @click="handleDeleteGoal(goal.id)" 
                                             class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
                                             title="Delete goal"
+                                            aria-label="Delete goal"
                                         >
-                                            <span class="i-ph-trash text-sm"></span>
+                                            <span class="i-ph-trash text-sm" aria-hidden="true"></span>
                                         </button>
                                     </div>
                                 </div>
@@ -289,15 +290,17 @@
                                                 @click="toggleSubtaskForm(task.id)"
                                                 class="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-400 transition-all p-1"
                                                 title="Add subtask"
+                                                aria-label="Add subtask"
                                             >
-                                                <span class="i-ph-plus text-sm"></span>
+                                                <span class="i-ph-plus text-sm" aria-hidden="true"></span>
                                             </button>
                                             <button 
                                                 @click="handleDeleteTask(task.id)" 
                                                 class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
                                                 title="Delete task"
+                                                aria-label="Delete task"
                                             >
-                                                <span class="i-ph-trash text-sm"></span>
+                                                <span class="i-ph-trash text-sm" aria-hidden="true"></span>
                                             </button>
                                         </div>
                                     </div>
@@ -407,8 +410,9 @@
                                         @click="handleDeleteNote(note.id)" 
                                         class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
                                         title="Delete note"
+                                        aria-label="Delete note"
                                     >
-                                        <span class="i-ph-trash text-sm"></span>
+                                        <span class="i-ph-trash text-sm" aria-hidden="true"></span>
                                     </button>
                                 </div>
                                 <p class="text-sm text-zinc-400 mt-2 whitespace-pre-wrap leading-relaxed">{{ note.content || 'No content.' }}</p>
@@ -489,8 +493,9 @@
                                         @click="handleDeleteLink(link.id)" 
                                         class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all p-1"
                                         title="Delete link"
+                                        aria-label="Delete link"
                                     >
-                                        <span class="i-ph-trash text-sm"></span>
+                                        <span class="i-ph-trash text-sm" aria-hidden="true"></span>
                                     </button>
                                 </div>
                             </div>
