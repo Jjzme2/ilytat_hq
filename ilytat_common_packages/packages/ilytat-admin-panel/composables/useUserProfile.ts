@@ -77,13 +77,6 @@ export const useUserProfile = () => {
      * Check if user is admin
      */
     const isAdmin = computed(() => {
-        const email = user.value?.email?.trim().toLowerCase()
-        const uid = user.value?.uid
-
-        // Hardcoded admin emails and UIDs for safety/fallback
-        if (email === 'zettler.jj@ilytat.com' || email === 'jj@ilytat.com') return true
-        if (uid === 'BoHGcwh2ApNQiJJIgjZWBC9hY8I3') return true
-
         return hasRole('admin')
     })
 

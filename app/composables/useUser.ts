@@ -20,17 +20,13 @@ export const useUser = () => {
     const isAdmin = computed(() => {
         if (!user.value) return false;
         return user.value.roles.includes('admin') ||
-            user.value.roles.includes('super') ||
-            user.value.email === 'admin@ilytat.com' ||
-            user.value.email === 'zettler.jj@ilytat.com';
+            user.value.roles.includes('super');
     });
 
     const isSuper = computed(() => {
         if (!user.value) return false;
         // Super access requires 'super' role AND 'ilytat-hq' tenant membership
-        return (user.value.roles.includes('super') && user.value.tenantId === 'ilytat-hq') ||
-            user.value.email === 'admin@ilytat.com' ||
-            user.value.email === 'zettler.jj@ilytat.com';
+        return (user.value.roles.includes('super') && user.value.tenantId === 'ilytat-hq');
     });
 
     const initUser = (): Promise<User | null> => {
