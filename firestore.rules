@@ -16,8 +16,7 @@ service cloud.firestore {
 
     // Checks if the user belongs to the tenant specified in the document
     function isTenantMember(tenantId) {
-      return isAuth() && (
-        tenantId == null || 
+      return isAuth() && tenantId != null && (
         request.auth.token.tenantId == tenantId || 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId
       );
